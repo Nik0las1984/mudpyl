@@ -128,6 +128,8 @@ class OutputView(gtk.TextView):
         """
         if self.paused:
             self.paused = False
+        #scroll to the end of output
+        self.scroll_mark_onscreen(self.end_mark)
 
     def key_pressed_cb(self, widget, event):
         """The user pressed a key while the output window was in focus.

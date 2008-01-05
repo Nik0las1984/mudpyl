@@ -2,6 +2,7 @@
 from cgi import escape
 from mudpyl.modules import BaseModule
 import time
+import os
 
 class HTMLLogOutput(object):
     """Handles the HTML log."""
@@ -69,7 +70,9 @@ body {
 class HTMLLoggingModule(BaseModule):
     """A module that logs to disk."""
 
-    logplace = '/home/sam/logs/%%(name)s/Date %Y %m %d Time %H %M %S.html'
+    #defaultly log to a file in ~/logs/
+    logplace = os.path.join(os.path.expanduser('~'), 'logs',
+                            '%%(name)s/Date %Y %m %d Time %H %M %S.html')
 
     def is_main(self):
         """Open up the HTML log."""
