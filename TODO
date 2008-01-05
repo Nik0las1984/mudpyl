@@ -17,6 +17,8 @@ Features and miscellanea:
  - have something line instance_macro.
  - more convenient (ie, one function) reloading
  - should TriggerMatchingRealm get send_after?
+ - more complex logging of errors than going to stdout. Pop up a dialogue box,
+   and write to the logfile?
 
 Screen related:
  - search facility in the output

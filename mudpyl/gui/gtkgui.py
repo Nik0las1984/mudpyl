@@ -58,8 +58,9 @@ class CommandView(gtk.TextView):
 
     def get_all_text(self):
         """Finger-saving mathod to get all the text from the buffer."""
-        return self.buffer.get_text(self.buffer.get_start_iter(), 
-                                    self.buffer.get_end_iter())
+        bytes = self.buffer.get_text(self.buffer.get_start_iter(), 
+                                     self.buffer.get_end_iter())
+        return bytes.decode('utf-8')
 
     def escape_pressed(self):
         """Add the current line to the list of previous commands, and clear
@@ -145,7 +146,8 @@ class OutputView(gtk.TextView):
 
         This will autoscroll to the end if we are not paused.
         """
-        self.buffer.insert_with_tags(self.buffer.get_end_iter(), text, 
+        bytes = text.encode('utf-8')
+        self.buffer.insert_with_tags(self.buffer.get_end_iter(), bytes, 
                                      self.fg_tag, self.bg_tag)
         if not self.paused:
             self.scroll_mark_onscreen(self.end_mark)
