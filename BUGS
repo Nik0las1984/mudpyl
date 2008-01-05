@@ -1,0 +1,16 @@
+gui/wxgui.py:
+ - All of these look like they are bugs with wx, not with mudpyl, and fixing
+   them is more trouble than it's worth. Recommendation: use the gtkgui.
+     - the selection poofs as soon as more text comes in.
+     - bug in wx? The emulated key press isn't what we asked for
+     - scrolling + pausing doesn't work
+     - paused screens still get some jitter
+     - selecting something when the screen's paused and more stuff is coming
+       in is broken.
+     - pausing as a whole doesn't work
+ - make the screen fullscreen
+ - copying from output window when focus is on command line may or may not be
+   broken.
+
+library/html.py:
+ - the HTML log breaks on unicode input

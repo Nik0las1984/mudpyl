@@ -1,0 +1,54 @@
+What mudpyl is
+==============
+
+mudpyl is a pure Python implementation of a MUD client. The aim is to keep the
+core concepts simple, and give the user the ability to fiddle around with it
+to suit there needs. Therefore, the core of the client is fairly small and
+modular, with simple interfaces between the parts.
+
+Briefly, the more interesting features are:
+
+    * Regular-expression based triggers and aliases
+    * Trigger-based and fairly safe line rewriting
+    * Macros for almost any keys on the keyboard (including with modifiers)
+    * Execute Python in-client
+    * Coloured HTML logs
+    * Supports MCCP v2
+    * Tab-completion based on words already seen
+    * Keeps a history of previous commands sent
+    * NO strange punctuation-based let's-reinvent-the-wheel programming 
+      language included!
+
+Installing mudpyl
+=================
+
+Decompress and untar the package file, and from the unpacked directory, run::
+
+    python setup.py install
+
+Or, from a shell with ``easy_install`` visible::
+
+    easy_install mudpyl
+
+Twisted and argparse must be installed. wax and wxpython are required by the 
+wxgui; PyGTK is needed by the gtkgui (the default and recommended). 
+peak.util.extremes is required by an optional module.
+
+**NOTE**: mudpyl requires python 2.6 (grab it from the trunk, or an alpha when
+one is released). This is because it uses a new feature in the stdlib module
+textwrap. 2.5 installations could, in theory at least, use the textwrap.py
+file from trunk.
+
+Running mudpyl
+==============
+
+See the file QUICKSTART for a tutorial-style guide for connecting to a MUD.
+
+Author, copyright and license
+=============================
+
+Copyright Sam Pointon 2007. The author is reachable at <sampointon@gmail.com>;
+please send bug reports and such!
+
+mudpyl is licensed under the GNU GPL v2 or later. See the LICENSE file for
+the full terms and conditions.

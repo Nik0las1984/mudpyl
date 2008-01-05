@@ -1,0 +1,121 @@
+"""The actual connection to the MUD."""
+from twisted.conch.telnet import Telnet, GA
+from twisted.protocols.basic import LineOnlyReceiver
+from twisted.internet.protocol import ClientFactory
+from mudpyl.net.nvt import ColourCodeParser, make_string_sane
+from mudpyl.output_manager import OutputManager
+from mudpyl.net.mccp import MCCPTransport, COMPRESS2
+from mudpyl.realms import RootRealm
+
+#pylint doesn't like Twisted naming conventions
+#pylint: disable-msg= C0103
+
+class TelnetClient(Telnet, LineOnlyReceiver):
+
+    """The link to the MUD."""
+
+    delimiter = '\n'
+
+    def __init__(self, factory):
+        Telnet.__init__(self)
+        self.commandMap[GA] = self.ga_received
+        self.negotiationMap[COMPRESS2] = self.turn_on_compression
+        #LineOnlyReceiver doesn't have an __init__ method, weirdly.
+        self.factory = factory
+        self.allowing_compress = False
+        self._colourparser = ColourCodeParser()
+
+    def connectionMade(self):
+        """Call our superclasses.
+        
+        Late initialisation should also go here.
+        """
+        Telnet.connectionMade(self)
+        LineOnlyReceiver.connectionMade(self)
+
+    def enableRemote(self, option):
+        """Allow MCCP to be turned on."""
+        if option == COMPRESS2:
+            self.allowing_compress = True
+            return True
+        else:
+            return False
+
+    def disableRemote(self, option):
+        """Allow MCCP to be turned off."""
+        if option == COMPRESS2:
+            self.allowing_compress = False
+
+    def turn_on_compression(self, bytes):
+        """Actually enable MCCP."""
+        #invalid states.   
+        if not self.allowing_compress or bytes:
+            return
+        self.transport.their_mccp_active = True
+
+    applicationDataReceived = LineOnlyReceiver.dataReceived
+
+    def close(self):
+        """Convenience: close the connection."""
+        self.transport.loseConnection()
+
+    def sendLine(self, line):
+        """Send a line plus a line delimiter to the MUD.
+
+        We need to override this because Telnet converts \\r\\n -> \\n, so
+        LineReceiver's delimiter needs to be \\n, but we need to -send- lines
+        terminated by \\r\\n. Sigh.
+        """
+        return self.transport.writeSequence([line, '\r\n'])
+
+    def connectionLost(self, reason):
+        """Clean up and let the superclass handle it."""
+        Telnet.connectionLost(self, reason)
+        LineOnlyReceiver.connectionLost(self, reason)
+        #flush out the buffer
+        if self._buffer:
+            self.lineReceived(self._buffer)
+
+    def ga_received(self, _):
+        """A GA's been received. We treat these kind of like line endings."""
+        #uses the internals of LineOnyReceiver
+        self._handle_line(self._buffer, from_ga = True)
+        self._buffer = ''
+
+    def lineReceived(self, line):
+        """A normally terminated line's been received from the MUD."""
+        self._handle_line(line, from_ga = False)
+
+    def _handle_line(self, line, from_ga):
+        """Clean the line, split out the colour codes, and feed it to the 
+        realm as a metaline.
+        """ 
+        metaline = self._colourparser.parseline(make_string_sane(line))
+        if from_ga:
+            if self.factory.realm.ga_as_line_end:
+                metaline.line_end = 'soft'
+            else:
+                metaline.line_end = None
+        else:
+            metaline.line_end = 'hard'
+        metaline.wrap = True
+        self.factory.realm.receive(metaline)
+
+class TelnetClientFactory(ClientFactory):
+
+    """A ClientFactory that produces TelnetClients."""
+
+    def __init__(self, name):
+        #no __init__ here, either.
+        self.name = name
+        self.outputs = OutputManager(self)
+        self.realm = RootRealm(self)
+
+    protocol = TelnetClient
+
+    def buildProtocol(self, addr):
+        """Build our protocol's instance."""
+        prot = self.protocol(self)
+        self.realm.telnet = prot
+        mccp = MCCPTransport(prot)
+        return mccp

@@ -1,0 +1,191 @@
+===========================
+Getting Started With mudpyl
+===========================
+
+mudpyl is a simple MUD client written entirely in Python. It aims to implement
+very little in the core of the client, and allow the user to customise it to
+a great extent. This means: no in-house scripting languages, no invented
+serialisation or storage systems. Just pure Python.
+
+Connecting to a MUD
+-------------------
+
+This is nice and simple. Once mudpyl is installed, you will be able to use the
+script named ``mudconnect.py`` to load modules and connect to MUDs with a minimum
+of wheel reinvention. This script takes one argument: the name of the Python
+module where the mudpyl module is located. This file will be imported and the
+mudpyl module will be usenged for MUD connection.
+
+An example: imagine that there is a MUD located at foo.org on port 23. We have
+a character named Fred on this MUD. In a directory on ``sys.path``, create a 
+file named ``fred.py``::
+
+    from mudpyl.modules import BaseModule
+    from mudpyl.gui.bindings import gui_macros
+
+    class MainModule(BaseModule):
+        name = 'fred'
+        host = 'foo.org'
+        port = 23
+        macros = gui_macros
+
+Ignore the lines about 'macros' -- these are bits of boilerplate that is needed
+to make the client's user interface actually usable.
+
+Now, from a command line, execute ``python mudconnect.py fred``. The magic 
+should work, and a window should open connecting you to foo.org. This will 
+only work if the definition is actually called ``MainModule``: anything else 
+won't work.
+
+Personally, I keep all my MUD character profiles in a separate folder, named
+``mudworlds``, and keep this under version control. But you can arrange yours
+however you want, so long as ``import`` *name* would import your module.
+
+A simple alias
+--------------
+
+foo.org is a fast paced game: you can't afford to spend all day typing some
+long commands out. This is grunt work! Fortunately, mudpyl allows us to define
+aliases as shortcuts for other things. Let's say there's a really irritating,
+long command, *reallyirritatinglongcommand*, that we want to mnemonicise 
+to *rilc*.
+
+To do this, our previous example script becomes::
+
+    from mudpyl.modules import BaseModule
+    from mudpyl.aliases import non_binding_alias
+    from mudpyl.gui.bindings import gui_macros
+
+    @non_binding_alias("^rilc$")
+    def rilc_mnemonic(match, realm):
+        realm.send("reallyirritatinglongcommand")
+        realm.send_to_mud = False
+
+    class MainModule(BaseModule):
+        name = 'fred'
+        host = 'foo.org'
+        port = 23
+        aliases = [rilc_mnemonic()]
+        macros = gui_macros
+
+Aliases use regular expressions to know when to fire: here, ours matches on
+``/^rilc$/``. They can match multiple times per line, and the body of code
+will be called once for each match, so the start and end markers are quite
+important.
+
+The core of an alias is just a Python function that's called with some values.
+The ``match`` argument is the MatchObject (from the stdlib's re module) for 
+this specific match. ``realm`` is the whole context that your code is running
+in -- here, an ``AliasMatchingRealm``. This is the main brain of the client:
+this is how lines are sent to the MUD, and where all sorts of helpful flags
+and data live. We set a flag here: ``send_to_mud`` defines whether the current
+line (that the alias matched on) will be sent to the MUD or not. Defaultly,
+this is True, but on our MUD *rilc* is nonsense, so we don't send it.
+
+So, now, whenever you enter *rilc* on its own, it won't get sent: instead,
+*reallylongirritatingcommand* will.
+
+Macros
+------
+
+Let's suppose that this isn't enough. If you had to type out *rilc* then hit
+carriage return all day, that'd feel like four characters too many. Isn't 
+there some way to cut it down to just one?
+
+There is a system of doing just that, called macros. These bind keys to Python
+functions, which are run whenever the key is pressed. This works for keychords
+as well (for example, Control-Meta-Q). Remember that ``gui_macros`` thing
+from before? That's just a collection of macros that bind, for example, return
+to actually sending the line.
+
+To bind F1 and make it send *reallylongirritatingcommand*, our ``fred.py`` 
+now looks like this::
+
+    from mudpyl.modules import BaseModule
+    from mudpyl.aliases import non_binding_alias
+    from mudpyl.gui.bindings import gui_macros
+    from mudpyl.gui.keychords import from_string
+
+    @non_binding_alias("^rilc$")
+    def rilc_mnemonic(match, realm):
+        realm.send("reallyirritatinglongcommand")
+        realm.send_to_mud = False
+
+    def rilc_macro(realm):
+        realm.send("rilc")
+
+    class MainModule(BaseModule):
+        name = 'fred'
+        host = 'foo.org'
+        port = 23
+        aliases = [rilc_mnemonic()]
+        macros = {from_string('F1'): rilc_macro}
+        macros.update(gui_macros)
+
+mudpyl uses a special object to represent a keypress. This object can be 
+created from a string representation: this is the ``from_string`` function.
+Macros are stored in a simple dictionary, where the key is, funnily enough,
+the key.
+
+Now when this module is run, whenever F1 is pressed, *rilc* is sent. Note that
+this is a macro, sending a line, which fires an alias -- aliases will match
+on anything sent, by anything, even themselves. When writing complicated 
+aliases, you should be careful of causing infinite loops.
+
+Triggers
+--------
+
+Even one keypress is too much. You need to send *reallyirritatinglongcommand*
+in the heat of battle, when you need to have reacted three seconds ago. mudpyl
+can automatically send a line (or do other things, as well) when the MUD
+sends us a line that matches a certain pattern.
+
+If you need to send *reallyirritatinglongcommand* every time you see a line
+line "*name* hits you with a large stick.", then the regular expression to
+match would be ``/^\w+ hits you with a large stick\.$/``. Again, the ^ and $
+are significant, as triggers can fire multiple times on a given line. The 
+function is as simple as::
+
+    def rilc_trigger(match, realm):
+        realm.send("rilc")
+
+Or, tying this into the running example::
+
+    from mudpyl.modules import BaseModule
+    from mudpyl.aliases import non_binding_alias
+    from mudpyl.triggers import non_binding_trigger
+    from mudpyl.gui.bindings import gui_macros
+    from mudpyl.gui.keychords import from_string
+
+    @non_binding_alias("^rilc$")
+    def rilc_mnemonic(match, realm):
+        realm.send("reallyirritatinglongcommand")
+        realm.send_to_mud = False
+
+    @non_binding_trigger("^\w+ hits you with a large stick\.$")
+    def rilc_trigger(match, realm):
+        realm.send("rilc")
+
+    def rilc_macro(realm):
+        realm.send("rilc")
+
+    class MainModule(BaseModule):
+        name = 'fred'
+        host = 'foo.org'
+        port = 23
+        aliases = [rilc_mnemonic()]
+        triggers = [rilc_trigger()]
+        macros = {from_string('F1'): rilc_macro}
+        macros.update(gui_macros)
+
+The decorated function needs to be called to actually create an instance of it:
+the object bound to ``rilc_trigger`` is actually a class, not an individual 
+trigger. The same applies to ``rilc_alias``.
+
+Conclusion
+----------
+
+There you go, a whirlwind tour of the basic use of mudpyl. For other, more
+detailed documentation, see the files under ``doc/``, or just read the source
+to see what stuff does. The modules under ``library/`` may be particularly
+helpful for examples of how to do things.

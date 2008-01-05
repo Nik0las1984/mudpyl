@@ -1,0 +1,48 @@
+Features and miscellanea:
+ - smarter creation of log files and directories
+ - add in some way to profile the client
+ - some kind of persistence mechanism?
+ - modules to be written:
+    - the Big Bad Combat System (ie, an autosipper first off)
+    - automapper
+    - not to be written, but targetting.py wants multiple targets and target
+      switching added.
+    - colourtells.py should also colour TELLS and SHOWTELL.
+    - colourtells.py should have a SHOWTELLCOLOURS alias
+ - write a manual?
+    - related but different: manpages
+ - MXP? May be too heavyweight to do nicely and keep the core small.
+ - rename Metaline.insert to insert_after, and add a new method called 
+   insert_before.
+ - have something line instance_macro.
+ - more convenient (ie, one function) reloading
+ - should TriggerMatchingRealm get send_after?
+
+Screen related:
+ - search facility in the output
+ - a little timer thing to show you how long you've been online for
+ - or, even better than pausing: screen splitting
+ - something to show you when each line arrived.
+ - some way of showing that the screen's paused.
+
+Test related:
+ - Tests that need writing:
+    - output_manager.py, gui/*gui.py
+    - The realms has imperfect test coverage right now
+    - TelnetClient has untested parts
+    - most stuff under library/
+    - LineAlterer needs some
+    - the GTK-specific bits of gui/keychords.py
+ - Use a proper mocking system instead of ad-hocking a new set of mock objects
+   in every test file. This might require writing an interface spec.
+ - write a few integration tests
+
+Other refactorings:
+ - customisation! Make the split char customisable, make the font 
+   customisable; these are only the tip of the iceberg. Echoing toggling?
+   Look through the code for hardcoded strings, etc.
+ - separate the different layers (MCCP, Telnet, Matching, Output-Managing, 
+   Outputs) more cleanly into Protocols, etc; ie, drink some more of the 
+   Twisted koolaid.
+ - make an abstract GUI interface, allowing for some other implementations 
+   besides wx. This is kind of half done informally, but half not.
