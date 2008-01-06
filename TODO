@@ -19,6 +19,10 @@ Features and miscellanea:
  - should TriggerMatchingRealm get send_after?
  - more complex logging of errors than going to stdout. Pop up a dialogue box,
    and write to the logfile?
+ - double-check that what comes in through dataReceived, the gui, etc, is
+   converted to unicode, and is properly encoded at all times. The logfile
+   may be writing fine, and it's the display, or there may be some confusion
+   going on.
 
 Screen related:
  - search facility in the output
