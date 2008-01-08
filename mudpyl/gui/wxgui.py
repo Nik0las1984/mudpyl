@@ -6,7 +6,6 @@ from mudpyl.gui.keychords import from_wx_event
 from mudpyl.gui.commandhistory import CommandHistory
 import wax
 import wx
-import traceback
 
 class OutputWindow(wax.TextBox):
     

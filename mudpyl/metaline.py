@@ -1,6 +1,5 @@
 """Utility for passing around lines with their colour information."""
 from bisect import insort
-import sys
 
 def iadjust(ind, start, adj):
     """Moves the ind along by adj amount, unless ind is before start, when it
@@ -72,13 +71,12 @@ class RunLengthList(object):
         """Return an unwrapped unredundant run-length list."""
         res = []
         cur = object() #sentinel
-
-        #we can have a '0' here, because only the first member of the pairwise
+        #we can have None here, because only the first member of the pairwise
         #(index, value) will be used, and it'll only be right at the end. In
         #fact, only the first one being used is the very reason we need to
         #do this: how else will the final value get out there?
-        for (start, val), (end, _) in _pairwise(self.values + 
-                                                [(sys.maxint, '0')]):
+        values = self.values + [(object(), None)]
+        for (start, val), (end, _) in _pairwise(values):
             if start != end and cur != val:
                 cur = val
                 res.append((start, val))

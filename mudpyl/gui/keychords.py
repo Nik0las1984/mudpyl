@@ -154,7 +154,7 @@ else:
         #different. These may differ in case than ours, which is why we do
         #.lower() above.
         if name in unusual_gtk_codes:
-        	name = unusual_gtk_codes[name]
+            name = unusual_gtk_codes[name]
         #though this isn't a special key we care about. Might be out of
         #ASCII bounds, though, so use unichr. Catching Caps_Lock and company
         #is a feature, not a bug (for now). GTK does capital-conversion
