@@ -27,9 +27,6 @@ def _pairwise(seq):
 class _LoopingLast(list):
     """A list whose final value is repeated infinitely."""
 
-    def __getslice__(self, i, j, k):
-        return self.__getitem__(slice(i, j, k))
-
     def __getitem__(self, ind):
         if ind >= len(self):
             return self[-1]
