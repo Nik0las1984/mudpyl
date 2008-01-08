@@ -1,0 +1,6 @@
+New since 0.1
+-------------
+
+2008-01-08  Sam Pointon <sampointon@gmail.com>
+    - escape_parser.py: Removed the obscure backslash-plus-newline-character
+      removal

@@ -14,6 +14,9 @@ class TestEscapes(object):
              ('foo\\nbar\n', #multiple things on one input.
              ['foo', 'bar']),
 
+             ('foo\\\nbar\n',
+              ['foo\\', 'bar']),
+
              ('foo;bar\n', #semicolon linebreak this time
              ['foo', 'bar']),
 
@@ -61,12 +64,6 @@ class TestEscapes(object):
 
     def test_retain_if_no_newline(self):
         res = list(self.eparser.parse('foo'))
-        assert res == []
-        res = list(self.eparser.parse('\n'))
-        assert res == ['foo']
-
-    def test_vanish_newline(self):
-        res = list(self.eparser.parse('foo\\\n')) #backslash - newline
         assert res == []
         res = list(self.eparser.parse('\n'))
         assert res == ['foo']

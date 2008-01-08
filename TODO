@@ -23,6 +23,7 @@ Features and miscellanea:
    converted to unicode, and is properly encoded at all times. The logfile
    may be writing fine, and it's the display, or there may be some confusion
    going on.
+ - unicode (\U and \u) escapes in escape_parser.py
 
 Screen related:
  - search facility in the output

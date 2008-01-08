@@ -47,8 +47,10 @@ See the file QUICKSTART for a tutorial-style guide for connecting to a MUD.
 Author, copyright and license
 =============================
 
-Copyright Sam Pointon 2007. The author is reachable at <sampointon@gmail.com>;
-please send bug reports and such!
+Copyright Sam Pointon 2007. The author is reachable at <sampointon@gmail.com>.
+
+The project is hosted at `Launchpad <https://launchpad.net/mudpyl>`_. Please
+report bugs or request features there.
 
 mudpyl is licensed under the GNU GPL v2 or later. See the LICENSE file for
 the full terms and conditions.

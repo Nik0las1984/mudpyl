@@ -54,9 +54,11 @@ class EscapeParser(object):
             #octal-encoded ASCII character
             chars = char + self.getoctdigits()
             return self.handle_normal_char(chr(int(chars, 8)))
-        elif char == '\n':
-            #\\\n (that is, backslash newline) at EOL makes it vanish.
-            pass
+        elif char == '\n':        
+            #actual newline characters always flush the buffer, but they also
+            #preserve the backslash
+            self.res += '\\'
+            return True
         else:
             self.res += '\\%s' % char
 
