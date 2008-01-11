@@ -11,3 +11,4 @@ New since 0.1
     - output_manager.py: now does two more hooks, connection_closed and
       connection_opened.
     - html.py and gtkgui.py: both now show when the session started and ended.
+    - gtkgui.py: split into gtkcommandline.py and gtkoutput.py

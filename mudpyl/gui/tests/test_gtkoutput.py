@@ -1,4 +1,4 @@
-from mudpyl.gui.gtkgui import OutputView
+from mudpyl.gui.gtkoutput import OutputView
 
 class DummyLabel:
 
