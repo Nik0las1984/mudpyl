@@ -123,8 +123,7 @@ class RootRealm(object):
         
         NOTE: this may have the power to execute arbitrary Python code. Thus,
         triggers and aliases should avoid using this, as they may be 
-        vulnerable to injection from outside sources. Use process_gui_line
-        instead.
+        vulnerable to injection from outside sources. Use send instead.
         """
         if string.startswith('/'):
             self.console.push(string[1:])

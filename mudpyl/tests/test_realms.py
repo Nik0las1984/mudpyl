@@ -329,6 +329,99 @@ class Test_send:
 #XXX: not tested still - TriggerMatchingRealm
 #also not tested: send() and default echoing in MatchingRealms
 
-def test_ga_as_line_end_is_defaultly_True():
-    r = RootRealm(None)
-    assert r.ga_as_line_end
+class FakeTelnetWithClosing:
+
+    def __init__(self):
+        self.closed = False
+
+    def close(self):
+        assert not self.closed
+        self.closed = True
+
+class TestOtherStuff:
+
+    def setUp(self):
+        self.realm = RootRealm(None)
+        self.realm.telnet = self.telnet = FakeTelnetWithClosing()
+    
+    def test_ga_as_line_end_is_defaultly_True(self):
+        assert self.realm.ga_as_line_end
+
+    def test_close_closes_telnet(self):
+        self.realm.close()
+        assert self.telnet.closed
+
+    def test_close_clears_telnet_attribute(self):
+        self.realm.close()
+        assert self.realm.telnet is None
+
+    def test_close_is_a_noop_when_telnet_is_None(self):
+        self.realm.telnet = None
+        self.realm.close()
+        assert self.realm.telnet is None
+
+from mudpyl import realms
+from mudpyl.gui.keychords import from_string
+import traceback
+
+class FakeTracebackModule:
+
+    def __init__(self):
+        self.calls = 0
+
+    def print_exc(self):
+        self.calls += 1
+
+class Test_maybe_do_macro:
+
+    def setUp(self):
+        self.realm = RootRealm(None)
+        self.realm.macros[from_string('X')] = self.macro
+        self.realm.macros[from_string('C-M-X')] = self.bad_macro
+        self.realm.macros[from_string('Z')] = self.simulated_grumpy_user
+        self.macro_called_with = []
+
+    def macro(self, realm):
+        self.macro_called_with.append(realm)
+
+    def bad_macro(self, realm):
+        raise Exception
+
+    def simulated_grumpy_user(self, realm):
+        raise KeyboardInterrupt
+
+    def test_returns_False_if_no_macro_found(self):
+        res = self.realm.maybe_do_macro(from_string('Q'))
+        assert not res
+
+    def test_returns_True_if_a_macro_found(self):
+        res = self.realm.maybe_do_macro(from_string('X'))
+        assert res
+
+    def test_calls_macro_with_itself(self):
+        self.realm.maybe_do_macro(from_string('X'))
+        assert len(self.macro_called_with) == 1
+        assert self.macro_called_with[0] is self.realm
+
+    def test_KeyboardInterrupt_is_not_caught(self):
+        try:
+            self.realm.maybe_do_macro(from_string('Z'))
+        except KeyboardInterrupt:
+            pass
+        else:
+            assert False
+
+    def test_Exception_is_caught(self):
+        tb = realms.traceback = FakeTracebackModule()
+
+        self.realm.maybe_do_macro(from_string('C-M-X'))
+
+        assert tb.calls
+
+        realms.traceback = traceback
+
+    def test_bad_macros_still_return_True(self):
+        realms.traceback = FakeTracebackModule()
+        res = self.realm.maybe_do_macro(from_string('C-M-X'))
+        assert res
+        realms.traceback = traceback
