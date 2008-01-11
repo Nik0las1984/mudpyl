@@ -147,12 +147,16 @@ class OutputView(gtk.TextView):
     def connection_opened(self):
         """The connection's been opened. Inform the user."""
         message = time.strftime("Connection opened at %H:%M:%S.\n")
-        self.buffer.insert(self.buffer.get_end_iter(), message)
+        tag = self.buffer.create_tag()
+        tag.set_property('foreground', '#FFAA00') #lovely orange
+        self.buffer.insert_with_tags(self.buffer.get_end_iter(), message, tag)
 
     def connection_closed(self):
         """The connection's been closed. Inform the user."""
-        message = time.strftime("Connection closed at %H:%M:%S.")
-        self.buffer.insert(self.buffer.get_end_iter(), message)
+        message = time.strftime("\nConnection closed at %H:%M:%S.")
+        tag = self.buffer.create_tag()
+        tag.set_property('foreground', '#FFAA00')
+        self.buffer.insert_with_tags(self.buffer.get_end_iter(), message, tag)
 
     def peek_line(self, line):
         '''Add in all our shiny new words to our dictionary.'''
