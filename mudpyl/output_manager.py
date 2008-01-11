@@ -20,6 +20,8 @@ class OutputManager(object):
         self.back = bg_code(BLACK)
         self.wrapper = TextWrapper(width = 100, 
                                   drop_whitespace = False)
+        self._connection_is_closed = False
+        self._waiting_on_connection_close = False
 
     def add_output(self, output):
         """Add another output that wants to receive stuff."""
@@ -114,7 +116,30 @@ class OutputManager(object):
         #need to do this now, while we're still alive, otherwise the
         #buffers will be flushed to screen when there is no screen.
         #but, we might not even be initialised yet, so we need to be aware
-        #of this while we close
-        self.factory.realm.close() 
+        #of this while we close. Now, when the connection actually does close,
+        #our connection_closed method will shut everything down for us after
+        #our outputs deal with it, removing the out-of-orderness.
+        self.factory.realm.close()
+        if self._connection_is_closed:
+            self._actually_close()
+        else:
+            self._waiting_on_connection_close = True
+
+    def _actually_close(self):
+        """Actually close all our outputs."""
         for output in self.outputs:
             output.close()
+
+    def connection_opened(self):
+        """The connection was opened. Pass this on to our outputs."""
+        for output in self.outputs:
+            output.connection_opened()
+        self._connection_is_closed = False
+
+    def connection_closed(self):
+        """The connection's been closed. Notify our outputs."""
+        for output in self.outputs:
+            output.connection_closed()
+        self._connection_is_closed = True
+        if self._waiting_on_connection_close:
+            self._actually_close()

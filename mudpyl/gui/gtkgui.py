@@ -3,9 +3,12 @@ from mudpyl.gui.keychords import from_gtk_event
 from mudpyl.gui.commandhistory import CommandHistory
 from mudpyl.gui.tabcomplete import Trie
 from mudpyl.colours import WHITE, BLACK, fg_code, bg_code
+from twisted.internet.task import LoopingCall
 import traceback
 import gtk
 import pango
+import time
+from datetime import datetime, timedelta
 
 class CommandView(gtk.TextView):
 
@@ -120,6 +123,7 @@ class OutputView(gtk.TextView):
         """Stop autoscrolling to new data."""
         if not self.paused:
             self.paused = True
+            self.gui.paused_label.set_text("PAUSED")
 
     def unpause(self):
         """Restart autoscrolling to new data.
@@ -128,6 +132,7 @@ class OutputView(gtk.TextView):
         """
         if self.paused:
             self.paused = False
+            self.gui.paused_label.set_text("")
         #scroll to the end of output
         self.scroll_mark_onscreen(self.end_mark)
 
@@ -138,6 +143,16 @@ class OutputView(gtk.TextView):
         """
         self.gui.command_line.emit('key-press-event', event)
         return True
+
+    def connection_opened(self):
+        """The connection's been opened. Inform the user."""
+        message = time.strftime("Connection opened at %H:%M:%S.\n")
+        self.buffer.insert(self.buffer.get_end_iter(), message)
+
+    def connection_closed(self):
+        """The connection's been closed. Inform the user."""
+        message = time.strftime("Connection closed at %H:%M:%S.")
+        self.buffer.insert(self.buffer.get_end_iter(), message)
 
     def peek_line(self, line):
         '''Add in all our shiny new words to our dictionary.'''
@@ -172,6 +187,40 @@ class OutputView(gtk.TextView):
         """
         pass
 
+class TimeOnlineLabel(gtk.Label):
+
+    """A display of how long the current session has been online for."""
+
+    def __init__(self):
+        gtk.Label.__init__(self)
+        self.looping_call = LoopingCall(self.update_time)
+        self.start_time = None
+
+    def connection_opened(self):
+        """Start ticking."""
+        self.start_time = datetime.now()
+        #don't leave our display blank
+        self.update_time()
+        self.looping_call.start(0.5) #update it twice per second
+
+    def connection_closed(self):
+        """We only count time online; stop counting."""
+        self.looping_call.stop()
+
+    #ignore the rest of the output methods
+    def write_out_span(self, arg = None):
+        pass
+    fg_changed = bg_changed = close = peek_line = write_out_span
+
+    def update_time(self):
+        """Should tick once a second. Displays the current running count of
+        how long's been spent online.
+        """
+        delta = datetime.now() - self.start_time
+        #chop off microseconds, for neatness
+        delta = timedelta(delta.days, delta.seconds)
+        self.set_text('Time online: %s' % delta)
+
 class GUI(gtk.Window):
 
     """The toplevel window. Contains the command line and the output view."""
@@ -186,6 +235,8 @@ class GUI(gtk.Window):
         self.output_window = OutputView(self)
         self.scrolled_out = gtk.ScrolledWindow()
         self.scrolled_in = gtk.ScrolledWindow()
+        self.paused_label = gtk.Label()
+        self.time_online = TimeOnlineLabel()
         self._make_widget_body()
 
     def _make_widget_body(self):
@@ -195,7 +246,7 @@ class GUI(gtk.Window):
         self.maximize() #sic
 
         self.outputs.add_output(self.output_window)
-        self.command_line.output_window = self.output_window
+        self.outputs.add_output(self.time_online)
 
         #never have hscrollbars normally, always have vscrollbars
         self.scrolled_out.set_policy(gtk.POLICY_NEVER, gtk.POLICY_ALWAYS)
@@ -204,11 +255,20 @@ class GUI(gtk.Window):
         self.scrolled_in.set_policy(gtk.POLICY_ALWAYS, gtk.POLICY_NEVER)
         self.scrolled_in.add(self.command_line)
 
+        #construct the bottom row of indicators and stuff
+        labelbox = gtk.HBox()
+        #we want the paused indicator to be to the left, because it comes 
+        #and goes.
+        labelbox.pack_end(self.time_online, expand = False)
+        labelbox.pack_end(gtk.VSeparator(), expand = False)
+        labelbox.pack_end(self.paused_label, expand = False)
+
         box = gtk.VBox()
 
         box.pack_start(self.scrolled_out)
         box.pack_start(gtk.HSeparator(), expand = False)
         box.pack_start(self.scrolled_in, expand = False)
+        box.pack_start(labelbox, expand = False)
         self.add(box)
 
         self.show_all()

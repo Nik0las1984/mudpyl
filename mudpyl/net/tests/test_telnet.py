@@ -12,7 +12,7 @@ class Test_LineReceiver_aspects:
 
     def setUp(self):
         self.received = []
-        self.tc = TelnetClient(None)
+        self.tc = TelnetClient(TelnetClientFactory(None))
         self.tc.transport = FakeTransport()
         self.tc.lineReceived = self.lr
 
@@ -25,6 +25,7 @@ class Test_LineReceiver_aspects:
 
     def test_closing_flushes_buffer(self):
         self.tc.dataReceived("bar")
+        print self.tc.factory.outputs
         self.tc.connectionLost(None)
         assert self.received == ['bar']
 
@@ -55,7 +56,7 @@ class FakeTransport:
 class Test_MCCP:
 
     def setUp(self):
-        self.tc = TelnetClient(None)
+        self.tc = TelnetClient(TelnetClientFactory(None))
         self.tc.transport = self.t = FakeTransport()
 
     def test_agree_to_enable_COMPRESS2(self):
@@ -148,3 +149,32 @@ class Test_receiving_lines:
         expected = [Metaline('foo', self.fores, self.backs, wrap = True)]
         self.tc.lineReceived('fooQ' + BS + VT)
         assert self.e.lines == expected
+
+class MockOutputManager:
+
+    def __init__(self):
+        self.calls = []
+
+    def connection_opened(self):
+        self.calls.append("connection_opened")
+
+    def connection_closed(self):
+        self.calls.append("connection_closed")
+
+def test_connectionLost_sends_connection_closed_to_the_outputs():
+    f = TelnetClientFactory(None)
+    telnet = TelnetClient(f)
+    om = f.outputs = MockOutputManager()
+
+    telnet.connectionLost(None)
+
+    assert om.calls == ['connection_closed']
+
+def test_connectionMade_sends_connection_opened_to_the_outputs():
+    f = TelnetClientFactory(None)
+    telnet = TelnetClient(f)
+    om = f.outputs = MockOutputManager()
+
+    telnet.connectionMade()
+
+    assert om.calls == ['connection_opened']

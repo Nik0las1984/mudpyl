@@ -22,7 +22,6 @@ body {
 </head>
 <body>
 <pre>
-<span style="color: #B0B0B0; background: #000000">
 '''
 
     log_postamble = '''
@@ -33,6 +32,15 @@ body {
 '''
 
     colour_change = '''</span><span style="color: #%s; background: #%s">'''
+
+    connection_closed_message = '''</span><span style="color: #FFAA00
+background: #000000">
+Connection closed at %H:%M:%S'''
+
+    connection_opened_message = '''<span style="color: #FFAA00">
+Connection opened at %H:%M:%S</span>
+<span style="color: #B0B0B0; background: #000000">
+'''
 
     def __init__(self, outputs, logformat):
         self.outputs = outputs
@@ -66,6 +74,14 @@ body {
         if self.log is not None:
             self.log.write(self.log_postamble)
             self.log.close()
+
+    def connection_opened(self):
+        """Write a note to the log about when the connection opened."""
+        self.log.write(time.strftime(self.connection_opened_message))
+
+    def connection_closed(self):
+        """Write a note to the log about when the connection closed."""
+        self.log.write(time.strftime(self.connection_closed_message))
 
 class HTMLLoggingModule(BaseModule):
     """A module that logs to disk."""

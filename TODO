@@ -27,10 +27,8 @@ Features and miscellanea:
 
 Screen related:
  - search facility in the output
- - a little timer thing to show you how long you've been online for
  - or, even better than pausing: screen splitting
  - something to show you when each line arrived.
- - some way of showing that the screen's paused.
 
 Test related:
  - Tests that need writing:

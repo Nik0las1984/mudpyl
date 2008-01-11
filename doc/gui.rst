@@ -58,3 +58,12 @@ Tab:
 Pause/Break:
     This key toggles the automatic scrolling of the output window to new text.
     Useful for trying to read something when it's a bit busy.
+
+The display
+===========
+
+The GUI has three main parts: the output window (the largest part, where all
+the MUD's text goes), the command line (where you type in your commands), and
+the status bar (which displays a few pieces of useful information). On the
+status bar, there is a count of how long the connection has lasted, and a
+reminder about the screen being paused, if it is.

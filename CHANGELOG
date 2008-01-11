@@ -4,3 +4,10 @@ New since 0.1
 2008-01-08  Sam Pointon <sampointon@gmail.com>
     - escape_parser.py: Removed the obscure backslash-plus-newline-character
       removal
+
+2008-01-11 Sam Pointon <sampointon@gmail.com>
+    - gtkgui.py: now has a counter of how long the session has lasted, and
+      whether the screen is paused or not.
+    - output_manager.py: now does two more hooks, connection_closed and
+      connection_opened.
+    - html.py and gtkgui.py: both now show when the session started and ended.

@@ -3,11 +3,14 @@ from mudpyl.library import html
 from mudpyl.library.html import HTMLLogOutput
 from cgi import escape
 from mudpyl.colours import HexFGCode, HexBGCode
+import time
 
 class Logger(HTMLLogOutput):
 
     log_postamble = "POSTAMBLE"
     colour_change = "COLOUR CHANGE %s %s"
+    connection_closed_message = 'closing time format goes here'
+    connection_opened_message = 'opening time format goes here'
 
     def __init__(self, log):
         self.log = log
@@ -39,6 +42,23 @@ class Test_HTMLLogOutput:
     def test_bg_changed_writes_out_new_colour(self):
         self.o.bg_changed(None)
         assert self.f.getvalue() == 'COLOUR CHANGE f00ba8 a2e665'
+
+    def test_connection_opened_writes_out_time_of_opening(self):
+        t = FakeTimeModule()
+        html.time = t
+        self.o.connection_opened()
+        assert self.f.getvalue() == 'FOO %(name)s'
+        assert t.formats == ['opening time format goes here']
+        html.time = time
+
+
+    def test_connection_closed_writes_out_time_of_closing(self):
+        t = FakeTimeModule()
+        html.time = t
+        self.o.connection_closed()
+        assert self.f.getvalue() == 'FOO %(name)s'
+        assert t.formats == ['closing time format goes here']
+        html.time = time
 
 class MockFile:
 
@@ -89,7 +109,6 @@ class TestHTMLLogOutputInitialisation:
 
     def tearDown(self):
         html.open = open
-        import time
         html.time = time
 
     def our_open(self, name, mode):

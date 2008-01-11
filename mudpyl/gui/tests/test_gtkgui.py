@@ -1,9 +1,15 @@
 from mudpyl.gui.gtkgui import OutputView
 
+class DummyLabel:
+
+    def set_text(self, text):
+        pass
+
 class DummyGUI:
 
     def __init__(self):
         self.tabdict = DummyTabdict()
+        self.paused_label = DummyLabel()
 
 class DummyTabdict(object):
 
