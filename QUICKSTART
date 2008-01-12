@@ -21,16 +21,11 @@ a character named Fred on this MUD. In a directory on ``sys.path``, create a
 file named ``fred.py``::
 
     from mudpyl.modules import BaseModule
-    from mudpyl.gui.bindings import gui_macros
 
     class MainModule(BaseModule):
         name = 'fred'
         host = 'foo.org'
         port = 23
-        macros = gui_macros
-
-Ignore the lines about 'macros' -- these are bits of boilerplate that is needed
-to make the client's user interface actually usable.
 
 Now, from a command line, execute ``python mudconnect.py fred``. The magic 
 should work, and a window should open connecting you to foo.org. This will 
@@ -54,7 +49,6 @@ To do this, our previous example script becomes::
 
     from mudpyl.modules import BaseModule
     from mudpyl.aliases import non_binding_alias
-    from mudpyl.gui.bindings import gui_macros
 
     @non_binding_alias("^rilc$")
     def rilc_mnemonic(match, realm):
@@ -66,7 +60,6 @@ To do this, our previous example script becomes::
         host = 'foo.org'
         port = 23
         aliases = [rilc_mnemonic()]
-        macros = gui_macros
 
 Aliases use regular expressions to know when to fire: here, ours matches on
 ``/^rilc$/``. They can match multiple times per line, and the body of code
@@ -94,16 +87,15 @@ there some way to cut it down to just one?
 
 There is a system of doing just that, called macros. These bind keys to Python
 functions, which are run whenever the key is pressed. This works for keychords
-as well (for example, Control-Meta-Q). Remember that ``gui_macros`` thing
-from before? That's just a collection of macros that bind, for example, return
-to actually sending the line.
+as well (for example, Control-Meta-Q). mudpyl binds a default set of keys to
+macros, without any extra work on your part. The keys bound are listed in
+``doc/gui.rst``.
 
 To bind F1 and make it send *reallylongirritatingcommand*, our ``fred.py`` 
 now looks like this::
 
     from mudpyl.modules import BaseModule
     from mudpyl.aliases import non_binding_alias
-    from mudpyl.gui.bindings import gui_macros
     from mudpyl.gui.keychords import from_string
 
     @non_binding_alias("^rilc$")
@@ -120,7 +112,6 @@ now looks like this::
         port = 23
         aliases = [rilc_mnemonic()]
         macros = {from_string('F1'): rilc_macro}
-        macros.update(gui_macros)
 
 mudpyl uses a special object to represent a keypress. This object can be 
 created from a string representation: this is the ``from_string`` function.
@@ -154,7 +145,6 @@ Or, tying this into the running example::
     from mudpyl.modules import BaseModule
     from mudpyl.aliases import non_binding_alias
     from mudpyl.triggers import non_binding_trigger
-    from mudpyl.gui.bindings import gui_macros
     from mudpyl.gui.keychords import from_string
 
     @non_binding_alias("^rilc$")
@@ -176,7 +166,6 @@ Or, tying this into the running example::
         aliases = [rilc_mnemonic()]
         triggers = [rilc_trigger()]
         macros = {from_string('F1'): rilc_macro}
-        macros.update(gui_macros)
 
 The decorated function needs to be called to actually create an instance of it:
 the object bound to ``rilc_trigger`` is actually a class, not an individual 

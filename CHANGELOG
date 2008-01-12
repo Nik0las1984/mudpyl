@@ -17,3 +17,5 @@ New since 0.1
     - output_manager.py: removed the connection_*, peek_line and close, and
       made them hooks in realms.py. Many other files touched by this, because
       of the renaming and such.
+    - realms.py: the macros from mudpyl.gui.bindings are now automatically
+      loaded.

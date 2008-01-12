@@ -29,8 +29,9 @@ The keybindings
 ===============
 
 mudpyl has a number of default keybindings, in addition to those the toolkit
-provides by default. These are found in ``gui/bindings.py``. They are not
-actually loaded by default, but should probably be done anyway. They are:
+provides by default. These are found in ``gui/bindings.py``. They are loaded
+by default, so unless you want to change them, their loading can be ignored. 
+They are:
 
 Page Up and Page Down:
     Because the command line is only one line, these would be no-ops. However,

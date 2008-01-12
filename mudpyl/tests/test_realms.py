@@ -352,6 +352,8 @@ class FakeTelnetWithClosing:
         assert not self.closed
         self.closed = True
 
+from mudpyl.gui.bindings import gui_macros
+
 class TestOtherStuff:
 
     def setUp(self):
@@ -373,6 +375,9 @@ class TestOtherStuff:
         self.realm.telnet = None
         self.realm.close()
         assert self.realm.telnet is None
+
+    def test_gui_macros_are_defaultly_loaded(self):
+        assert self.realm.macros == gui_macros
 
 from mudpyl import realms
 from mudpyl.gui.keychords import from_string

@@ -5,6 +5,7 @@ from mudpyl.colours import fg_code, bg_code, BLACK, WHITE
 from mudpyl.metaline import Metaline, RunLengthList
 from mudpyl.triggers import TriggerMatchingRealm
 from mudpyl.aliases import AliasMatchingRealm
+from mudpyl.gui.bindings import gui_macros
 import traceback
 
 class RootRealm(object):
@@ -17,7 +18,7 @@ class RootRealm(object):
         self.telnet = None
         self.triggers = []
         self.aliases = []
-        self.macros = {}
+        self.macros = gui_macros.copy()
         self.ga_as_line_end = True
         self.modules_loaded = set()
         self._escape_parser = EscapeParser()
@@ -38,6 +39,7 @@ class RootRealm(object):
         self.triggers[:] = []
         self.aliases[:] = []
         self.macros.clear()
+        self.macros.update(gui_macros)
         self.modules_loaded = set()
 
     def load_module(self, cls, _sort = True):
