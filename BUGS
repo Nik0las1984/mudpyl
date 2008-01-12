@@ -12,9 +12,6 @@ gui/wxgui.py:
  - copying from output window when focus is on command line may or may not be
    broken.
 
-gui/gtkgui.py
- - the connection closed message isn't scrolled to
-
 library/html.py:
  - the HTML log breaks on unicode input
 

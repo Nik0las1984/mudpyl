@@ -63,6 +63,7 @@ class OutputView(gtk.TextView):
         tag = self.buffer.create_tag()
         tag.set_property('foreground', '#FFAA00') #lovely orange
         self.buffer.insert_with_tags(self.buffer.get_end_iter(), message, tag)
+        self.scroll_mark_onscreen(self.end_mark)
 
     def connection_lost(self):
         """The connection's been closed. Inform the user."""
@@ -70,6 +71,7 @@ class OutputView(gtk.TextView):
         tag = self.buffer.create_tag()
         tag.set_property('foreground', '#FFAA00')
         self.buffer.insert_with_tags(self.buffer.get_end_iter(), message, tag)
+        self.scroll_mark_onscreen(self.end_mark)
 
     def write_out_span(self, text):
         """Write a span of text to the window using the current colours.
