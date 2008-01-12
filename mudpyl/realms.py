@@ -61,7 +61,11 @@ class RootRealm(object):
         return robmod
 
     def close(self):
-        """Close up our connection and shut up shop."""
+        """Close up our connection and shut up shop.
+        
+        It is guaranteed that, on registered connection event receivers,
+        connection_lost will be called before close.
+        """
         if self.telnet is not None:
             #lose the connection first.
             self.telnet.close()
@@ -73,12 +77,23 @@ class RootRealm(object):
         self._closing_down = True
 
     def add_connection_receiver(self, receiver):
+        """Register a receiver for close, connection_made and connection_lost
+        events.
+        """
         self.connection_event_receivers.append(receiver)
 
     def add_peeker(self, receiver):
+        """Register a receiver that will have its peek_line method called
+        with every line being written to screen.
+        """
         self.peeking_receivers.append(receiver)
 
     def connection_lost(self):
+        """The link to the MUD died.
+
+        It is guaranteed that this will be called before close on connection
+        event receivers.
+        """
         for receiver in self.connection_event_receivers:
             receiver.connection_lost()
         #we might be waiting on the connection to die before we send out
@@ -89,6 +104,7 @@ class RootRealm(object):
                 receiver.close()
 
     def connection_made(self):
+        """The MUD's been connected to."""
         for receiver in self.connection_event_receivers:
             receiver.connection_made()
 

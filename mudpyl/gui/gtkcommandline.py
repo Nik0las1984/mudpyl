@@ -86,4 +86,5 @@ class CommandView(gtk.TextView):
         self.buffer.place_cursor(newiter)
 
     def peek_line(self, line):
+        """Add all the new words in the line to our tabdict."""
         self.gui.tabdict.add_line(line)
