@@ -117,14 +117,6 @@ class TrackingMetaline(Metaline):
         Metaline.insert(self, ind, string)
         self.inserted.append((ind, string))
 
-class PeekingTom:
-
-    def __init__(self):
-        self.pought = []
-
-    def peek_line(self, line):
-        self.pought.append(line)
-
 class Test_write_to_screen:
 
     def our_actually_write_to_screen(self, colours, line):
@@ -154,14 +146,8 @@ class Test_write_to_screen:
                                    RunLengthList([(0, self.bg),
                                                   (2, 'bg2')]))
         self.om = OutputManager(object())
-        self.tom = PeekingTom()
-        self.om.add_output(self.tom)
         self.om._actually_write_to_screen = self.our_actually_write_to_screen
         self.called = False
-
-    def test_peeking(self):
-        self.om.write_to_screen(self.ml)
-        assert self.tom.pought == ["foo"]
 
     def test_line_insertion_with_hard_line_end_no_sls(self):
         self.om.last_line_end = 'hard'
@@ -209,68 +195,4 @@ class Test_write_to_screen:
         self.ml.wrap = True
         self.om.write_to_screen(self.ml)
 
-class TrackingOutput:
 
-    def __init__(self):
-        self.calls = []
-
-    def connection_closed(self):
-        self.calls.append('connection_closed')
-
-    def connection_opened(self):
-        self.calls.append("connection_opened")
-
-    def close(self):
-        self.calls.append("close")
-
-def test_passes_on_connection_closed():
-    om = OutputManager(None)
-    output = TrackingOutput()
-    om.add_output(output)
-
-    om.connection_closed()
-
-    assert output.calls == ['connection_closed']
-
-def test_passes_on_connection_opened():
-    om = OutputManager(None)
-    output = TrackingOutput()
-    om.add_output(output)
-
-    om.connection_opened()
-
-    assert output.calls == ['connection_opened']
-
-class FakeRealm:
-
-    def __init__(self):
-        self.closed = False
-
-    def close(self):
-        assert not self.closed
-        self.closed = True
-
-class FakeFactory:
-
-    def __init__(self):
-        self.realm = FakeRealm()
-
-def test_sends_connection_closed_and_close_in_right_order():
-    f = FakeFactory()
-    om = OutputManager(f)
-    output = TrackingOutput()
-    om.add_output(output)
-
-    om.closing()
-    #simulate Twisted's 'throw-it-over-the-wall' anti-guarantee
-    om.connection_closed()
-
-    assert output.calls == ['connection_closed', 'close']
-
-def test_closing_tells_the_realm_to_close():
-    f = FakeFactory()
-    om = OutputManager(f)
-
-    om.closing()
-
-    assert f.realm.closed

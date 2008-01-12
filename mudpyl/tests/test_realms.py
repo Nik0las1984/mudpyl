@@ -60,6 +60,14 @@ class MockOutputs:
         self.back = back
         self.write_to_screen = wts
 
+class PeekingTom:
+
+    def __init__(self):
+        self.pought = []
+
+    def peek_line(self, line):
+        self.pought.append(line)
+
 class Test_write:
 
     def setUp(self):
@@ -139,6 +147,12 @@ class Test_write:
         expected = [inline, self.noting_line]
         print expected
         assert self.lines_gotten == expected
+
+    def test_write_sends_peek_line(self):
+        p = PeekingTom()
+        self.realm.add_peeker(p)
+        self.realm.write('foobar')
+        assert p.pought == ['foobar']
 
 class Test_receive:
 
@@ -425,3 +439,53 @@ class Test_maybe_do_macro:
         res = self.realm.maybe_do_macro(from_string('C-M-X'))
         assert res
         realms.traceback = traceback
+
+class TrackingReceiver:
+
+    def __init__(self):
+        self.calls = []
+
+    def connection_lost(self):
+        self.calls.append('connection_lost')
+
+    def connection_made(self):
+        self.calls.append("connection_made")
+
+    def close(self):
+        self.calls.append("close")
+
+class Test_connection_events:
+
+    def setUp(self):
+        self.realm = RootRealm(None)
+        self.realm.telnet = self.telnet = FakeTelnetWithClosing()
+        self.receiver = TrackingReceiver()
+        self.realm.add_connection_receiver(self.receiver)
+
+    def test_passes_on_connection_closed(self):
+        self.realm.connection_lost()
+
+        assert self.receiver.calls == ['connection_lost']
+
+    def test_passes_on_connection_opened(self):
+        self.realm.connection_made()
+
+        assert self.receiver.calls == ['connection_made']
+
+    def test_sends_connection_closed_and_close_in_right_order(self):
+        self.realm.close()
+        #simulate Twisted's 'throw-it-over-the-wall' anti-guarantee
+        self.realm.connection_lost()
+
+        assert self.receiver.calls == ['connection_lost', 'close']
+
+    def test_connection_closed_then_close_work(self):
+        self.realm.connection_lost()
+        self.realm.close()
+
+        assert self.receiver.calls == ['connection_lost', 'close']
+
+    def test_connection_closed_sets_telnet_to_None(self):
+        self.realm.connection_lost()
+
+        assert self.realm.telnet is None

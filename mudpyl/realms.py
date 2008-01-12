@@ -25,6 +25,10 @@ class RootRealm(object):
         self.console_ns = {'realm': self}
         self.console = InteractiveConsole(self.console_ns)
 
+        self.connection_event_receivers = []
+        self.peeking_receivers = []
+        self._closing_down = False
+
     #Bidirectional, or just ambivalent, functions.
 
     def clear_modules(self):
@@ -57,10 +61,36 @@ class RootRealm(object):
         return robmod
 
     def close(self):
-        """Close up our connection."""
+        """Close up our connection and shut up shop."""
         if self.telnet is not None:
+            #lose the connection first.
             self.telnet.close()
+        else:
+            #connection's already lost, we don't need to wait
+            for receiver in self.connection_event_receivers:
+                receiver.close()
         self.telnet = None
+        self._closing_down = True
+
+    def add_connection_receiver(self, receiver):
+        self.connection_event_receivers.append(receiver)
+
+    def add_peeker(self, receiver):
+        self.peeking_receivers.append(receiver)
+
+    def connection_lost(self):
+        for receiver in self.connection_event_receivers:
+            receiver.connection_lost()
+        #we might be waiting on the connection to die before we send out
+        #close events
+        self.telnet = None
+        if self._closing_down:
+            for receiver in self.connection_event_receivers:
+                receiver.close()
+
+    def connection_made(self):
+        for receiver in self.connection_event_receivers:
+            receiver.connection_made()
 
     def trace_on(self):
         """Turn tracing (verbose printing to the output screen) on."""
@@ -115,6 +145,9 @@ class RootRealm(object):
         #implied colour, so notes can't bleed out into text (though the 
         #reverse can be true).
         self.factory.outputs.write_to_screen(line)
+        
+        for receiver in self.peeking_receivers:
+            receiver.peek_line(line.line)
 
     #Going towards the MUD.
 

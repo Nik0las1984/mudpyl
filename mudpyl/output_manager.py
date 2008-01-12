@@ -45,9 +45,6 @@ class OutputManager(object):
         
     def write_to_screen(self, metaline):
         """Write the line to the logs and screen."""
-        for output in self.outputs:
-            output.peek_line(metaline.line)
-
         if metaline.wrap:
             metaline = self._wrap_line(metaline)
 
@@ -109,37 +106,4 @@ class OutputManager(object):
         else:
             raise RuntimeError("Dunno what %r is." % change)
 
-    def closing(self):
-        """We're shutting down - close our telnet link, and notify our
-        outputs.
-        """
-        #need to do this now, while we're still alive, otherwise the
-        #buffers will be flushed to screen when there is no screen.
-        #but, we might not even be initialised yet, so we need to be aware
-        #of this while we close. Now, when the connection actually does close,
-        #our connection_closed method will shut everything down for us after
-        #our outputs deal with it, removing the out-of-orderness.
-        self.factory.realm.close()
-        if self._connection_is_closed:
-            self._actually_close()
-        else:
-            self._waiting_on_connection_close = True
 
-    def _actually_close(self):
-        """Actually close all our outputs."""
-        for output in self.outputs:
-            output.close()
-
-    def connection_opened(self):
-        """The connection was opened. Pass this on to our outputs."""
-        for output in self.outputs:
-            output.connection_opened()
-        self._connection_is_closed = False
-
-    def connection_closed(self):
-        """The connection's been closed. Notify our outputs."""
-        for output in self.outputs:
-            output.connection_closed()
-        self._connection_is_closed = True
-        if self._waiting_on_connection_close:
-            self._actually_close()

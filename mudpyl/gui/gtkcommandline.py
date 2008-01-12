@@ -85,3 +85,5 @@ class CommandView(gtk.TextView):
         newiter = self.buffer.get_iter_at_offset(ind)
         self.buffer.place_cursor(newiter)
 
+    def peek_line(self, line):
+        self.gui.tabdict.add_line(line)

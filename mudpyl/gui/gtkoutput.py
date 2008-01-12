@@ -57,23 +57,19 @@ class OutputView(gtk.TextView):
         self.gui.command_line.emit('key-press-event', event)
         return True
 
-    def connection_opened(self):
+    def connection_made(self):
         """The connection's been opened. Inform the user."""
         message = time.strftime("Connection opened at %H:%M:%S.\n")
         tag = self.buffer.create_tag()
         tag.set_property('foreground', '#FFAA00') #lovely orange
         self.buffer.insert_with_tags(self.buffer.get_end_iter(), message, tag)
 
-    def connection_closed(self):
+    def connection_lost(self):
         """The connection's been closed. Inform the user."""
         message = time.strftime("\nConnection closed at %H:%M:%S.")
         tag = self.buffer.create_tag()
         tag.set_property('foreground', '#FFAA00')
         self.buffer.insert_with_tags(self.buffer.get_end_iter(), message, tag)
-
-    def peek_line(self, line):
-        '''Add in all our shiny new words to our dictionary.'''
-        self.gui.tabdict.add_line(line)
 
     def write_out_span(self, text):
         """Write a span of text to the window using the current colours.

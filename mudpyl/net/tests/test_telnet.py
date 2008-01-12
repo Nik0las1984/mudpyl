@@ -150,31 +150,31 @@ class Test_receiving_lines:
         self.tc.lineReceived('fooQ' + BS + VT)
         assert self.e.lines == expected
 
-class MockOutputManager:
+class MockConnectionRealm:
 
     def __init__(self):
         self.calls = []
 
-    def connection_opened(self):
-        self.calls.append("connection_opened")
+    def connection_lost(self):
+        self.calls.append("connection_lost")
 
-    def connection_closed(self):
-        self.calls.append("connection_closed")
+    def connection_made(self):
+        self.calls.append("connection_made")
 
 def test_connectionLost_sends_connection_closed_to_the_outputs():
     f = TelnetClientFactory(None)
     telnet = TelnetClient(f)
-    om = f.outputs = MockOutputManager()
+    r = f.realm = MockConnectionRealm()
 
     telnet.connectionLost(None)
 
-    assert om.calls == ['connection_closed']
+    assert r.calls == ['connection_lost']
 
 def test_connectionMade_sends_connection_opened_to_the_outputs():
     f = TelnetClientFactory(None)
     telnet = TelnetClient(f)
-    om = f.outputs = MockOutputManager()
+    r = f.realm = MockConnectionRealm()
 
     telnet.connectionMade()
 
-    assert om.calls == ['connection_opened']
+    assert r.calls == ['connection_made']

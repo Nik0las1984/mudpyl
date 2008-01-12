@@ -9,8 +9,8 @@ class Logger(HTMLLogOutput):
 
     log_postamble = "POSTAMBLE"
     colour_change = "COLOUR CHANGE %s %s"
-    connection_closed_message = 'closing time format goes here'
-    connection_opened_message = 'opening time format goes here'
+    connection_lost_message = 'closing time format goes here'
+    connection_made_message = 'opening time format goes here'
 
     def __init__(self, log):
         self.log = log
@@ -46,16 +46,15 @@ class Test_HTMLLogOutput:
     def test_connection_opened_writes_out_time_of_opening(self):
         t = FakeTimeModule()
         html.time = t
-        self.o.connection_opened()
+        self.o.connection_made()
         assert self.f.getvalue() == 'FOO %(name)s'
         assert t.formats == ['opening time format goes here']
         html.time = time
 
-
-    def test_connection_closed_writes_out_time_of_closing(self):
+    def test_connection_lost_writes_out_time_of_closing(self):
         t = FakeTimeModule()
         html.time = t
-        self.o.connection_closed()
+        self.o.connection_lost()
         assert self.f.getvalue() == 'FOO %(name)s'
         assert t.formats == ['closing time format goes here']
         html.time = time
@@ -104,6 +103,7 @@ class TestHTMLLogOutputInitialisation:
         html.time = self.time = FakeTimeModule()
         self.factory = TelnetClientFactory('baz')
         self.outputs = self.factory.outputs
+        self.realm = self.factory.realm
         self.opened = []
         self.open_returns = MockFile()
 
@@ -117,30 +117,35 @@ class TestHTMLLogOutputInitialisation:
         return self.open_returns
 
     def test_adds_itself_to_output_manager(self):
-        log = HTMLLogOutput(self.outputs, None)
+        log = HTMLLogOutput(self.outputs, self.realm, None)
         assert self.outputs.outputs == [log]
 
+    def test_adds_itself_for_connection_events(self):
+        log = HTMLLogOutput(self.outputs, self.realm, None)
+        assert self.realm.connection_event_receivers == [log]
+
     def test_passes_given_format_to_strftime(self):
-        HTMLLogOutput(self.outputs, 'BAR')
+        HTMLLogOutput(self.outputs, self.realm, 'BAR')
         assert self.time.formats == ['BAR']
 
     def test_uses_return_value_of_strftime_as_filename(self):
-        HTMLLogOutput(self.outputs, None)
+        HTMLLogOutput(self.outputs, self.realm, None)
         assert self.opened == ['FOO baz']
 
     def test_sets_opened_file_to_self_log(self):
-        log = HTMLLogOutput(self.outputs, None)
+        log = HTMLLogOutput(self.outputs, self.realm, None)
         assert log.log is self.open_returns
 
     def test_writes_preamble_to_file(self):
-        HTMLLogOutput(self.outputs, None)
+        HTMLLogOutput(self.outputs, self.realm, None)
         assert self.open_returns.written == HTMLLogOutput.log_preamble
 
 from mudpyl.library.html import HTMLLoggingModule
 
 def test_HTMLLoggingModule_is_main_initialises_html_log():
-    def fake_module(outputs, logplace_received):
+    def fake_module(outputs, realm, logplace_received):
         assert outputs is f.outputs
+        assert realm is f.realm
         assert logplace is logplace_received
         calls.append(True)
     calls = []

@@ -33,25 +33,22 @@ body {
 
     colour_change = '''</span><span style="color: #%s; background: #%s">'''
 
-    connection_closed_message = '''</span><span style="color: #FFAA00
+    connection_lost_message = '''</span><span style="color: #FFAA00
 background: #000000">
 Connection closed at %H:%M:%S'''
 
-    connection_opened_message = '''<span style="color: #FFAA00">
+    connection_made_message = '''<span style="color: #FFAA00">
 Connection opened at %H:%M:%S</span>
 <span style="color: #B0B0B0; background: #000000">
 '''
 
-    def __init__(self, outputs, logformat):
+    def __init__(self, outputs, realm, logformat):
         self.outputs = outputs
         outputs.add_output(self)
+        realm.add_connection_receiver(self)
         self.log = open(time.strftime(logformat) % 
                                    {'name': self.outputs.factory.name}, 'a')
         self.log.write(self.log_preamble)
-
-    def peek_line(self, line):
-        """We don't need to peek at the line."""
-        pass
 
     def write_out_span(self, span):
         """Write a span of coloured text to the log, using our most recent
@@ -75,13 +72,13 @@ Connection opened at %H:%M:%S</span>
             self.log.write(self.log_postamble)
             self.log.close()
 
-    def connection_opened(self):
+    def connection_made(self):
         """Write a note to the log about when the connection opened."""
-        self.log.write(time.strftime(self.connection_opened_message))
+        self.log.write(time.strftime(self.connection_made_message))
 
-    def connection_closed(self):
+    def connection_lost(self):
         """Write a note to the log about when the connection closed."""
-        self.log.write(time.strftime(self.connection_closed_message))
+        self.log.write(time.strftime(self.connection_lost_message))
 
 class HTMLLoggingModule(BaseModule):
     """A module that logs to disk."""
@@ -93,5 +90,5 @@ class HTMLLoggingModule(BaseModule):
     def is_main(self):
         """Open up the HTML log."""
         #automatically adds itself to the outputs list
-        HTMLLogOutput(self.realm.factory.outputs, self.logplace)
+        HTMLLogOutput(self.realm.factory.outputs, self.realm, self.logplace)
 

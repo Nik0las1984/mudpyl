@@ -12,3 +12,8 @@ New since 0.1
       connection_opened.
     - html.py and gtkgui.py: both now show when the session started and ended.
     - gtkgui.py: split into gtkcommandline.py and gtkoutput.py
+
+2008-01-12 Sam Pointon <sampointon@gmail.com>
+    - output_manager.py: removed the connection_*, peek_line and close, and
+      made them hooks in realms.py. Many other files touched by this, because
+      of the renaming and such.

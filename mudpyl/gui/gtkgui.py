@@ -16,21 +16,20 @@ class TimeOnlineLabel(gtk.Label):
         self.looping_call = LoopingCall(self.update_time)
         self.start_time = None
 
-    def connection_opened(self):
+    def connection_made(self):
         """Start ticking."""
         self.start_time = datetime.now()
         #don't leave our display blank
         self.update_time()
         self.looping_call.start(0.5) #update it twice per second
 
-    def connection_closed(self):
+    def connection_lost(self):
         """We only count time online; stop counting."""
         self.looping_call.stop()
 
-    #ignore the rest of the output methods
-    def write_out_span(self, arg = None):
+    def close(self):
+        """GTK garbage collects for us."""
         pass
-    fg_changed = bg_changed = close = peek_line = write_out_span
 
     def update_time(self):
         """Should tick once a second. Displays the current running count of
@@ -66,7 +65,9 @@ class GUI(gtk.Window):
         self.maximize() #sic
 
         self.outputs.add_output(self.output_window)
-        self.outputs.add_output(self.time_online)
+        self.realm.add_connection_receiver(self.output_window)
+        self.realm.add_connection_receiver(self.time_online)
+        self.realm.add_peeker(self.command_line)
 
         #never have hscrollbars normally, always have vscrollbars
         self.scrolled_out.set_policy(gtk.POLICY_NEVER, gtk.POLICY_ALWAYS)
@@ -96,7 +97,7 @@ class GUI(gtk.Window):
     def destroy_cb(self, widget, data = None):
         """Close everything down."""
         try:
-            self.outputs.closing()
+            self.realm.close()
         except Exception:
             #swallow-log traceback here, because exiting gracefully is fairly
             #important. The traceback is written to stdout (or is it stderr?

@@ -11,10 +11,10 @@ Connecting to a MUD
 -------------------
 
 This is nice and simple. Once mudpyl is installed, you will be able to use the
-script named ``mudconnect.py`` to load modules and connect to MUDs with a minimum
-of wheel reinvention. This script takes one argument: the name of the Python
-module where the mudpyl module is located. This file will be imported and the
-mudpyl module will be usenged for MUD connection.
+script named ``mudconnect.py`` to load modules and connect to MUDs with a 
+minimum of wheel reinvention. This script takes one argument: the name of the 
+Python module where the mudpyl module is located. This file will be imported 
+and the mudpyl module will be usenged for MUD connection.
 
 An example: imagine that there is a MUD located at foo.org on port 23. We have
 a character named Fred on this MUD. In a directory on ``sys.path``, create a 
