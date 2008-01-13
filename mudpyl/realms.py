@@ -99,7 +99,7 @@ class RootRealm(object):
         """
         message = time.strftime("Connection closed at %H:%M:%S.")
         colour = HexFGCode(0xFF, 0xAA, 0x00) #lovely orange
-        metalline = Metaline(message, RunLengthList([(0, colour)]),
+        metaline = Metaline(message, RunLengthList([(0, colour)]),
                              RunLengthList([(0, bg_code(BLACK))]))
         self.write(metaline)
         for receiver in self.connection_event_receivers:

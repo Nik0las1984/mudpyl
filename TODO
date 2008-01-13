@@ -51,5 +51,3 @@ Other refactorings:
    Twisted koolaid.
  - make an abstract GUI interface, allowing for some other implementations 
    besides wx. This is kind of half done informally, but half not.
- - split the output manager into several different bits, where objects can
-   pick and choose which events they get
