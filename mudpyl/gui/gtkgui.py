@@ -65,7 +65,6 @@ class GUI(gtk.Window):
         self.maximize() #sic
 
         self.outputs.add_output(self.output_window)
-        self.realm.add_connection_receiver(self.output_window)
         self.realm.add_connection_receiver(self.time_online)
         self.realm.add_peeker(self.command_line)
 

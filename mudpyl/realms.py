@@ -1,12 +1,13 @@
 """Hierarchical stacking contexts for execution."""
 from code import InteractiveConsole
 from mudpyl.escape_parser import EscapeParser
-from mudpyl.colours import fg_code, bg_code, BLACK, WHITE
+from mudpyl.colours import fg_code, bg_code, BLACK, WHITE, HexFGCode
 from mudpyl.metaline import Metaline, RunLengthList
 from mudpyl.triggers import TriggerMatchingRealm
 from mudpyl.aliases import AliasMatchingRealm
 from mudpyl.gui.bindings import gui_macros
 import traceback
+import time
 
 class RootRealm(object):
     """The root of the realms hierarchy. This is what macros and top-level
@@ -96,6 +97,11 @@ class RootRealm(object):
         It is guaranteed that this will be called before close on connection
         event receivers.
         """
+        message = time.strftime("Connection closed at %H:%M:%S.")
+        colour = HexFGCode(0xFF, 0xAA, 0x00) #lovely orange
+        metalline = Metaline(message, RunLengthList([(0, colour)]),
+                             RunLengthList([(0, bg_code(BLACK))]))
+        self.write(metaline)
         for receiver in self.connection_event_receivers:
             receiver.connection_lost()
         #we might be waiting on the connection to die before we send out
@@ -107,6 +113,11 @@ class RootRealm(object):
 
     def connection_made(self):
         """The MUD's been connected to."""
+        message = time.strftime("Connection opened at %H:%M:%S.")
+        colour = HexFGCode(0xFF, 0xAA, 0x00) #lovely orange
+        metaline = Metaline(message, RunLengthList([(0, colour)]),
+                      RunLengthList([(0, bg_code(BLACK))]))
+        self.write(metaline)
         for receiver in self.connection_event_receivers:
             receiver.connection_made()
 

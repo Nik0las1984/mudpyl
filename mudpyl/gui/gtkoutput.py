@@ -1,7 +1,6 @@
 """Contains the widget that displays the text from the MUD."""
 from mudpyl.colours import WHITE, BLACK, fg_code, bg_code
 import gtk
-import time
 import pango
 
 class OutputView(gtk.TextView):
@@ -57,22 +56,6 @@ class OutputView(gtk.TextView):
         self.gui.command_line.emit('key-press-event', event)
         return True
 
-    def connection_made(self):
-        """The connection's been opened. Inform the user."""
-        message = time.strftime("Connection opened at %H:%M:%S.\n")
-        tag = self.buffer.create_tag()
-        tag.set_property('foreground', '#FFAA00') #lovely orange
-        self.buffer.insert_with_tags(self.buffer.get_end_iter(), message, tag)
-        self.scroll_mark_onscreen(self.end_mark)
-
-    def connection_lost(self):
-        """The connection's been closed. Inform the user."""
-        message = time.strftime("\nConnection closed at %H:%M:%S.")
-        tag = self.buffer.create_tag()
-        tag.set_property('foreground', '#FFAA00')
-        self.buffer.insert_with_tags(self.buffer.get_end_iter(), message, tag)
-        self.scroll_mark_onscreen(self.end_mark)
-
     def write_out_span(self, text):
         """Write a span of text to the window using the current colours.
 
@@ -95,11 +78,4 @@ class OutputView(gtk.TextView):
         self.bg_tag = self.buffer.create_tag()
         self.bg_tag.set_property('background', '#' + change.tohex())
         self.bg_tag.set_property('background-set', True)
-
-    def close(self):
-        """We don't much care about these. GTK cleans up afterwards, and we
-        don't want to poof right away when the connection closes.
-        """
-        pass
-
 

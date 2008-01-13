@@ -43,22 +43,6 @@ class Test_HTMLLogOutput:
         self.o.bg_changed(None)
         assert self.f.getvalue() == 'COLOUR CHANGE f00ba8 a2e665'
 
-    def test_connection_opened_writes_out_time_of_opening(self):
-        t = FakeTimeModule()
-        html.time = t
-        self.o.connection_made()
-        assert self.f.getvalue() == 'FOO %(name)s'
-        assert t.formats == ['opening time format goes here']
-        html.time = time
-
-    def test_connection_lost_writes_out_time_of_closing(self):
-        t = FakeTimeModule()
-        html.time = t
-        self.o.connection_lost()
-        assert self.f.getvalue() == 'FOO %(name)s'
-        assert t.formats == ['closing time format goes here']
-        html.time = time
-
 class MockFile:
 
     def __init__(self):

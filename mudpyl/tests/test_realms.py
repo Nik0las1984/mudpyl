@@ -1,9 +1,10 @@
 from mudpyl.realms import RootRealm
-from mudpyl.colours import fg_code, bg_code, WHITE, BLACK
+from mudpyl.colours import fg_code, bg_code, WHITE, BLACK, HexFGCode
 from mudpyl.metaline import Metaline, RunLengthList
 from mudpyl.triggers import binding_trigger
 from mudpyl.aliases import binding_alias
 from mudpyl.net.telnet import TelnetClientFactory
+import time
 
 class FooException(Exception):
     pass
@@ -462,35 +463,76 @@ class TrackingReceiver:
 class Test_connection_events:
 
     def setUp(self):
-        self.realm = RootRealm(None)
+        self.factory = TelnetClientFactory(None)
+        self.realm = RootRealm(self.factory)
         self.realm.telnet = self.telnet = FakeTelnetWithClosing()
         self.receiver = TrackingReceiver()
         self.realm.add_connection_receiver(self.receiver)
 
-    def test_passes_on_connection_closed(self):
+    def test_passes_on_connection_lost(self):
         self.realm.connection_lost()
 
         assert self.receiver.calls == ['connection_lost']
 
-    def test_passes_on_connection_opened(self):
+    def test_connection_lost_writes_message(self):
+        written = []
+        def our_write(ml):
+            assert ml.line == 'FOOBAR'
+            assert ml.fores.as_populated_list() == [HexFGCode(0xFF, 0xAA, 
+                                                                       0x00)]
+            assert ml.backs.as_populated_list() == [bg_code(BLACK)]
+            written.append(ml)
+        class our_time:
+            def strftime(self, _):
+                return 'FOOBAR'
+
+        self.realm.write = our_write
+        realms.time = our_time()
+
+        self.realm.connection_lost()
+        assert written
+
+        realms.time = time
+
+    def test_connection_made_writes_message(self):
+        written = []
+        def our_write(ml):
+            assert ml.line == 'FOOBAR'
+            assert ml.fores.as_populated_list() == [HexFGCode(0xFF, 0xAA, 
+                                                                       0x00)]
+            assert ml.backs.as_populated_list() == [bg_code(BLACK)]
+            written.append(ml)
+        class our_time:
+            def strftime(self, _):
+                return 'FOOBAR'
+
+        self.realm.write = our_write
+        realms.time = our_time()
+
+        self.realm.connection_made()
+        assert written
+
+        realms.time = time
+
+    def test_passes_on_connection_made(self):
         self.realm.connection_made()
 
         assert self.receiver.calls == ['connection_made']
 
-    def test_sends_connection_closed_and_close_in_right_order(self):
+    def test_sends_connection_lost_and_close_in_right_order(self):
         self.realm.close()
         #simulate Twisted's 'throw-it-over-the-wall' anti-guarantee
         self.realm.connection_lost()
 
         assert self.receiver.calls == ['connection_lost', 'close']
 
-    def test_connection_closed_then_close_work(self):
+    def test_connection_lost_then_close_work(self):
         self.realm.connection_lost()
         self.realm.close()
 
         assert self.receiver.calls == ['connection_lost', 'close']
 
-    def test_connection_closed_sets_telnet_to_None(self):
+    def test_connection_lost_sets_telnet_to_None(self):
         self.realm.connection_lost()
 
         assert self.realm.telnet is None
