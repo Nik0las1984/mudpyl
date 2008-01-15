@@ -74,7 +74,7 @@ class Test_write:
     def setUp(self):
         self.fore = "tata"
         self.back = "toto"
-        self.fact = TelnetClientFactory(None)
+        self.fact = TelnetClientFactory(None, 'ascii')
         self.fact.outputs = MockOutputs(self.fore, self.back, self.our_wts)
         self.realm = self.fact.realm
         self.realm.telnet = FakeTelnet()
@@ -160,7 +160,7 @@ class Test_receive:
     def setUp(self):
         self.fore = "tata"
         self.back = "toto"
-        self.fact = TelnetClientFactory(None)
+        self.fact = TelnetClientFactory(None, 'ascii')
         self.fact.outputs = MockOutputs(self.fore, self.back, self.our_wts)
         self.realm = self.fact.realm
         self.lines_gotten = []
@@ -220,7 +220,7 @@ class Test_send:
     def setUp(self):
         self.fore = "tata"
         self.back = "toto"
-        self.fact = TelnetClientFactory(None)
+        self.fact = TelnetClientFactory(None, 'ascii')
         self.fact.outputs = MockOutputs(self.fore, self.back, self.our_wts)
         self.realm = self.fact.realm
         self.realm.telnet = self.tc = FakeTelnet()
@@ -463,7 +463,7 @@ class TrackingReceiver:
 class Test_connection_events:
 
     def setUp(self):
-        self.factory = TelnetClientFactory(None)
+        self.factory = TelnetClientFactory(None, 'ascii')
         self.realm = RootRealm(self.factory)
         self.realm.telnet = self.telnet = FakeTelnetWithClosing()
         self.receiver = TrackingReceiver()

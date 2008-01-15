@@ -11,7 +11,7 @@ def test_BaseModule_adds_triggers_aliases_and_macros():
         macro = object()
         macros = {'f': macro}
 
-    f = TelnetClientFactory(None)
+    f = TelnetClientFactory(None, 'ascii')
     Module(f.realm)
 
     assert len(f.realm.triggers) == 1
@@ -48,3 +48,5 @@ def test_load_file_reimports():
     sys.modules["foobar"] = object()
     test_load_file_loads_script()
 
+def test_encoding_is_defaultly_utf_8():
+    assert BaseModule.encoding == 'utf-8'

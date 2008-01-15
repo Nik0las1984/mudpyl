@@ -19,7 +19,7 @@ class StubTelnet:
 class Test_TellColourer:
 
     def setUp(self):
-        self.fact = TelnetClientFactory(None)
+        self.fact = TelnetClientFactory(None, 'ascii')
         self.fact.outputs = FakeOutputs()
         self.fact.realm.telnet = StubTelnet()
         self.tc = TellColourer(self.fact.realm)

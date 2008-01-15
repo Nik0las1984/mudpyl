@@ -2,8 +2,13 @@ from mudpyl.net.telnet import TelnetClientFactory
 
 def test_TelnetClientFactory_sets_name():
     o = object()
-    c = TelnetClientFactory(o)
+    c = TelnetClientFactory(o, None)
     assert c.name is o
+
+def test_TelnetClientFactory_sets_encoding():
+    o = object()
+    c = TelnetClientFactory(None, o)
+    assert c.encoding is o
 
 from mudpyl.net.telnet import TelnetClient
 from mudpyl.net.mccp import COMPRESS2
@@ -12,7 +17,7 @@ class Test_LineReceiver_aspects:
 
     def setUp(self):
         self.received = []
-        self.tc = TelnetClient(TelnetClientFactory(None))
+        self.tc = TelnetClient(TelnetClientFactory(None, 'ascii'))
         self.tc.transport = FakeTransport()
         self.tc.lineReceived = self.lr
 
@@ -39,6 +44,10 @@ class Test_sending_lines:
         self.tc.sendLine("foo")
         assert self.transport.written == 'foo\r\n'
 
+    def test_doubles_IAC(self):
+        self.tc.sendLine('foo\xffbar')
+        assert self.transport.written == 'foo\xff\xffbar\r\n'
+
 class FakeTransport:
     def __init__(self):
         self.their_mccp_active = False
@@ -56,7 +65,7 @@ class FakeTransport:
 class Test_MCCP:
 
     def setUp(self):
-        self.tc = TelnetClient(TelnetClientFactory(None))
+        self.tc = TelnetClient(TelnetClientFactory(None, 'ascii'))
         self.tc.transport = self.t = FakeTransport()
 
     def test_agree_to_enable_COMPRESS2(self):
@@ -100,9 +109,9 @@ from twisted.conch.telnet import IAC, GA, BS, VT
 class Test_receiving_lines:
 
     def setUp(self):
-        f = TelnetClientFactory(None)
-        f.realm = self.e = FakeRealmWithSoftGAs()
-        self.tc = TelnetClient(f)
+        self.f = TelnetClientFactory(None, 'ascii')
+        self.f.realm = self.e = FakeRealmWithSoftGAs()
+        self.tc = TelnetClient(self.f)
         self.tc.transport = FakeTransport()
         self.fores = RunLengthList([(0, fg_code(WHITE, False))])
         self.backs = RunLengthList([(0, bg_code(BLACK))])
@@ -150,6 +159,14 @@ class Test_receiving_lines:
         self.tc.lineReceived('fooQ' + BS + VT)
         assert self.e.lines == expected
 
+    def test_lineReceived_decodes_data(self):
+        #real-ish example that booted me :(
+        self.f.encoding = 'cp1250'
+        expected = [Metaline(u"bar\u2019baz", self.fores, self.backs, 
+                             wrap = True)]
+        self.tc.lineReceived('bar\x92baz')
+        assert self.e.lines == expected, self.e.lines
+
 class MockConnectionRealm:
 
     def __init__(self):
@@ -162,7 +179,7 @@ class MockConnectionRealm:
         self.calls.append("connection_made")
 
 def test_connectionLost_sends_connection_closed_to_the_outputs():
-    f = TelnetClientFactory(None)
+    f = TelnetClientFactory(None, 'ascii')
     telnet = TelnetClient(f)
     r = f.realm = MockConnectionRealm()
 
@@ -171,7 +188,7 @@ def test_connectionLost_sends_connection_closed_to_the_outputs():
     assert r.calls == ['connection_lost']
 
 def test_connectionMade_sends_connection_opened_to_the_outputs():
-    f = TelnetClientFactory(None)
+    f = TelnetClientFactory(None, 'ascii')
     telnet = TelnetClient(f)
     r = f.realm = MockConnectionRealm()
 

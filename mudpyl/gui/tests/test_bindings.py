@@ -43,7 +43,7 @@ class FakeGUI:
 class Test_bindings:
 
     def setUp(self):
-        self.factory = TelnetClientFactory(None)
+        self.factory = TelnetClientFactory(None, 'ascii')
         self.factory.gui = FakeGUI()
 
     def test_enter_pressed_submits_line(self):

@@ -1,5 +1,5 @@
 """The actual connection to the MUD."""
-from twisted.conch.telnet import Telnet, GA
+from twisted.conch.telnet import Telnet, GA, IAC
 from twisted.protocols.basic import LineOnlyReceiver
 from twisted.internet.protocol import ClientFactory
 from mudpyl.net.nvt import ColourCodeParser, make_string_sane
@@ -67,6 +67,12 @@ class TelnetClient(Telnet, LineOnlyReceiver):
         LineReceiver's delimiter needs to be \\n, but we need to -send- lines
         terminated by \\r\\n. Sigh.
         """
+        #currently, this wusses out of encoding problems by ignoring it, but
+        #this should probably encode text. Most MUDs are ACSII-only, so this
+        #shouldn't bite the user too often, but on general principles...
+
+        #double IAC, else it might be interpreted as a command
+        line = line.replace(IAC, IAC + IAC)
         return self.transport.writeSequence([line, '\r\n'])
 
     def connectionLost(self, reason):
@@ -91,7 +97,8 @@ class TelnetClient(Telnet, LineOnlyReceiver):
     def _handle_line(self, line, from_ga):
         """Clean the line, split out the colour codes, and feed it to the 
         realm as a metaline.
-        """ 
+        """
+        line = line.decode(self.factory.encoding)
         metaline = self._colourparser.parseline(make_string_sane(line))
         if from_ga:
             if self.factory.realm.ga_as_line_end:
@@ -107,9 +114,10 @@ class TelnetClientFactory(ClientFactory):
 
     """A ClientFactory that produces TelnetClients."""
 
-    def __init__(self, name):
+    def __init__(self, name, encoding):
         #no __init__ here, either.
         self.name = name
+        self.encoding = encoding
         self.outputs = OutputManager(self)
         self.realm = RootRealm(self)
 
@@ -117,7 +125,7 @@ class TelnetClientFactory(ClientFactory):
 
     def buildProtocol(self, addr):
         """Build our protocol's instance."""
-        prot = self.protocol(self)
+        prot = self.protocol(self, self.encoding)
         self.realm.telnet = prot
         mccp = MCCPTransport(prot)
         return mccp

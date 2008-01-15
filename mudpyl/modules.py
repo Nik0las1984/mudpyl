@@ -19,6 +19,7 @@ class BaseModule(object):
     aliases = []
     macros = {}
     modules = []
+    encoding = 'utf-8'
 
     def __init__(self, realm):
         super(BaseModule, self).__init__(realm)

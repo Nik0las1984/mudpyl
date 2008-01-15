@@ -19,3 +19,9 @@ New since 0.1
       of the renaming and such.
     - realms.py: the macros from mudpyl.gui.bindings are now automatically
       loaded.
+
+2008-01-15 Sam Pointon <sampointon@gmail.com>
+    - telnet.py: now treats the MUD's text as a series of bytes and decodes
+      it using a given encoding, defaulting to utf-8. TelnetClientFactory now
+      takes a second argument to construct, the encoding to use.
+    - modules.py: modules now have another attribute, encoding.
