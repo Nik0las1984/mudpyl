@@ -37,7 +37,8 @@ class Test_LineReceiver_aspects:
 class Test_sending_lines:
 
     def setUp(self):
-        self.tc = TelnetClient(None)
+        self.f = TelnetClientFactory(None, 'ascii')
+        self.tc = TelnetClient(self.f)
         self.tc.transport = self.transport = FakeTransport()
 
     def test_sendLine_appends_crlf(self):
@@ -45,8 +46,20 @@ class Test_sending_lines:
         assert self.transport.written == 'foo\r\n'
 
     def test_doubles_IAC(self):
-        self.tc.sendLine('foo\xffbar')
+        self.f.encoding = 'cp1250'
+        #crock a unicode sequence that has 0xFF in it as CP1250
+        self.tc.sendLine(u'foo\u02D9bar')
         assert self.transport.written == 'foo\xff\xffbar\r\n'
+
+    def test_with_interesting_encoding(self):
+        self.f.encoding = 'utf-8'
+        self.tc.sendLine(u'foo')
+        assert self.transport.written == 'foo\r\n'
+
+    def test_with_interesting_encoding_and_interesting_characters(self):
+        self.f.encoding = 'cp1250'
+        self.tc.sendLine(u'foo\u2019bar')
+        assert self.transport.written == 'foo\x92bar\r\n'
 
 class FakeTransport:
     def __init__(self):

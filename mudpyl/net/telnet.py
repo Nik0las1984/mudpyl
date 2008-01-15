@@ -67,10 +67,7 @@ class TelnetClient(Telnet, LineOnlyReceiver):
         LineReceiver's delimiter needs to be \\n, but we need to -send- lines
         terminated by \\r\\n. Sigh.
         """
-        #currently, this wusses out of encoding problems by ignoring it, but
-        #this should probably encode text. Most MUDs are ACSII-only, so this
-        #shouldn't bite the user too often, but on general principles...
-
+        line = line.encode(self.factory.encoding)
         #double IAC, else it might be interpreted as a command
         line = line.replace(IAC, IAC + IAC)
         return self.transport.writeSequence([line, '\r\n'])
