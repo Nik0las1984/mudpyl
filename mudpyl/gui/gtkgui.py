@@ -1,7 +1,6 @@
 """A GUI for mudpyl written in PyGTK."""
 from mudpyl.gui.gtkoutput import OutputView
 from mudpyl.gui.gtkcommandline import CommandView
-from mudpyl.gui.tabcomplete import Trie
 from twisted.internet.task import LoopingCall
 from datetime import datetime, timedelta
 import traceback
@@ -49,7 +48,6 @@ class GUI(gtk.Window):
         self.outputs = outputs
         self.realm = realm
         realm.factory.gui = self
-        self.tabdict = Trie()
         self.command_line = CommandView(self)
         self.output_window = OutputView(self)
         self.scrolled_out = gtk.ScrolledWindow()

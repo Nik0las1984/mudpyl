@@ -125,7 +125,7 @@ class TelnetClientFactory(ClientFactory):
 
     def buildProtocol(self, addr):
         """Build our protocol's instance."""
-        prot = self.protocol(self, self.encoding)
+        prot = self.protocol(self)
         self.realm.telnet = prot
         mccp = MCCPTransport(prot)
         return mccp
