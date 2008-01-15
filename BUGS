@@ -1,5 +1,2 @@
-library/html.py:
- - the HTML log breaks on unicode input
-
 metaline.py:
  - _LoopingLast doesn't quite work like expected with slices.

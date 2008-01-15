@@ -12,6 +12,7 @@ class HTMLLogOutput(object):
     log_preamble = '''
 <html>
 <head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
 <style>
 body {
     background: black;

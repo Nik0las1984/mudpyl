@@ -28,3 +28,4 @@ New since 0.1
     - wxgui.py: removed
     - gtkgui.py and gtkcommandline.py: the tabdict attribute was moved from
       the GUI class to the CommandView class.
+    - html.py: now correctly sets the encoding
