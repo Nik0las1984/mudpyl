@@ -50,4 +50,4 @@ Other refactorings:
    Outputs) more cleanly into Protocols, etc; ie, drink some more of the 
    Twisted koolaid.
  - make an abstract GUI interface, allowing for some other implementations 
-   besides wx. This is kind of half done informally, but half not.
+   This is kind of half done informally, but half not.

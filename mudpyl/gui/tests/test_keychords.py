@@ -1,8 +1,6 @@
 from mudpyl.gui.keychords import from_string, InvalidSpecialKeyError, \
                                  CantParseThatError, InvalidModifiersError
 
-#XXX: need to make all the wx-dependent tests conditional on importing wx
-
 def single_keychord_key_equal(key, chord):
     assert chord.key == key
 
@@ -148,99 +146,6 @@ def test_inequality():
 
 def test_equal_chords_hash_the_same():
     assert hash(from_string('f')) == hash(from_string('f'))
-
-import wx
-from mudpyl.gui.keychords import from_wx_event
-
-class MockEvent:
-
-    def __init__(self, control, alt, code):
-        self.control = control
-        self.alt = alt
-        self.code = code
-
-    def ControlDown(self):
-        return self.control
-
-    def AltDown(self):
-        return self.alt
-
-    def GetKeyCode(self):
-        return self.code
-    KeyCode = property(GetKeyCode)
-
-def test_creates_KeyChords_from_wx_events_with_ASCII_keys():
-    ev = MockEvent(False, False, ord('a'))
-    c = from_wx_event(ev)
-    assert c == from_string('a')
-
-def test_from_wx_event_puts_control_through_properly():
-    ev = MockEvent(True, False, ord('a'))
-    c = from_wx_event(ev)
-    assert c == from_string('C-a')
-
-def test_from_wx_event_puts_meta_through_properly():
-    ev = MockEvent(False, True, ord('a'))
-    c = from_wx_event(ev)
-    assert c == from_string('M-a')
-
-corres =  {"backspace": 8,
-           "tab": wx.WXK_TAB,
-           "return": wx.WXK_RETURN,
-           "enter": wx.WXK_NUMPAD_ENTER,
-           "dash": ord('-'),
-           "pause": wx.WXK_PAUSE,
-           "escape": wx.WXK_ESCAPE,
-           "page up": wx.WXK_PAGEDOWN,
-           "page down": wx.WXK_PAGEUP,
-           "end": wx.WXK_END,
-           "home": wx.WXK_HOME,
-           "left": wx.WXK_LEFT,
-           "up": wx.WXK_UP,
-           "right": wx.WXK_RIGHT,
-           "down": wx.WXK_DOWN, 
-           "insert": wx.WXK_INSERT,
-           "delete": wx.WXK_DELETE,
-           'f1': wx.WXK_F1,
-           'f2': wx.WXK_F2,
-           'f3': wx.WXK_F3,
-           'f4': wx.WXK_F4,
-           'f5': wx.WXK_F5,
-           'f6': wx.WXK_F6,
-           'f7': wx.WXK_F7,
-           'f8': wx.WXK_F8,
-           'f9': wx.WXK_F9,
-           'f10': wx.WXK_F10,
-           'f11': wx.WXK_F11,
-           'f12': wx.WXK_F12,
-           'numpad 1': wx.WXK_NUMPAD1,
-           'numpad 2': wx.WXK_NUMPAD2,
-           'numpad 3': wx.WXK_NUMPAD3,
-           'numpad 4': wx.WXK_NUMPAD4,
-           'numpad 5': wx.WXK_NUMPAD5,
-           'numpad 6': wx.WXK_NUMPAD6,
-           'numpad 7': wx.WXK_NUMPAD7,
-           'numpad 8': wx.WXK_NUMPAD8,
-           'numpad 9': wx.WXK_NUMPAD9,
-           'numpad 0': wx.WXK_NUMPAD0,
-           'numpad add': wx.WXK_NUMPAD_ADD,
-           'numpad divide': wx.WXK_NUMPAD_DIVIDE,
-           'numpad subtract': wx.WXK_NUMPAD_SUBTRACT,
-           'numpad multiply': wx.WXK_NUMPAD_MULTIPLY}
-
-def one_comparison(our_name, wx_code):
-    assert from_wx_event(MockEvent(False, False, wx_code)) == \
-           from_string('<%s>' % our_name)
-
-def test_from_wx_event_converts_special_keys():
-    for ours, theirs in corres.items():
-        yield one_comparison, ours, theirs
-
-from mudpyl.gui.keychords import KeyChord
-
-def test_from_wx_event_unrecognised_code():
-    ev = MockEvent(False, False, 538)
-    assert from_wx_event(ev) == KeyChord(unichr(538), False, False)
 
 def test_plays_nice_with_dict():
     d = {from_string('C-f'): 'foo',

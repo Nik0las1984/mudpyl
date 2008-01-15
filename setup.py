@@ -25,7 +25,6 @@ setup(name = "mudpyl",
       license = 'GNU GPL v2 or later',
       install_requires = ['Twisted', 'argparse'],
       extras_require = {'rifttracker': ['peak.util.extremes'],
-                        'wxgui': ['wax', 'wxpython'],
                         'gtkgui': ['pygtk']
                         },
       test_suite = 'nose.collector',

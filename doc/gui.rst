@@ -2,10 +2,9 @@
 Using mudpyl's GUI
 =====================================
 
-mudpyl has two GUIs written for it: one using the wxPython toolset, and the
-other using the PyGTK toolset. Both intend to support the same functionality,
-but the wxgui in particular has infelicities. Therefore, the gtkgui is
-recommended and is the default.
+mudpyl has a GUI written in PyGTK. There was originally a GUI written in
+wxPython, but wx didn't provide as useful a text widget as GTK, so the switch
+was made.
 
 Picking which GUI to use
 ========================
@@ -16,12 +15,9 @@ like this::
     mudconnect.py fred
 
 This will launch the default GUI, which is the gtkgui. To use a different GUI,
-the ``--gui`` switch must be specified. This command will use the wxgui::
-
-    mudconnect.py --gui wx fred
-
-``--gui`` may be shortened to just ``-g``. Also, the default GUI may be 
-explicitly specified, like so::
+the ``--gui`` switch must be specified. Currently, there is only the gtkgui,
+so this switch won't do much. ``--gui`` may be shortened to just ``-g``. 
+Also, the default GUI may be explicitly specified, like so::
 
     mudconnect.py -g gtk fred
 

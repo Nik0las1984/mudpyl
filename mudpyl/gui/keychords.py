@@ -61,68 +61,6 @@ def from_string(string):
     return KeyChord(key, control, meta)
 
 try:
-    import wx
-except ImportError:
-    pass
-else:
-    wx_codes =  {8: "backspace",
-                 wx.WXK_TAB: 'tab',
-                 wx.WXK_RETURN: "return",
-                 wx.WXK_NUMPAD_ENTER: "enter",
-                 ord('-'): "dash",
-                 wx.WXK_PAUSE: "pause",
-                 wx.WXK_ESCAPE: "escape",
-                 wx.WXK_PAGEDOWN: "page up",
-                 wx.WXK_PAGEUP: "page down",
-                 wx.WXK_END: "end",
-                 wx.WXK_HOME: "home",
-                 wx.WXK_LEFT: "left",
-                 wx.WXK_UP: "up",
-                 wx.WXK_RIGHT: "right",
-                 wx.WXK_DOWN: "down",
-                 wx.WXK_INSERT: "insert",
-                 wx.WXK_DELETE: "delete",
-                 wx.WXK_F1: 'f1',
-                 wx.WXK_F2: 'f2',
-                 wx.WXK_F3: 'f3',
-                 wx.WXK_F4: 'f4',
-                 wx.WXK_F5: 'f5',
-                 wx.WXK_F6: 'f6',
-                 wx.WXK_F7: 'f7',
-                 wx.WXK_F8: 'f8',
-                 wx.WXK_F9: 'f9',
-                 wx.WXK_F10: 'f10',
-                 wx.WXK_F11: 'f11',
-                 wx.WXK_F12: 'f12',
-                 wx.WXK_NUMPAD1: 'numpad 1',
-                 wx.WXK_NUMPAD2: 'numpad 2',
-                 wx.WXK_NUMPAD3: 'numpad 3',
-                 wx.WXK_NUMPAD4: 'numpad 4',
-                 wx.WXK_NUMPAD5: 'numpad 5',
-                 wx.WXK_NUMPAD6: 'numpad 6',
-                 wx.WXK_NUMPAD7: 'numpad 7',
-                 wx.WXK_NUMPAD8: 'numpad 8',
-                 wx.WXK_NUMPAD9: 'numpad 9',
-                 wx.WXK_NUMPAD0: 'numpad 0',
-                 wx.WXK_NUMPAD_ADD: 'numpad add',
-                 wx.WXK_NUMPAD_DIVIDE: 'numpad divide',
-                 wx.WXK_NUMPAD_SUBTRACT: 'numpad subtract',
-                 wx.WXK_NUMPAD_MULTIPLY: 'numpad multiply'}
-
-    def from_wx_event(event):
-        """Convert a wx.KeyEvent to a KeyChord."""
-        try:
-            #see if it's a special code   
-            code = wx_codes[event.KeyCode]
-        except KeyError:
-            #otherwise, it's a boring ASCII character or something we don't 
-            #know about. There are some wx keycodes we don't know about, and 
-            #which ASCII-only chr() would blow up on, so use unichr as a 
-            #workaround.
-            code = unichr(event.KeyCode)
-        return KeyChord(code, event.ControlDown(), event.AltDown())
-
-try:
     import gtk
 except ImportError:
     pass

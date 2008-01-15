@@ -25,3 +25,4 @@ New since 0.1
       it using a given encoding, defaulting to utf-8. TelnetClientFactory now
       takes a second argument to construct, the encoding to use.
     - modules.py: modules now have another attribute, encoding.
+    - wxgui.py: removed

@@ -8,7 +8,7 @@ import argparse
 parser = argparse.ArgumentParser(version = "%(prog)s " + __version__, 
                                  prog = 'mudpyl')
 
-known_guis = ['wx', 'gtk']
+known_guis = ['gtk']
 gui_help = ("The GUI to use. Available options: %s. Default: %%(default)s" %
                      ', '.join(known_guis))
 
@@ -32,9 +32,7 @@ def main():
     modinstance = factory.realm.load_module(modclass)
     modinstance.is_main()
 
-    if options.gui == 'wx':
-        from mudpyl.gui.wxgui import configure
-    elif options.gui == 'gtk':
+    if options.gui == 'gtk':
         from mudpyl.gui.gtkgui import configure
 
     configure(factory)
