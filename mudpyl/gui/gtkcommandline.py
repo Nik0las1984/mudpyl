@@ -1,5 +1,6 @@
 """Contains the implementation of the command entry widget."""
 from mudpyl.gui.commandhistory import CommandHistory
+from mudpyl.gui.tabcomplete import Trie
 from mudpyl.gui.keychords import from_gtk_event
 import gtk
 import pango
@@ -12,6 +13,7 @@ class CommandView(gtk.TextView):
         gtk.TextView.__init__(self)
         self.realm = gui.realm
         self.gui = gui
+        self.tabdict = Trie()
         self.hist = CommandHistory(200)
         self.connect('key-press-event', self.key_pressed_cb)
         self.modify_font(pango.FontDescription('monospace 8'))
@@ -79,7 +81,7 @@ class CommandView(gtk.TextView):
         cursoriter = self.buffer.get_iter_at_mark(self.buffer.get_insert())
         #cursor position as an integer from the start of the line
         ind = cursoriter.get_offset()
-        line, ind = self.gui.tabdict.complete(line, ind)
+        line, ind = self.tabdict.complete(line, ind)
         self.buffer.set_text(line)
         #move the cursor to where the tabdict wants it
         newiter = self.buffer.get_iter_at_offset(ind)
@@ -87,4 +89,4 @@ class CommandView(gtk.TextView):
 
     def peek_line(self, line):
         """Add all the new words in the line to our tabdict."""
-        self.gui.tabdict.add_line(line)
+        self.tabdict.add_line(line)

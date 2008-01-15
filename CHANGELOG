@@ -26,3 +26,5 @@ New since 0.1
       takes a second argument to construct, the encoding to use.
     - modules.py: modules now have another attribute, encoding.
     - wxgui.py: removed
+    - gtkgui.py and gtkcommandline.py: the tabdict attribute was moved from
+      the GUI class to the CommandView class.

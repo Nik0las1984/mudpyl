@@ -3,7 +3,6 @@ from mudpyl.gui.gtkcommandline import CommandView
 class DummyGUI:
 
     def __init__(self):
-        self.tabdict = DummyTabdict()
         self.realm = None
 
 class DummyTabdict(object):
@@ -17,8 +16,11 @@ class DummyTabdict(object):
 def test_adding_to_tabdict():
     d = DummyGUI()
     o = CommandView(d)
+    o.tabdict = DummyTabdict()
     line = 'Foo; bar baz qux. Quux! QUUUX!!!'
     o.peek_line(line)
-    d.tabdict.lines == [line]
+    assert o.tabdict.lines == [line]
+
+
 
 
