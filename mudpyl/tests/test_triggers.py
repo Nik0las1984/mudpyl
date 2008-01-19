@@ -1,5 +1,6 @@
 from mudpyl.triggers import LineAlterer
 from mudpyl.metaline import Metaline, RunLengthList
+from mudpyl.colours import HexFGCode, CYAN, WHITE, RED, fg_code
 
 class Test_LineAlterer:
 
@@ -100,6 +101,28 @@ class Test_LineAlterer:
     #  - test .apply() copies and applies each change in order.
     #  - test .insert() does what it says on the tin
     #  - test .change_fore() and .change_back()
+
+    def test_change_fore(self):
+        self.la.change_fore(0, 9, 'foo')
+        res = self.la.apply(self.ml)
+        assert res.fores.as_pruned_index_list() == [(0, 'foo'),
+                                                    (9, 'C')], \
+               res.fores.values      
+
+    def test_change_fore_with_trailing_colours(self):
+        #don't know why, but this test exposed what looked like a quasi-random
+        #failure...
+        ml = Metaline('foobars eggs.', 
+                      RunLengthList([(0, fg_code(CYAN, False)),
+                                     (13, fg_code(WHITE, False))]),
+                      RunLengthList([(0, None)]))
+        self.la.change_fore(0, 7, fg_code(RED, True))
+        res = self.la.apply(ml)
+        expected = [(0, fg_code(RED, True)),
+                    (7, fg_code(CYAN, False)),
+                    (13, fg_code(WHITE, False))]
+        assert res.fores.as_pruned_index_list() == expected, \
+               res.fores.values
 
 from mudpyl.triggers import non_binding_trigger
 

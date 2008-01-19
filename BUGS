@@ -1,2 +1,5 @@
 metaline.py:
  - _LoopingLast doesn't quite work like expected with slices.
+
+gui/keychords.py:
+ - C-M- combinations may not be working in the gtkgui.

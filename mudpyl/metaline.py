@@ -38,6 +38,8 @@ class RunLengthList(object):
     
     Thus, the data is using run-length coding. The data passed into this class
     must not have a 'gap' at the beginning, otherwise Bad Things may happen.
+    If multiple runs start at the same index (ie, it is not normalised), other
+    Bad Things (related to insort, order and consistency) may happen.
     """
 
     def __init__(self, values):
@@ -122,8 +124,9 @@ class RunLengthList(object):
         
         This preserves the implied colour at the end.
         """
-        self.blank_between(start, end)
         self._make_explicit(end)
+        res = [val for val in self.values if not start <= val[0] < end]
+        self.values = res
         self.add_colour(start, value)
 
     def __eq__(self, other):

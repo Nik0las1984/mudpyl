@@ -81,6 +81,12 @@ def test_equality_simple():
 
 #XXX: test copying and repr <-> eval
 
+def test_change_fore_with_trailing_colours():
+    ml = Metaline('foo bar', RunLengthList([(0, 'foo'), (7, 'bar')]),
+                  RunLengthList([(0, 'bar')]))
+    ml.change_fore(0, 3, 'baz')
+    assert ml.fores.values == [(0, 'baz'), (3, 'foo'), (7, 'bar')]
+
 from mudpyl.metaline import RunLengthList
 
 def test_RunLengthList_as_populated_list():
