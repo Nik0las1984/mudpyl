@@ -57,6 +57,12 @@ class _HexCode(object):
     def __eq__(self, other):
         return type(self) == type(other) and self.triple == other.triple
 
+    def __lt__(self, other):
+        return NotImplemented
+
+    def __gt__(self, other):
+        return NotImplemented
+
     def __repr__(self):
         return "<%s %s>" % (type(self).__name__, self.tohex())
 
