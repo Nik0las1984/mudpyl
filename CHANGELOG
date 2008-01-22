@@ -29,3 +29,7 @@ New since 0.1
     - gtkgui.py and gtkcommandline.py: the tabdict attribute was moved from
       the GUI class to the CommandView class.
     - html.py: now correctly sets the encoding
+
+2008-01-22 Sam Pointon <sampointon@gmail.com>
+    - metaline.py: blank_between now fails if it would be blanking the start
+      of the list, and index_adjust now normalises the list as well.

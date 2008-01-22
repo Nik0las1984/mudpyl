@@ -105,9 +105,12 @@ class RunLengthList(object):
         for num in range(len(self.values)):
             ind, col = self.values[num]
             self.values[num] = (iadjust(ind, start, change), col)
+        self._normalise()
 
     def blank_between(self, start, end):
         """Delete a span of values between given indexes."""
+        if start == 0:
+            raise ValueError("The start of the list may not be blanked.")
         #don't lose the information about what colour we end with
         self._make_explicit(end)
         res = [val for val in self.values if not start <= val[0] < end]
@@ -116,7 +119,6 @@ class RunLengthList(object):
 
     def delete_between(self, start, end):
         """Hardcore value removal."""
-        self.blank_between(start, end)
         self.index_adjust(start, start - end)
 
     def change_between(self, start, end, value):

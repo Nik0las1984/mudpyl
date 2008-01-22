@@ -130,10 +130,10 @@ def test_RunLengthList_index_adjust_negative_adjustment():
     c.index_adjust(1, -1)
     assert c.values == [(0, 'f'), (1, 'o'), (2, 'b')]
 
-def test_RunlengthList_index_adjust_negative_adjustment_with_overspill():
+def test_RunlengthList_index_adjust_negative_adjustment_normalises():
     c = RunLengthList([(0, 'f'), (2, 'o'), (3, 'b')])
     c.index_adjust(1, -2)
-    assert c.values == [(0, 'f'), (1, 'o'), (1, 'b')]
+    assert c.values == [(0, 'f'), (1, 'b')]
 
 def test_RunLengthList_blank_between():
     c = RunLengthList([(0, 'FOO'), (2, 'BAR'), (3, 'BAZ'), (4, 'QUX')])
@@ -187,3 +187,12 @@ def test_RunLengthList_throws_ValueError_when_given_gappy_list():
         pass
     else:
         assert False, r
+
+def test_as_populated_list_throws_error_if_clearing_start():
+    r = RunLengthList([(0, 'foo'), (3, 'bar')])
+    try:
+        r.blank_between(0, 2)
+    except ValueError:
+        pass
+    else:
+        assert False
