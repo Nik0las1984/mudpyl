@@ -87,7 +87,18 @@ class RunLengthList(object):
 
     def add_colour(self, ind, value):
         """Add a value starting at a specific point."""
+        #remove any other colours present at this index. Because bisect won't
+        #accept a custom compare function, it will always compare both the key
+        #and the value of our tuples. But, if the value we're adding sorts
+        #before the present value, this means that it will be obliterated
+        #by the normalisation. Therefore, better safe than sorry.
+        for num, (other_ind, _) in enumerate(self.values):
+            if other_ind == ind:
+                print 'found and deleting'
+                del self.values[num]
+        print self.values
         insort(self.values, (ind, value))
+        print self.values
         self._normalise()
 
     def _make_explicit(self, ind):

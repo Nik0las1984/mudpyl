@@ -196,3 +196,9 @@ def test_as_populated_list_throws_error_if_clearing_start():
         pass
     else:
         assert False
+
+def test_add_colour_works_on_top_of_existing_colour_definition():
+    rl = RunLengthList([(0, 'foo'), (2, +20)])
+    rl.add_colour(2, -20) #deliberately try and get it to the left
+    assert rl.values == [(0, 'foo'), (2, -20)]
+
