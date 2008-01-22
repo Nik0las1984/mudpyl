@@ -94,11 +94,8 @@ class RunLengthList(object):
         #by the normalisation. Therefore, better safe than sorry.
         for num, (other_ind, _) in enumerate(self.values):
             if other_ind == ind:
-                print 'found and deleting'
                 del self.values[num]
-        print self.values
         insort(self.values, (ind, value))
-        print self.values
         self._normalise()
 
     def _make_explicit(self, ind):
