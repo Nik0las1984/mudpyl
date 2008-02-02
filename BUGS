@@ -3,3 +3,6 @@ metaline.py:
 
 gui/keychords.py:
  - C-M- combinations may not be working in the gtkgui.
+
+gui/gtkgui.py:
+ - when the output window has focus, the command line's cursor doesn't show
