@@ -1,4 +1,4 @@
-from mudpyl.library.autosipper_imperian import Autosipper
+from mudpyl.library.imperian.autosipper import Autosipper
 from mudpyl.metaline import Metaline
 import re
 

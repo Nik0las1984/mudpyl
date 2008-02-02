@@ -35,4 +35,4 @@ New since 0.1
       of the list, and index_adjust now normalises the list as well.
 
 2008-02-2 Sam Pointon <sampointon@gmail.com>
-    - autosipper_imperian.py: new module.
+    - library/imperian/autosipper.py: new module.
