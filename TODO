@@ -3,7 +3,7 @@ Features and miscellanea:
  - add in some way to profile the client
  - some kind of persistence mechanism?
  - modules to be written:
-    - the Big Bad Combat System (ie, an autosipper first off)
+    - the Big Bad Combat System
     - automapper
     - not to be written, but targetting.py wants multiple targets and target
       switching added.
@@ -19,6 +19,7 @@ Features and miscellanea:
  - should TriggerMatchingRealm get send_after?
  - more complex logging of errors than going to stdout. Pop up a dialogue box,
    and write to the logfile?
+    -if this gets done, then realm.console should also do something similar
  - double-check that what comes in through dataReceived, the gui, etc, is
    converted to unicode, and is properly encoded at all times. The logfile
    may be writing fine, and it's the display, or there may be some confusion

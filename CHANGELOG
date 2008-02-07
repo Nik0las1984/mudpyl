@@ -40,3 +40,5 @@ New since 0.1
 2008-02-07 Sam Pointon <sampointon@gmail.com>
     - gui/keychords.py: the KeyChord objects are now well and truly agnostic
       about case.
+    - gui/gtkoutput.py gui/gtkcommandline.py: make copying from the output
+      window work with the command line always having focus

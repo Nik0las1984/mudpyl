@@ -1,7 +1,7 @@
 """Contains the implementation of the command entry widget."""
 from mudpyl.gui.commandhistory import CommandHistory
 from mudpyl.gui.tabcomplete import Trie
-from mudpyl.gui.keychords import from_gtk_event
+from mudpyl.gui.keychords import from_gtk_event, from_string
 import gtk
 import pango
 
@@ -31,18 +31,23 @@ class CommandView(gtk.TextView):
         """
         chord = from_gtk_event(event)
 
-        if chord.key == 'page up':
+        if self.gui.realm.maybe_do_macro(chord):
+            pass
+        elif chord == from_string('<page up>'):
             self.gui.scrolled_out.emit('scroll-child', 
                                        gtk.SCROLL_PAGE_BACKWARD,
                                        False)
-        elif chord.key == 'page down':
+        elif chord == from_string('<page down>'):
             self.gui.scrolled_out.emit('scroll-child',
                                        gtk.SCROLL_PAGE_FORWARD,
                                        False)
-        elif self.gui.realm.maybe_do_macro(chord):
-            pass
+        elif chord == from_string("C-c") and \
+                                          not self.buffer.get_has_selection():
+            #let the output window see the keypress, to forward copying if
+            #we have no selection
+            self.gui.output_window.emit('key-press-event', event)
         else:
-            #not a macro, so keep processing
+            #not a macro, so keep processing.
             return False
         return True
 

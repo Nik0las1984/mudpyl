@@ -23,13 +23,19 @@ class OutputView(gtk.TextView):
         self.end_mark = self.buffer.create_mark('end_mark', 
                                                 self.buffer.get_end_iter(), 
                                                 False)
-        self.connect('key-press-event', self.key_pressed_cb)
+        self.connect('focus-in-event', self.got_focus_cb)
 
         self.set_editable(False)
         self.set_cursor_visible(False)
         self.set_wrap_mode(gtk.WRAP_CHAR)
         self.modify_base(gtk.STATE_NORMAL, gtk.gdk.Color(0, 0, 0)) #sic
         self.modify_font(pango.FontDescription('monospace 8'))
+
+    def got_focus_cb(self, widget, event):
+        """We never want focus; the command line automatically lets us peek
+        at all incoming keypresses.
+        """
+        self.gui.command_line.grab_focus()
 
     def pause(self):
         """Stop autoscrolling to new data."""
@@ -47,14 +53,6 @@ class OutputView(gtk.TextView):
             self.gui.paused_label.set_text("")
         #scroll to the end of output
         self.scroll_mark_onscreen(self.end_mark)
-
-    def key_pressed_cb(self, widget, event):
-        """The user pressed a key while the output window was in focus.
-
-        This forwards it to the command line.
-        """
-        self.gui.command_line.emit('key-press-event', event)
-        return True
 
     def write_out_span(self, text):
         """Write a span of text to the window using the current colours.
