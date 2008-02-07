@@ -1,8 +1,7 @@
 metaline.py:
  - _LoopingLast doesn't quite work like expected with slices.
 
-gui/keychords.py:
- - C-M- combinations may not be working in the gtkgui.
-
 gui/gtkgui.py:
  - when the output window has focus, the command line's cursor doesn't show
+ - when the selection extends to the very last character, when more text
+   is written to screen, that's added to the selection as well.

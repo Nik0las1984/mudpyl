@@ -34,5 +34,9 @@ New since 0.1
     - metaline.py: blank_between now fails if it would be blanking the start
       of the list, and index_adjust now normalises the list as well.
 
-2008-02-2 Sam Pointon <sampointon@gmail.com>
+2008-02-02 Sam Pointon <sampointon@gmail.com>
     - library/imperian/autosipper.py: new module.
+
+2008-02-07 Sam Pointon <sampointon@gmail.com>
+    - gui/keychords.py: the KeyChord objects are now well and truly agnostic
+      about case.

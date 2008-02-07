@@ -1,12 +1,12 @@
 """A keychord representation system."""
 
 #NOTE: the key pressed is case insensitive as far as macros are concerned. 
-#C-T and C-t are the same key, but only C-T will be looked up.
+#C-T and C-t are the same key
 #XXX: make macros case sensitive, perhaps? "S-"?
 class KeyChord(object):
     """Represents one key with control and meta keys, possibly."""
     def __init__(self, key, control, meta):
-        self.key = key
+        self.key = key.lower()
         self.control = control
         self.meta = meta
 
@@ -96,9 +96,9 @@ else:
         #though this isn't a special key we care about. Might be out of
         #ASCII bounds, though, so use unichr. Catching Caps_Lock and company
         #is a feature, not a bug (for now). GTK does capital-conversion
-        #before we get a peek at the key, so we uppercase it.
+        #before we get a peek at the key, but we don't care about that.
         elif not name in legal_specials:
-            name = unichr(event.keyval).upper()
+            name = unichr(event.keyval)
 
         meta = bool(event.state & gtk.gdk.MOD1_MASK)
         control = bool(event.state & gtk.gdk.CONTROL_MASK)

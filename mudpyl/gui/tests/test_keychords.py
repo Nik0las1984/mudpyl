@@ -1,5 +1,6 @@
 from mudpyl.gui.keychords import from_string, InvalidSpecialKeyError, \
-                                 CantParseThatError, InvalidModifiersError
+                                 CantParseThatError, InvalidModifiersError, \
+                                 KeyChord
 
 def single_keychord_key_equal(key, chord):
     assert chord.key == key
@@ -46,6 +47,11 @@ def test_case_insensitivity_in_special_keys():
 
     for val in vals:
         yield single_keychord_key_equal, 'escape', from_string('<%s>' % val)
+
+def test_case_insensitivity_on_normal_keys():
+    assert KeyChord('h', False, False) == KeyChord('H', False, False)
+    assert hash(KeyChord('h', False, False)) == hash(KeyChord('H', False,
+                                                              False))
 
 def test_blows_up_on_unclosed_special_key():
     try:
