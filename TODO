@@ -2,13 +2,6 @@ Features and miscellanea:
  - smarter creation of log files and directories
  - add in some way to profile the client
  - some kind of persistence mechanism?
- - modules to be written:
-    - the Big Bad Combat System
-    - automapper
-    - not to be written, but targetting.py wants multiple targets and target
-      switching added.
-    - colourtells.py should also colour TELLS and SHOWTELL.
-    - colourtells.py should have a SHOWTELLCOLOURS alias
  - write a manual?
     - related but different: manpages
  - MXP? May be too heavyweight to do nicely and keep the core small.
@@ -55,3 +48,15 @@ Other refactorings:
    Twisted koolaid.
  - make an abstract GUI interface, allowing for some other implementations 
    This is kind of half done informally, but half not.
+
+Specific modules under library/:
+  - write:
+    - the Big Bad Combat System
+    - automapper
+  - targetting.py wants multiple targets and target switching added.
+  - colourtells.py should also colour TELLS and SHOWTELL.
+  - colourtells.py should have a SHOWTELLCOLOURS alias
+  - imperian/autosipper.py: 
+     - make it less trusting and add timeouts.
+     - support for priest-mode (make mana sipping a higher priority)?
+
