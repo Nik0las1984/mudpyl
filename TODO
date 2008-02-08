@@ -8,7 +8,6 @@ Features and miscellanea:
  - rename Metaline.insert to insert_after, and add a new method called 
    insert_before.
  - have something line instance_macro.
- - more convenient (ie, one function) reloading
  - should TriggerMatchingRealm get send_after?
  - more complex logging of errors than going to stdout. Pop up a dialogue box,
    and write to the logfile?

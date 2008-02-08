@@ -5,6 +5,7 @@ from mudpyl.colours import fg_code, bg_code, BLACK, WHITE, HexFGCode
 from mudpyl.metaline import Metaline, RunLengthList
 from mudpyl.triggers import TriggerMatchingRealm
 from mudpyl.aliases import AliasMatchingRealm
+from mudpyl.modules import load_file
 from mudpyl.gui.bindings import gui_macros
 import traceback
 import time
@@ -42,6 +43,14 @@ class RootRealm(object):
         self.macros.clear()
         self.macros.update(gui_macros)
         self.modules_loaded = set()
+
+    def reload_main_module(self):
+        """Clear ourselves into a pristine state and load the main module
+        again.
+        """
+        self.clear_modules()
+        cls = load_file(self.factory.main_module_name)
+        self.load_module(cls)
 
     def load_module(self, cls, _sort = True):
         """Load the triggers, aliases, macros and other modules of the given

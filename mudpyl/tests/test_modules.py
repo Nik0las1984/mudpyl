@@ -11,7 +11,7 @@ def test_BaseModule_adds_triggers_aliases_and_macros():
         macro = object()
         macros = {'f': macro}
 
-    f = TelnetClientFactory(None, 'ascii')
+    f = TelnetClientFactory(None, 'ascii', None)
     Module(f.realm)
 
     assert len(f.realm.triggers) == 1

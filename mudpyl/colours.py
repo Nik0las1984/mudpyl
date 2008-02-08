@@ -57,11 +57,16 @@ class _HexCode(object):
     def __eq__(self, other):
         return type(self) == type(other) and self.triple == other.triple
 
+#ignore the unused arguments and could-be-a-function messages
+#pylint: disable-msg=W0613,R0201
+
     def __lt__(self, other):
         return NotImplemented
 
     def __gt__(self, other):
         return NotImplemented
+
+#pylint: enable-msg=W0613,R0201
 
     def __repr__(self):
         return "<%s %s>" % (type(self).__name__, self.tohex())

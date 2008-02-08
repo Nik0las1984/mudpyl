@@ -28,7 +28,8 @@ def main():
 
     modclass = load_file(options.modulename)
 
-    factory = TelnetClientFactory(modclass.name, modclass.encoding)
+    factory = TelnetClientFactory(modclass.name, modclass.encoding, 
+                                  options.modulename)
     modinstance = factory.realm.load_module(modclass)
     modinstance.is_main()
 

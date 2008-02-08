@@ -19,6 +19,10 @@ class Autosipper(EarlyInitialisingModule):
         self.state = 'sip balance'
         self.calculate_threshold()
 
+#pylint likes complaining about the unused arguments in the callbacks, which
+#are actually perfectly harmless.
+#pylint: disable-msg=W0613
+
     @binding_trigger('^H:(\d+) M:(\d+) E:\d+ W:\d+ <.*>')
     def prompt_seen(self, match, realm):
         """We've seen a prompt. Do we need to sip?"""
@@ -63,6 +67,8 @@ class Autosipper(EarlyInitialisingModule):
         """Recalcuate our sipping threshold based on SCORE."""
         self.max_mana = int(match.group(1))
         self.calculate_threshold()
+
+#pylint: enable-msg=W0613
 
     @property
     def triggers(self):

@@ -111,10 +111,11 @@ class TelnetClientFactory(ClientFactory):
 
     """A ClientFactory that produces TelnetClients."""
 
-    def __init__(self, name, encoding):
+    def __init__(self, name, encoding, main_module_name):
         #no __init__ here, either.
         self.name = name
         self.encoding = encoding
+        self.main_module_name = main_module_name
         self.outputs = OutputManager(self)
         self.realm = RootRealm(self)
 

@@ -46,6 +46,8 @@ class TestModuleLoading:
         else:
     	    assert False
 
+#XXX: test clear_modules
+
 class FakeTelnet:
 
     def __init__(self):
@@ -74,7 +76,7 @@ class Test_write:
     def setUp(self):
         self.fore = "tata"
         self.back = "toto"
-        self.fact = TelnetClientFactory(None, 'ascii')
+        self.fact = TelnetClientFactory(None, 'ascii', None)
         self.fact.outputs = MockOutputs(self.fore, self.back, self.our_wts)
         self.realm = self.fact.realm
         self.realm.telnet = FakeTelnet()
@@ -160,7 +162,7 @@ class Test_receive:
     def setUp(self):
         self.fore = "tata"
         self.back = "toto"
-        self.fact = TelnetClientFactory(None, 'ascii')
+        self.fact = TelnetClientFactory(None, 'ascii', None)
         self.fact.outputs = MockOutputs(self.fore, self.back, self.our_wts)
         self.realm = self.fact.realm
         self.lines_gotten = []
@@ -220,7 +222,7 @@ class Test_send:
     def setUp(self):
         self.fore = "tata"
         self.back = "toto"
-        self.fact = TelnetClientFactory(None, 'ascii')
+        self.fact = TelnetClientFactory(None, 'ascii', None)
         self.fact.outputs = MockOutputs(self.fore, self.back, self.our_wts)
         self.realm = self.fact.realm
         self.realm.telnet = self.tc = FakeTelnet()
@@ -463,7 +465,7 @@ class TrackingReceiver:
 class Test_connection_events:
 
     def setUp(self):
-        self.factory = TelnetClientFactory(None, 'ascii')
+        self.factory = TelnetClientFactory(None, 'ascii', None)
         self.realm = RootRealm(self.factory)
         self.realm.telnet = self.telnet = FakeTelnetWithClosing()
         self.receiver = TrackingReceiver()
@@ -536,3 +538,66 @@ class Test_connection_events:
         self.realm.connection_lost()
 
         assert self.realm.telnet is None
+
+from mudpyl.modules import load_file
+
+class DummyModule:
+
+    triggers = []
+    aliases = []
+    macros = {}
+    modules = []
+
+    def __init__(self, realm):
+        pass
+
+class Test_reload:
+
+    def tearDown(self):
+        realms.load_file = load_file
+
+    def setUp(self):
+        self.sentinel = object()
+        self.factory = TelnetClientFactory(None, None, self.sentinel)
+        self.realm = RootRealm(self.factory)
+        realms.load_file = self.our_load_file_blank
+
+    def our_load_file_1(self, modulename):
+        self.load_file_calls += 1
+        return DummyModule
+
+    def test_calls_load_file(self):
+        self.load_file_calls = 0
+        realms.load_file = self.our_load_file_1
+        self.realm.reload_main_module()
+        assert self.load_file_calls == 1
+
+    def our_load_file_2(self, modulename):
+        assert modulename is self.sentinel
+        return DummyModule
+
+    def test_calls_load_file_with_main_module_name(self):
+        realms.load_file = self.our_load_file_2
+        self.realm.reload_main_module()
+
+    def our_load_file_blank(self, modulename):
+        return DummyModule
+
+    def our_clear_modules(self):
+        self.clear_modules_calls += 1
+
+    def test_clears_modules(self):
+        self.clear_modules_calls = 0
+        self.realm.clear_modules = self.our_clear_modules
+        self.realm.reload_main_module()
+        assert self.clear_modules_calls == 1
+
+    def our_load_module(self, module):
+        assert module is DummyModule
+        self.load_module_calls += 1
+
+    def test_calls_load_module(self):
+        self.realm.load_module = self.our_load_module
+        self.load_module_calls = 0
+        self.realm.reload_main_module()
+        assert self.load_module_calls == 1

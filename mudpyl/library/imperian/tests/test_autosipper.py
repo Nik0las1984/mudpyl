@@ -16,3 +16,5 @@ def test_health_update_max_health_setting():
     a = Autosipper(10, 10)
     a.health_update(m, DummyRealm())
     assert a.max_health == 42
+
+#XXX

@@ -85,7 +85,7 @@ class TestHTMLLogOutputInitialisation:
     def setUp(self):
         html.open = self.our_open
         html.time = self.time = FakeTimeModule()
-        self.factory = TelnetClientFactory('baz', None)
+        self.factory = TelnetClientFactory('baz', None, None)
         self.outputs = self.factory.outputs
         self.realm = self.factory.realm
         self.opened = []
@@ -135,7 +135,7 @@ def test_HTMLLoggingModule_is_main_initialises_html_log():
     calls = []
     html.HTMLLogOutput = fake_module
 
-    f = TelnetClientFactory(None, 'ascii')
+    f = TelnetClientFactory(None, 'ascii', None)
     logplace = object()
 
     m = HTMLLoggingModule(f.realm)

@@ -42,3 +42,8 @@ New since 0.1
       about case.
     - gui/gtkoutput.py gui/gtkcommandline.py: make copying from the output
       window work with the command line always having focus
+
+2008-02-08 Sam Pointon <sampointon@gmail.com>
+    - net/telnet.py: TelnetClientFactory now requires a third parameter, the
+      name of the main module.
+    - realms.py: RootRealm now has a reload_main_module() method.

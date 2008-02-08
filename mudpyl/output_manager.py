@@ -20,8 +20,6 @@ class OutputManager(object):
         self.back = bg_code(BLACK)
         self.wrapper = TextWrapper(width = 100, 
                                   drop_whitespace = False)
-        self._connection_is_closed = False
-        self._waiting_on_connection_close = False
 
     def add_output(self, output):
         """Add another output that wants to receive stuff."""
