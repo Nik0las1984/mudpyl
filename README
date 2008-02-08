@@ -3,7 +3,7 @@ What mudpyl is
 
 mudpyl is a pure Python implementation of a MUD client. The aim is to keep the
 core concepts simple, and give the user the ability to fiddle around with it
-to suit there needs. Therefore, the core of the client is fairly small and
+to suit their needs. Therefore, the core of the client is fairly small and
 modular, with simple interfaces between the parts.
 
 Briefly, the more interesting features are:
