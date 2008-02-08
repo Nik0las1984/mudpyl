@@ -29,4 +29,4 @@ setup(name = "mudpyl",
                         },
       test_suite = 'nose.collector',
       packages = find_packages(),
-      scripts = ['mudpyl/connect.py'])
+      scripts = ['mudpyl/mudconnect.py'])
