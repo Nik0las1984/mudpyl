@@ -11,13 +11,12 @@ Features and miscellanea:
  - should TriggerMatchingRealm get send_after?
  - more complex logging of errors than going to stdout. Pop up a dialogue box,
    and write to the logfile?
-    -if this gets done, then realm.console should also do something similar
+    - if this gets done, then realm.console should also do something similar
  - double-check that what comes in through dataReceived, the gui, etc, is
    converted to unicode, and is properly encoded at all times. The logfile
    may be writing fine, and it's the display, or there may be some confusion
    going on.
  - unicode (\U and \u) escapes in escape_parser.py
- - write RunLengthList using an ordered dict or similar
 
 Screen related:
  - search facility in the output
@@ -47,14 +46,16 @@ Other refactorings:
    Twisted koolaid.
  - make an abstract GUI interface, allowing for some other implementations 
    This is kind of half done informally, but half not.
+ - write RunLengthList using an ordered dict or similar
 
 Specific modules under library/:
   - write:
     - the Big Bad Combat System
     - automapper
   - targetting.py wants multiple targets and target switching added.
-  - colourtells.py should also colour TELLS and SHOWTELL.
-  - colourtells.py should have a SHOWTELLCOLOURS alias
+  - colourtells.py:
+     - should also colour TELLS and SHOWTELL.
+     - should have a SHOWTELLCOLOURS alias
   - imperian/autosipper.py: 
      - make it less trusting and add timeouts.
      - support for priest-mode (make mana sipping a higher priority)?
