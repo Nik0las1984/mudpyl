@@ -8,6 +8,7 @@ New since 0.2
       module can fiddle around with the macros baked in by the GUI.
     - gui/gtkgui.py, gui/gtkcommandline.py: these now bake in the page up|down
       and copy forwarding to the output window as macros.
+    - library/imperian/balance.py: new file; balance highlighter.
 
 New since 0.1
 -------------

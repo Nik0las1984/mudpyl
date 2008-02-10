@@ -30,8 +30,9 @@ Or, from a shell with ``easy_install`` visible::
 
     easy_install mudpyl
 
-PyGTK is needed by the gtkgui, which is currently the only GUI avabilable.
-peak.util.extremes is required by an optional module.
+PyGTK is needed by the gtkgui, which is currently the only GUI avabilable;
+Twisted and argparse are also needed. peak.util.extremes is required by an 
+optional module.
 
 **NOTE**: mudpyl requires python 2.6 (grab it from the trunk, or an alpha when
 one is released). This is because it uses a new feature in the stdlib module
@@ -46,7 +47,8 @@ See the file QUICKSTART for a tutorial-style guide for connecting to a MUD.
 Author, copyright and license
 =============================
 
-Copyright Sam Pointon 2007. The author is reachable at <sampointon@gmail.com>.
+Copyright Sam Pointon 2007, 2008. The author is reachable at 
+<sampointon@gmail.com>.
 
 The project is hosted at `Launchpad <https://launchpad.net/mudpyl>`_. Please
 report bugs or request features there.
