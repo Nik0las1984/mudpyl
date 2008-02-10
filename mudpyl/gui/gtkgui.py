@@ -123,7 +123,7 @@ class GUI(gtk.Window):
         self.scrolled_out.emit("scroll-child", gtk.SCROLL_PAGE_BACKWARD,
                                False)
 
-    def forward_page_down_cb(self, realm, event):
+    def forward_page_down_cb(self, realm):
         """Forward a page down key from the command line to the output window.
         """
         self.scrolled_out.emit("scroll-child", gtk.SCROLL_PAGE_FORWARD,
