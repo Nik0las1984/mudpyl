@@ -1,4 +1,4 @@
-#/usr/bin/python
+#!/usr/bin/python
 """Connand-line script to hook you up to the MUD of your choice."""
 from mudpyl.net.telnet import TelnetClientFactory
 from mudpyl.modules import load_file
