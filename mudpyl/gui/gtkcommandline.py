@@ -1,7 +1,7 @@
 """Contains the implementation of the command entry widget."""
 from mudpyl.gui.commandhistory import CommandHistory
 from mudpyl.gui.tabcomplete import Trie
-from mudpyl.gui.keychords import from_gtk_event, from_string
+from mudpyl.gui.keychords import from_gtk_event
 import gtk
 import pango
 
@@ -23,30 +23,12 @@ class CommandView(gtk.TextView):
     def key_pressed_cb(self, widget, event):
         """The user's pressed a key.
 
-        This checks to see if it's a page up or page down key, because these
-        are forwarded to the output window, and then looks to see if there is
-        a macro defined for this key.
-
-        If not, it is added to the buffer of text.
+        First, this checks to see if there is a macro bound for the keychord,
+        and if there is then it is run; if not, the key is handled by PyGTK.
         """
         chord = from_gtk_event(event)
 
-        if self.gui.realm.maybe_do_macro(chord):
-            pass
-        elif chord == from_string('<page up>'):
-            self.gui.scrolled_out.emit('scroll-child', 
-                                       gtk.SCROLL_PAGE_BACKWARD,
-                                       False)
-        elif chord == from_string('<page down>'):
-            self.gui.scrolled_out.emit('scroll-child',
-                                       gtk.SCROLL_PAGE_FORWARD,
-                                       False)
-        elif chord == from_string("C-c") and \
-                                          not self.buffer.get_has_selection():
-            #let the output window see the keypress, to forward copying if
-            #we have no selection
-            self.gui.output_window.emit('key-press-event', event)
-        else:
+        if not self.gui.realm.maybe_do_macro(chord):
             #not a macro, so keep processing.
             return False
         return True

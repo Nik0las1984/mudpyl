@@ -20,7 +20,8 @@ class RootRealm(object):
         self.telnet = None
         self.triggers = []
         self.aliases = []
-        self.macros = gui_macros.copy()
+        self.baked_in_macros = gui_macros.copy()
+        self.macros = self.baked_in_macros.copy()
         self.ga_as_line_end = True
         self.modules_loaded = set()
         self._escape_parser = EscapeParser()
@@ -41,7 +42,7 @@ class RootRealm(object):
         self.triggers[:] = []
         self.aliases[:] = []
         self.macros.clear()
-        self.macros.update(gui_macros)
+        self.macros.update(self.baked_in_macros)
         self.modules_loaded = set()
 
     def reload_main_module(self):
@@ -146,15 +147,17 @@ class RootRealm(object):
         """Try and run a macro against the given keychord.
 
         A return value of True means a macro was found and run, False means
-        no macro was found.
+        no macro was found, or a macro returned True (meaning allow the GUI
+        to continue handling the keypress).
         """
         if chord in self.macros:
             macro = self.macros[chord]
+            allow_gui_continue = False
             try:
-                macro(self)
+                allow_gui_continue = macro(self)
             except Exception:
                 traceback.print_exc()
-            return True
+            return not allow_gui_continue
         else:
             return False
 

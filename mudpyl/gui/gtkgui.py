@@ -2,6 +2,7 @@
 from mudpyl.gui.gtkoutput import OutputView
 from mudpyl.gui.gtkcommandline import CommandView
 from twisted.internet.task import LoopingCall
+from mudpyl.gui.keychords import from_string
 from datetime import datetime, timedelta
 import traceback
 import gtk
@@ -114,8 +115,39 @@ class GUI(gtk.Window):
             #pylint: enable-msg= E1101
             return True
 
+    def forward_page_up_cb(self, realm):
+        """Forward a page up key to the output window from the command line.
+
+        As the command line is only one line, these don't make sense anyway.
+        """
+        self.scrolled_out.emit("scroll-child", gtk.SCROLL_PAGE_BACKWARD,
+                               False)
+
+    def forward_page_down_cb(self, realm, event):
+        """Forward a page down key from the command line to the output window.
+        """
+        self.scrolled_out.emit("scroll-child", gtk.SCROLL_PAGE_FORWARD,
+                               False)
+
+    def maybe_forward_copy_cb(self, realm):
+        """If there is no selection in the command line, forward the copy
+        command to the output window.
+
+        This is needed so that focus can always stay on the command line.
+        """
+        if self.command_line.buffer.get_has_selection():
+            #let the command window handle if it's got the selection
+            return True
+        else:
+            self.output_window.emit("copy-clipboard")
+
 def configure(factory):
     """Set the right reactor up and get the GUI going."""
     from twisted.internet import gtk2reactor
     gtk2reactor.install()
-    GUI(factory.outputs, factory.realm)
+    gui = GUI(factory.outputs, factory.realm)
+    macros = {from_string("<page up>"): gui.forward_page_up_cb,
+              from_string('<page down>'): gui.forward_page_down_cb,
+              from_string("C-c"): gui.maybe_forward_copy_cb}
+    factory.realm.macros.update(macros)
+    factory.realm.baked_in_macros.update(macros)

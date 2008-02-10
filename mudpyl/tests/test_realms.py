@@ -382,6 +382,15 @@ class TestOtherStuff:
     def test_gui_macros_are_defaultly_loaded(self):
         assert self.realm.macros == gui_macros
 
+    def test_baked_in_macros_loaded_after_clear(self):
+        self.realm.baked_in_macros['f'] = 'foo'
+        self.realm.clear_modules()
+        res = gui_macros.copy()
+        res['f'] = 'foo'
+        assert self.realm.macros == res
+
+#XXX: test clear_modules
+
 from mudpyl import realms
 from mudpyl.gui.keychords import from_string
 import traceback
@@ -401,10 +410,15 @@ class Test_maybe_do_macro:
         self.realm.macros[from_string('X')] = self.macro
         self.realm.macros[from_string('C-M-X')] = self.bad_macro
         self.realm.macros[from_string('Z')] = self.simulated_grumpy_user
+        self.realm.macros[from_string('L')] = self.macro_returning_true
         self.macro_called_with = []
 
     def macro(self, realm):
         self.macro_called_with.append(realm)
+
+    def macro_returning_true(self, realm):
+        self.macro_called_with.append(realm)
+        return True
 
     def bad_macro(self, realm):
         raise Exception
@@ -447,6 +461,10 @@ class Test_maybe_do_macro:
         res = self.realm.maybe_do_macro(from_string('C-M-X'))
         assert res
         realms.traceback = traceback
+
+    def test_macro_that_returns_True_tells_gui_to_keep_processing(self):
+        res = self.realm.maybe_do_macro(from_string('L'))
+        assert not res
 
 class TrackingReceiver:
 

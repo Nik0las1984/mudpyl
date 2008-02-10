@@ -18,25 +18,25 @@ parser.add_argument("modulename", help = "The module to import")
 def main():   
     """Launch the client.
 
-    This is the main entry point.
+    This is the main entry point. This will first initialise the GUI, then
+    load the main module specified on the command line.
     """
     options = parser.parse_args()
+
+    modclass = load_file(options.modulename)
+    factory = TelnetClientFactory(modclass.name, modclass.encoding, 
+                                  options.modulename)
 
     if options.gui not in known_guis:
         parser.error("Unknown GUI given (valid options: %s)" % 
                                      ', '.join(known_guis))
-
-    modclass = load_file(options.modulename)
-
-    factory = TelnetClientFactory(modclass.name, modclass.encoding, 
-                                  options.modulename)
-    modinstance = factory.realm.load_module(modclass)
-    modinstance.is_main()
-
-    if options.gui == 'gtk':
+    elif options.gui == 'gtk':
         from mudpyl.gui.gtkgui import configure
 
     configure(factory)
+
+    modinstance = factory.realm.load_module(modclass)
+    modinstance.is_main()
 
     from twisted.internet import reactor
 
