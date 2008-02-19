@@ -1,4 +1,5 @@
 from mudpyl.gui.tabcomplete import Trie
+from mock import Mock
 
 class Test_Adding:
 
@@ -32,20 +33,12 @@ class Test_Adding:
 
     #XXX: test splitting
 
-class FakeTrie(Trie):
-
-    __slots__ = ['words']
-
-    def __init__(self):
-        self.words = []
-
-    def add_word(self, word):
-        self.words.append(word)
-
 def test_add_line_only_adds_words_not_splitting_characters():
-    trie = FakeTrie()
+    trie = Trie()
+    trie.add_word = Mock()
     trie.add_line('foo, bar  ')
-    assert trie.words == ['foo', 'bar'], trie.words
+    assert trie.add_word.call_args_list == [(('foo',), {}), 
+                                            (('bar',), {})]
 
 class Test_complete_and_keys:
 

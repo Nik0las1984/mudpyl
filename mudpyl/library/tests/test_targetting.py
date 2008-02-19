@@ -4,75 +4,56 @@ from mudpyl.realms import RootRealm, TriggerMatchingRealm, AliasMatchingRealm
 from mudpyl.colours import fg_code, RED
 from mudpyl.metaline import Metaline, RunLengthList
 import re
-
-class MockFactory:
-
-    def __init__(self):
-        self.macros = {}
-        self.triggers = []
-        self.aliases = []
-
-class MockRootRealm:
-    
-    def __init__(self):
-        self.lines_processed = []
-
-    def send(self, line, echo = None):
-        self.lines_processed.append(line)
+from mock import Mock
 
 mobj = re.search('(foo)', 'bar foo baz')
 
-def test_set_target_default_regex():
-    assert Targetter(MockFactory()).target_seen.regex is None
+class TestTargetting:
 
-def test_set_target_regex_setting():
-    t = Targetter(MockFactory())
-    r = MockRootRealm()
-    amr = AliasMatchingRealm('foo', True, r, r)
-    t.set_target.func(mobj, amr)
-    assert t.target_seen.regex.pattern == r"\bfoos?'?s?\b"
+    def setUp(self):
+        self.r = Mock(spec = RootRealm)
+        self.r.macros = {}
+        self.r.triggers = []
+        self.r.aliases = []
+        self.t = Targetter(self.r)
+        self.amr = AliasMatchingRealm('foo', True, self.r, self.r)
 
-def test_set_target_sends_target_line():
-    t = Targetter(MockFactory())
-    r = MockRootRealm()
-    amr = AliasMatchingRealm('foo', True, r, r)
-    t.set_target.func(mobj, amr)
-    assert r.lines_processed == ['settarget tar foo'], r.lines_processed
+    def test_set_target_default_regex(self):
+        assert self.t.target_seen.regex is None
 
-def test_set_target_sets_the_target_caselessly():
-    t = Targetter(MockFactory())
-    r = MockRootRealm()
-    amr = AliasMatchingRealm('foo', True, r, r)
-    t.set_target.func(mobj, amr)
-    ml = Metaline('FOO', RunLengthList([(0, None)]), 
-                         RunLengthList([(0, None)]))
-    res = t.target_seen.match(ml)
-    assert res, res
+    def test_set_target_regex_setting(self):
+        self.t.set_target.func(mobj, self.amr)
+        assert self.t.target_seen.regex.pattern == r"\bfoos?'?s?\b"
 
-def test_clear_target_nuking_regex():
-    t = Targetter(MockFactory())
-    t.target_seen.regex = 'foo'
-    r = MockRootRealm()
-    amr = AliasMatchingRealm('foo', True, r, r)
-    t.clear_target.func(mobj, amr)
-    assert t.target_seen.regex is None
+    def test_set_target_sends_target_line(self):
+        self.t.set_target.func(mobj, self.amr)
+        argslist = [args for (args, kwargs) in self.r.send.call_args_list]
+        assert argslist == [('settarget tar foo', False)]
 
-def test_clear_target_sends_clear_line():
-    t = Targetter(MockFactory())
-    r = MockRootRealm()
-    amr = AliasMatchingRealm('foo', True, r, r)
-    t.clear_target.func(mobj, amr)
-    assert r.lines_processed == ['cleartarget tar'], r.lines_processed
+    def test_set_target_sets_the_target_caselessly(self):
+        self.t.set_target.func(mobj, self.amr)
+        ml = Metaline('FOO', RunLengthList([(0, None)]), 
+                             RunLengthList([(0, None)]))
+        res = self.t.target_seen.match(ml)
+        assert res, res
 
-def test_target_seen_highlighting():
-    t = Targetter(MockFactory())
-    r = MockRootRealm()
-    ml = Metaline('bar foo baz', RunLengthList([(0, 'foo')]), 
-                  RunLengthList([(0, 'bar')]))
-    ti = TriggerMatchingRealm(ml, r, r)
-    a = ti.alterer
-    t.target_seen.func(mobj, ti)
-    res = a.apply(ml)
-    assert res.fores.as_pruned_index_list() == [(0, 'foo'),
-                                                (4, fg_code(RED, True)),
-                                                (7, 'foo')]
+    def test_clear_target_nuking_regex(self):
+        self.t.target_seen.regex = 'foo'
+        self.t.clear_target.func(mobj, self.amr)
+        assert self.t.target_seen.regex is None
+
+    def test_clear_target_sends_clear_line(self):
+        self.t.clear_target.func(mobj, self.amr)
+        arglist = [args for (args, kwargs) in self.r.send.call_args_list]
+        assert arglist == [('cleartarget tar', False)]
+
+    def test_target_seen_highlighting(self):
+        ml = Metaline('bar foo baz', RunLengthList([(0, 'foo')]), 
+                      RunLengthList([(0, 'bar')]))
+        ti = TriggerMatchingRealm(ml, self.r, self.r)
+        a = ti.alterer
+        self.t.target_seen.func(mobj, ti)
+        res = a.apply(ml)
+        assert res.fores.as_pruned_index_list() == [(0, 'foo'),
+                                                    (4, fg_code(RED, True)),
+                                                    (7, 'foo')]

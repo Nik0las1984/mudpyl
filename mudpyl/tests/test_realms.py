@@ -3,7 +3,9 @@ from mudpyl.colours import fg_code, bg_code, WHITE, BLACK, HexFGCode
 from mudpyl.metaline import Metaline, RunLengthList
 from mudpyl.triggers import binding_trigger
 from mudpyl.aliases import binding_alias
-from mudpyl.net.telnet import TelnetClientFactory
+from mudpyl.net.telnet import TelnetClientFactory, TelnetClient
+from mudpyl.output_manager import OutputManager
+from mock import Mock
 import time
 
 class FooException(Exception):
@@ -48,48 +50,28 @@ class TestModuleLoading:
 
 #XXX: test clear_modules
 
-class FakeTelnet:
-
-    def __init__(self):
-        self.sent = []
-
-    def sendLine(self, line):
-        self.sent.append(line)
-
-class MockOutputs:
-
-    def __init__(self, fore, back, wts):
-        self.fore = fore
-        self.back = back
-        self.write_to_screen = wts
-
-class PeekingTom:
-
-    def __init__(self):
-        self.pought = []
-
-    def peek_line(self, line):
-        self.pought.append(line)
-
 class Test_write:
 
     def setUp(self):
         self.fore = "tata"
         self.back = "toto"
         self.fact = TelnetClientFactory(None, 'ascii', None)
-        self.fact.outputs = MockOutputs(self.fore, self.back, self.our_wts)
+        self.fact.outputs = Mock(spec = OutputManager)
+        self.fact.outputs.fore = self.fore
+        self.fact.outputs.back = self.back
         self.realm = self.fact.realm
-        self.realm.telnet = FakeTelnet()
-        self.lines_gotten = []
+        self.realm.telnet = Mock(spec = TelnetClient)
         #hack: use set() here because it has copy()
         self.noting_line = Metaline('foo', set(), set())
-
-    def our_wts(self, ml):
-        self.lines_gotten.append(ml)
 
     def writer(self, match, realm):
         print 'writer called!'
         realm.write(self.noting_line)
+
+    @property
+    def lines_gotten(self):
+        return [line for ((line,), kwargs) in 
+                            self.fact.outputs.write_to_screen.call_args_list]
 
     def test_from_not_a_string(self):
         self.realm.write(42)
@@ -152,10 +134,10 @@ class Test_write:
         assert self.lines_gotten == expected
 
     def test_write_sends_peek_line(self):
-        p = PeekingTom()
+        p = Mock()
         self.realm.add_peeker(p)
         self.realm.write('foobar')
-        assert p.pought == ['foobar']
+        assert p.peek_line.call_args == (('foobar',), {})
 
 class Test_receive:
 
@@ -163,14 +145,17 @@ class Test_receive:
         self.fore = "tata"
         self.back = "toto"
         self.fact = TelnetClientFactory(None, 'ascii', None)
-        self.fact.outputs = MockOutputs(self.fore, self.back, self.our_wts)
+        self.fact.outputs = Mock(spec = OutputManager)
+        self.fact.outputs.fore = self.fore
+        self.fact.outputs.back = self.back
         self.realm = self.fact.realm
-        self.lines_gotten = []
         self.ml = Metaline('foo', set(), set())
         self.ml2 = Metaline("bar", None, None)
 
-    def our_wts(self, ml):
-        self.lines_gotten.append(ml)
+    @property
+    def lines_gotten(self):
+        return [line for ((line,), kwargs) in 
+                            self.fact.outputs.write_to_screen.call_args_list]
 
     def test_sends_to_screen_normally(self):
         self.realm.receive(self.ml)
@@ -223,17 +208,20 @@ class Test_send:
         self.fore = "tata"
         self.back = "toto"
         self.fact = TelnetClientFactory(None, 'ascii', None)
-        self.fact.outputs = MockOutputs(self.fore, self.back, self.our_wts)
+        self.fact.outputs = Mock(spec = OutputManager)
+        self.fact.outputs.fore = self.fore
+        self.fact.outputs.back = self.back
         self.realm = self.fact.realm
-        self.realm.telnet = self.tc = FakeTelnet()
-        self.lines_gotten = []
+        self.realm.telnet = self.tc = Mock(spec = TelnetClient)
 
-    def our_wts(self, ml):
-        self.lines_gotten.append(ml)
+    @property
+    def lines_gotten(self):
+        return [line for ((line,), kwargs) in 
+                            self.fact.outputs.write_to_screen.call_args_list]
 
     def test_send_sends_to_the_mud(self):
         self.realm.send("bar")
-        assert self.tc.sent == ['bar']
+        assert self.tc.sendLine.call_args_list == [(('bar',), {})]
 
     def test_send_echos_by_default(self):
         self.realm.send("bar")
@@ -269,7 +257,8 @@ class Test_send:
         self.realm.aliases.append(self.our_alias_1)
         self.realm.send('bar')
 
-        assert self.tc.sent == ['bar', 'foo'], self.tc.sent
+        assert self.tc.sendLine.call_args_list == [(('bar',), {}), 
+                                                   (('foo',), {})]
 
     def test_send_after_default_echoing_is_off(self):
         self.realm.aliases.append(self.our_alias_1)
@@ -321,9 +310,10 @@ class Test_send:
                                  RunLengthList([(0, bg_code(BLACK))]),
                                  soft_line_start = True)]
         expect_send = ['baz', 'bar', 'foo']
+        sent = [line for ((line,), kwargs) in self.tc.sendLine.call_args_list]
 
         assert self.lines_gotten == expect_write
-        assert self.tc.sent == expect_send
+        assert sent == expect_send
 
     @binding_alias('spam')
     def noisy_alias(self, match, realm):
@@ -346,29 +336,20 @@ class Test_send:
 #XXX: not tested still - TriggerMatchingRealm
 #also not tested: send() and default echoing in MatchingRealms
 
-class FakeTelnetWithClosing:
-
-    def __init__(self):
-        self.closed = False
-
-    def close(self):
-        assert not self.closed
-        self.closed = True
-
 from mudpyl.gui.bindings import gui_macros
 
 class TestOtherStuff:
 
     def setUp(self):
         self.realm = RootRealm(None)
-        self.realm.telnet = self.telnet = FakeTelnetWithClosing()
+        self.realm.telnet = self.telnet = Mock(spec = TelnetClient)
     
     def test_ga_as_line_end_is_defaultly_True(self):
         assert self.realm.ga_as_line_end
 
     def test_close_closes_telnet(self):
         self.realm.close()
-        assert self.telnet.closed
+        assert self.telnet.close.called
 
     def test_close_clears_telnet_attribute(self):
         self.realm.close()
@@ -391,17 +372,8 @@ class TestOtherStuff:
 
 #XXX: test clear_modules
 
-from mudpyl import realms
 from mudpyl.gui.keychords import from_string
-import traceback
-
-class FakeTracebackModule:
-
-    def __init__(self):
-        self.calls = 0
-
-    def print_exc(self):
-        self.calls += 1
+from mock import patch
 
 class Test_maybe_do_macro:
 
@@ -447,114 +419,74 @@ class Test_maybe_do_macro:
         else:
             assert False
 
-    def test_Exception_is_caught(self):
-        tb = realms.traceback = FakeTracebackModule()
-
+    @patch('mudpyl.realms', 'traceback')
+    def test_Exception_is_caught(self, tb):
         self.realm.maybe_do_macro(from_string('C-M-X'))
+        assert tb.print_exc.called
 
-        assert tb.calls
-
-        realms.traceback = traceback
-
-    def test_bad_macros_still_return_True(self):
-        realms.traceback = FakeTracebackModule()
+    @patch('mudpyl.realms', 'traceback')
+    def test_bad_macros_still_return_True(self, tb):
         res = self.realm.maybe_do_macro(from_string('C-M-X'))
         assert res
-        realms.traceback = traceback
 
     def test_macro_that_returns_True_tells_gui_to_keep_processing(self):
         res = self.realm.maybe_do_macro(from_string('L'))
         assert not res
-
-class TrackingReceiver:
-
-    def __init__(self):
-        self.calls = []
-
-    def connection_lost(self):
-        self.calls.append('connection_lost')
-
-    def connection_made(self):
-        self.calls.append("connection_made")
-
-    def close(self):
-        self.calls.append("close")
 
 class Test_connection_events:
 
     def setUp(self):
         self.factory = TelnetClientFactory(None, 'ascii', None)
         self.realm = RootRealm(self.factory)
-        self.realm.telnet = self.telnet = FakeTelnetWithClosing()
-        self.receiver = TrackingReceiver()
+        self.realm.telnet = self.telnet = Mock(spec = TelnetClient)
+        self.receiver = Mock()
         self.realm.add_connection_receiver(self.receiver)
 
     def test_passes_on_connection_lost(self):
         self.realm.connection_lost()
+        assert self.receiver.connection_lost.called
 
-        assert self.receiver.calls == ['connection_lost']
-
-    def test_connection_lost_writes_message(self):
-        written = []
-        def our_write(ml):
-            assert ml.line == 'FOOBAR'
-            assert ml.fores.as_populated_list() == [HexFGCode(0xFF, 0xAA, 
-                                                                       0x00)]
-            assert ml.backs.as_populated_list() == [bg_code(BLACK)]
-            written.append(ml)
-        class our_time:
-            def strftime(self, _):
-                return 'FOOBAR'
-
-        self.realm.write = our_write
-        realms.time = our_time()
-
+    @patch('mudpyl.realms', 'time')
+    def test_connection_lost_writes_message(self, our_time):
+        our_time.strftime.return_value = 'FOOBAR'
+        self.realm.write = Mock()
         self.realm.connection_lost()
-        assert written
+        assert self.realm.write.called
+        ml = self.realm.write.call_args[0][0]
+        assert ml.line == 'FOOBAR'
+        assert ml.fores.as_populated_list() == [HexFGCode(0xFF, 0xAA, 0x00)]
+        assert ml.backs.as_populated_list() == [bg_code(BLACK)]
 
-        realms.time = time
-
-    def test_connection_made_writes_message(self):
-        written = []
-        def our_write(ml):
-            assert ml.line == 'FOOBAR'
-            assert ml.fores.as_populated_list() == [HexFGCode(0xFF, 0xAA, 
-                                                                       0x00)]
-            assert ml.backs.as_populated_list() == [bg_code(BLACK)]
-            written.append(ml)
-        class our_time:
-            def strftime(self, _):
-                return 'FOOBAR'
-
-        self.realm.write = our_write
-        realms.time = our_time()
-
+    @patch('mudpyl.realms', 'time')
+    def test_connection_made_writes_message(self, our_time):
+        our_time.strftime.return_value = 'FOOBAR'
+        self.realm.write = Mock()
         self.realm.connection_made()
-        assert written
-
-        realms.time = time
+        assert self.realm.write.called
+        ml = self.realm.write.call_args[0][0]
+        assert ml.line == 'FOOBAR'
+        assert ml.fores.as_populated_list() == [HexFGCode(0xFF, 0xAA, 0x00)]
+        assert ml.backs.as_populated_list() == [bg_code(BLACK)]
 
     def test_passes_on_connection_made(self):
         self.realm.connection_made()
-
-        assert self.receiver.calls == ['connection_made']
+        assert self.receiver.connection_made.called
 
     def test_sends_connection_lost_and_close_in_right_order(self):
         self.realm.close()
         #simulate Twisted's 'throw-it-over-the-wall' anti-guarantee
         self.realm.connection_lost()
+        calls = [mname for (mname, args, kws) in self.receiver.method_calls]
+        assert calls == ['connection_lost', 'close']
 
-        assert self.receiver.calls == ['connection_lost', 'close']
-
-    def test_connection_lost_then_close_work(self):
+    def test_connection_lost_then_close_works(self):
         self.realm.connection_lost()
         self.realm.close()
-
-        assert self.receiver.calls == ['connection_lost', 'close']
+        calls = [mname for (mname, args, kws) in self.receiver.method_calls]
+        assert calls == ['connection_lost', 'close']
 
     def test_connection_lost_sets_telnet_to_None(self):
         self.realm.connection_lost()
-
         assert self.realm.telnet is None
 
 from mudpyl.modules import load_file
@@ -569,53 +501,37 @@ class DummyModule:
     def __init__(self, realm):
         pass
 
+from mock import sentinel
+
 class Test_reload:
 
-    def tearDown(self):
-        realms.load_file = load_file
-
     def setUp(self):
-        self.sentinel = object()
-        self.factory = TelnetClientFactory(None, None, self.sentinel)
+        self.factory = TelnetClientFactory(None, None, sentinel.ModuleName)
         self.realm = RootRealm(self.factory)
-        realms.load_file = self.our_load_file_blank
 
-    def our_load_file_1(self, modulename):
-        self.load_file_calls += 1
-        return DummyModule
-
-    def test_calls_load_file(self):
-        self.load_file_calls = 0
-        realms.load_file = self.our_load_file_1
+    @patch('mudpyl.realms', 'load_file')
+    def test_calls_load_file(self, our_load_file):
+        our_load_file.return_value = DummyModule
         self.realm.reload_main_module()
-        assert self.load_file_calls == 1
+        assert our_load_file.called
 
-    def our_load_file_2(self, modulename):
-        assert modulename is self.sentinel
-        return DummyModule
-
-    def test_calls_load_file_with_main_module_name(self):
-        realms.load_file = self.our_load_file_2
+    @patch('mudpyl.realms', 'load_file')
+    def test_calls_load_file_with_main_module_name(self, our_load_file):
+        our_load_file.return_value = DummyModule
         self.realm.reload_main_module()
+        assert our_load_file.call_args[0] == (sentinel.ModuleName,)
 
-    def our_load_file_blank(self, modulename):
-        return DummyModule
-
-    def our_clear_modules(self):
-        self.clear_modules_calls += 1
-
-    def test_clears_modules(self):
-        self.clear_modules_calls = 0
-        self.realm.clear_modules = self.our_clear_modules
+    @patch('mudpyl.realms', 'load_file')
+    def test_clears_modules(self, our_load_file):
+        our_load_file.return_value = DummyModule
+        self.realm.clear_modules = Mock()
         self.realm.reload_main_module()
-        assert self.clear_modules_calls == 1
+        assert self.realm.clear_modules.called
 
-    def our_load_module(self, module):
-        assert module is DummyModule
-        self.load_module_calls += 1
-
-    def test_calls_load_module(self):
-        self.realm.load_module = self.our_load_module
-        self.load_module_calls = 0
+    @patch('mudpyl.realms', 'load_file')
+    def test_calls_load_module(self, our_load_file):
+        our_load_file.return_value = sentinel.Module
+        self.realm.load_module = Mock()
         self.realm.reload_main_module()
-        assert self.load_module_calls == 1
+        assert self.realm.load_module.called
+        assert self.realm.load_module.call_args[0] == (sentinel.Module,)

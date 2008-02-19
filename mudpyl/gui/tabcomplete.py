@@ -15,9 +15,6 @@ class Trie(object):
 
     #pylint: enable-msg= E0602
 
-    #we construct rather a lot of these, so optimise for space.
-    __slots__ = ['primkey', 'sorted_keys', 'descs']
-
     def __init__(self):
         self.primkey = ''
         self.sorted_keys = []

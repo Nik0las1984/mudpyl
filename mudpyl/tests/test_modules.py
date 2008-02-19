@@ -23,26 +23,18 @@ def test_BaseModule_adds_triggers_aliases_and_macros():
 
 from mudpyl.modules import load_file
 import sys
-
-class FakeMainModule:
-
-    modules = []
-
-    def __init__(self, clientfactory):
-        clientfactory.loaded = True
-
-class FakePythonModule:
-    MainModule = FakeMainModule
+from mock import patch, sentinel, Mock
 
 def our_import(name, globals, locals, importlist):
     if name == 'foobar' and importlist == ['MainModule']:
-        return FakePythonModule()
+        m = Mock()
+        m.MainModule = sentinel.Module
+        return m
 
+@patch('__builtin__', '__import__', our_import)
 def test_load_file_loads_script():
-    from mudpyl import modules
-    modules.__import__ = our_import
     m = load_file("foobar")
-    assert m is FakeMainModule
+    assert m == sentinel.Module
 
 def test_load_file_reimports():
     sys.modules["foobar"] = object()

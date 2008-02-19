@@ -1,4 +1,6 @@
 from mudpyl.net.telnet import TelnetClientFactory
+from mock import Mock
+from mudpyl.realms import RootRealm
 
 def test_TelnetClientFactory_sets_name():
     o = object()
@@ -111,15 +113,6 @@ class Test_MCCP:
         self.tc.close()
         assert self.t.lost_connection
 
-class FakeRealmWithSoftGAs:
-
-    def __init__(self):
-        self.lines = []
-        self.ga_as_line_end = True
-
-    def receive(self, line):
-        self.lines.append(line)
-
 from mudpyl.metaline import Metaline, RunLengthList
 from mudpyl.colours import fg_code, RED, WHITE, BLACK, bg_code
 from twisted.conch.telnet import IAC, GA, BS, VT
@@ -128,7 +121,8 @@ class Test_receiving_lines:
 
     def setUp(self):
         self.f = TelnetClientFactory(None, 'ascii', None)
-        self.f.realm = self.e = FakeRealmWithSoftGAs()
+        self.f.realm = self.e = Mock(spec = RootRealm)
+        self.e.ga_as_line_end = True
         self.tc = TelnetClient(self.f)
         self.tc.transport = FakeTransport()
         self.fores = RunLengthList([(0, fg_code(WHITE, False))])
@@ -139,7 +133,8 @@ class Test_receiving_lines:
                              line_end = 'soft')]
         self.tc.dataReceived("foo" + IAC + GA)
         print expected
-        assert self.e.lines == expected, self.e.lines
+        lines = [line for ((line,), kwargs) in self.e.receive.call_args_list]
+        assert lines == expected, lines
 
     def test_ga_received_flushes_out_the_buffer(self):
         expected = [Metaline("foo", self.fores, self.backs, wrap = True,
@@ -147,35 +142,40 @@ class Test_receiving_lines:
                     Metaline('', self.fores, self.backs, wrap = True,
                              line_end = 'soft')]
         self.tc.dataReceived('foo' + IAC + GA + IAC + GA)
-        assert self.e.lines == expected, self.e.lines
+        lines = [line for ((line,), kwargs) in self.e.receive.call_args_list]
+        assert lines == expected, lines
 
     def test_ga_received_respects_ga_as_line_end_flag(self):
         self.e.ga_as_line_end = False
         expected = [Metaline('foo', self.fores, self.backs, wrap = True,
                              line_end = None)]
         self.tc.dataReceived("foo" + IAC + GA)
-        assert self.e.lines == expected, self.e.lines
+        lines = [line for ((line,), kwargs) in self.e.receive.call_args_list]
+        assert lines == expected, lines
 
     def test_lineReceived_sends_line_on(self):
         self.tc.lineReceived("foo")
-        assert self.e.lines == [Metaline('foo', self.fores, self.backs, 
-                                         wrap = True)]
+        lines = [line for ((line,), kwargs) in self.e.receive.call_args_list]
+        assert lines == [Metaline('foo', self.fores, self.backs, wrap = True)]
 
     def test_lineReceived_parses_colours(self):
         expected = [Metaline('foo', RunLengthList([(0, fg_code(RED, False))]),
                              self.backs, wrap = True)]
         self.tc.lineReceived('\x1b[31mfoo')
-        assert self.e.lines == expected
-    
+        lines = [line for ((line,), kwargs) in self.e.receive.call_args_list]
+        assert lines == expected, lines
+
     def test_lineReceived_works_via_dataReceived(self):
         expected = [Metaline('foo', self.fores, self.backs, wrap = True)]
         self.tc.dataReceived('foo\r\n')
-        assert self.e.lines == expected
+        lines = [line for ((line,), kwargs) in self.e.receive.call_args_list]
+        assert lines == expected, lines
 
     def test_lineReceived_cleans_out_VT100_stuff(self):
         expected = [Metaline('foo', self.fores, self.backs, wrap = True)]
         self.tc.lineReceived('fooQ' + BS + VT)
-        assert self.e.lines == expected
+        lines = [line for ((line,), kwargs) in self.e.receive.call_args_list]
+        assert lines == expected, lines
 
     def test_lineReceived_decodes_data(self):
         #real-ish example that booted me :(
@@ -183,33 +183,23 @@ class Test_receiving_lines:
         expected = [Metaline(u"bar\u2019baz", self.fores, self.backs, 
                              wrap = True)]
         self.tc.lineReceived('bar\x92baz')
-        assert self.e.lines == expected, self.e.lines
-
-class MockConnectionRealm:
-
-    def __init__(self):
-        self.calls = []
-
-    def connection_lost(self):
-        self.calls.append("connection_lost")
-
-    def connection_made(self):
-        self.calls.append("connection_made")
+        lines = [line for ((line,), kwargs) in self.e.receive.call_args_list]
+        assert lines == expected, lines
 
 def test_connectionLost_sends_connection_closed_to_the_outputs():
     f = TelnetClientFactory(None, 'ascii', None)
     telnet = TelnetClient(f)
-    r = f.realm = MockConnectionRealm()
+    r = f.realm = Mock(spec = RootRealm)
 
     telnet.connectionLost(None)
 
-    assert r.calls == ['connection_lost']
+    assert r.connection_lost.called
 
 def test_connectionMade_sends_connection_opened_to_the_outputs():
     f = TelnetClientFactory(None, 'ascii', None)
     telnet = TelnetClient(f)
-    r = f.realm = MockConnectionRealm()
+    r = f.realm = Mock(spec = RootRealm)
 
     telnet.connectionMade()
 
-    assert r.calls == ['connection_made']
+    assert r.connection_made.called

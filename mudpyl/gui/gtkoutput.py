@@ -32,8 +32,8 @@ class OutputView(gtk.TextView):
         self.modify_font(pango.FontDescription('monospace 8'))
 
     def got_focus_cb(self, widget, event):
-        """We never want focus; the command line automatically lets us peek
-        at all incoming keypresses.
+        """We never want focus; the command line automatically lets us have
+        all incoming keypresses that we're interested in.
         """
         self.gui.command_line.grab_focus()
 

@@ -1,31 +1,15 @@
-from mudpyl.matchers import ProtoMatcher
-from mudpyl import matchers
+from mudpyl.matchers import ProtoMatcher, BaseMatchingRealm
+from mudpyl.realms import RootRealm
+from mock import Mock, patch
 import traceback
-
-class FakeRealm:
-
-    def __init__(self):
-        self.noted = []
-        self.tracing = False
-        self.root = self
-
-    def write(self, string):
-        self.noted.append(string)
-
-class FakeTracebackModule:
-
-    def __init__(self):
-        self.print_exc_called = False
-
-    def print_exc(self):
-        assert not self.print_exc_called
-        self.print_exc_called = True
 
 class Test__call__:
 
     def setUp(self):
         self.m = ProtoMatcher(func = self.func)
-        self.realm = FakeRealm()
+        self.realm = Mock(spec = BaseMatchingRealm)
+        self.realm.root = Mock(spec = RootRealm)
+        self.realm.root.tracing = False
         self.matches = []
 
     def func(self, match, realm):
@@ -40,22 +24,23 @@ class Test__call__:
 
     def test_doesnt_trace_if_told_not_to(self):
         self.m(None, self.realm)
-        assert not self.realm.noted
+        assert not self.realm.write.called
 
     def test_traces_if_told_to(self):
-        self.realm.tracing = True
+        self.realm.root.tracing = True
         self.m(None, self.realm)
-        assert self.realm.noted == ['TRACE: %s matched!' % self.m]
+        arg = ('TRACE: %s matched!' % self.m)
+        print self.realm.write.call_args_list
+        assert self.realm.write.call_args_list == [((arg,), {})]
 
     def bad_func(self, match, info):
         raise Exception
 
-    def test_uses_traceback_on_error(self):
+    @patch('mudpyl.matchers', 'traceback')
+    def test_uses_traceback_on_error(self, t):
         self.m.func = self.bad_func
-        matchers.traceback = t = FakeTracebackModule()
         self.m(None, self.realm)
-        assert t.print_exc_called
-        matchers.traceback = traceback
+        assert t.print_exc.called
  
     def simulated_grumpy_user(self, match, info):
         raise KeyboardInterrupt

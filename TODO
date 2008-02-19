@@ -17,6 +17,7 @@ Features and miscellanea:
    may be writing fine, and it's the display, or there may be some confusion
    going on.
  - unicode (\U and \u) escapes in escape_parser.py
+ - multiline triggers
 
 Screen related:
  - search facility in the output

@@ -1,9 +1,10 @@
+from __future__ import with_statement
 from StringIO import StringIO
 from mudpyl.library import html
 from mudpyl.library.html import HTMLLogOutput
 from cgi import escape
 from mudpyl.colours import HexFGCode, HexBGCode
-import time
+from mock import _importer, Mock, sentinel
 
 class Logger(HTMLLogOutput):
 
@@ -70,77 +71,83 @@ class Test_close:
         assert self.f.closed
 
 from mudpyl.net.telnet import TelnetClientFactory
+from contextlib import contextmanager, nested
 
-class FakeTimeModule:
+@contextmanager
+def patched(target, attribute, new = None):
+    if isinstance(target, basestring):
+        target = _importer(target)
 
-    def __init__(self):
-        self.formats = []
+    if new is None:
+        new = Mock()
 
-    def strftime(self, format):
-        self.formats.append(format)
-        return 'FOO %(name)s'
+    original = getattr(target, attribute)
+    setattr(target, attribute, new)
+
+    try:
+        yield new
+    finally:
+        setattr(target, attribute, original)
 
 class TestHTMLLogOutputInitialisation:
 
     def setUp(self):
-        html.open = self.our_open
-        html.time = self.time = FakeTimeModule()
+        self.time = Mock(methods = ['strftime'])
+        self.time.strftime.return_value = "FOO %(name)s"
         self.factory = TelnetClientFactory('baz', None, None)
         self.outputs = self.factory.outputs
         self.realm = self.factory.realm
-        self.opened = []
-        self.open_returns = MockFile()
-
-    def tearDown(self):
-        html.open = open
-        html.time = time
-
-    def our_open(self, name, mode):
-        assert mode == 'a'
-        self.opened.append(name)
-        return self.open_returns
+        self.open = Mock()
+        self.open.return_value = MockFile()
 
     def test_adds_itself_to_output_manager(self):
-        log = HTMLLogOutput(self.outputs, self.realm, None)
+        with nested(patched('__builtin__', 'open', self.open),
+                    patched('mudpyl.library.html', 'time', self.time)):
+            log = HTMLLogOutput(self.outputs, self.realm, None)
         assert self.outputs.outputs == [log]
 
     def test_adds_itself_for_connection_events(self):
-        log = HTMLLogOutput(self.outputs, self.realm, None)
+        with nested(patched('__builtin__', 'open', self.open),
+                    patched('mudpyl.library.html', 'time', self.time)):
+            log = HTMLLogOutput(self.outputs, self.realm, None)
         assert self.realm.connection_event_receivers == [log]
 
-    def test_passes_given_format_to_strftime(self):
-        HTMLLogOutput(self.outputs, self.realm, 'BAR')
-        assert self.time.formats == ['BAR']
+    def test_opens_file_in_append_mode(self):
+        with nested(patched('__builtin__', 'open', self.open),
+                    patched('mudpyl.library.html', 'time', self.time)):
+            log = HTMLLogOutput(self.outputs, self.realm, None)
+        assert self.open.call_args == (("FOO baz", "a"), {})
 
-    def test_uses_return_value_of_strftime_as_filename(self):
-        HTMLLogOutput(self.outputs, self.realm, None)
-        assert self.opened == ['FOO baz']
+    def test_passes_given_format_to_strftime(self):
+        with nested(patched('__builtin__', 'open', self.open),
+                    patched('mudpyl.library.html', 'time', self.time)):
+            log = HTMLLogOutput(self.outputs, self.realm, "BAR")
+        assert self.time.method_calls == [('strftime', ('BAR',), {})]
 
     def test_sets_opened_file_to_self_log(self):
-        log = HTMLLogOutput(self.outputs, self.realm, None)
-        assert log.log is self.open_returns
+        with nested(patched('__builtin__', 'open', self.open),
+                    patched('mudpyl.library.html', 'time', self.time)):
+            print 'opening'
+            log = HTMLLogOutput(self.outputs, self.realm, "BAR")
+            print 'should be opened'
+        print log.log, self.open.return_value
+        assert log.log is self.open.return_value
 
     def test_writes_preamble_to_file(self):
-        HTMLLogOutput(self.outputs, self.realm, None)
-        assert self.open_returns.written == HTMLLogOutput.log_preamble
+        with nested(patched('__builtin__', 'open', self.open),
+                    patched('mudpyl.library.html', 'time', self.time)):
+            log = HTMLLogOutput(self.outputs, self.realm, "BAR")
+        assert self.open.return_value.written == HTMLLogOutput.log_preamble
 
 from mudpyl.library.html import HTMLLoggingModule
 
 def test_HTMLLoggingModule_is_main_initialises_html_log():
-    def fake_module(outputs, realm, logplace_received):
-        assert outputs is f.outputs
-        assert realm is f.realm
-        assert logplace is logplace_received
-        calls.append(True)
-    calls = []
-    html.HTMLLogOutput = fake_module
-
     f = TelnetClientFactory(None, 'ascii', None)
-    logplace = object()
+    m = Mock()
+    with nested(patched("mudpyl.library.html", "HTMLLogOutput", m),
+                patched("mudpyl.library.html", "time")):
+        mod = HTMLLoggingModule(f.realm)
+        mod.logplace = sentinel.logplace
+        mod.is_main()
+    assert m.call_args_list == [((f.outputs, f.realm, sentinel.logplace), {})]
 
-    m = HTMLLoggingModule(f.realm)
-    m.logplace = logplace
-    m.is_main()
-    assert calls == [True]
-
-    html.HTMLLogOutput = HTMLLogOutput

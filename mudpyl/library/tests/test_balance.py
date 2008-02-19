@@ -3,31 +3,10 @@ from mudpyl.metaline import Metaline, RunLengthList
 from mudpyl.colours import HexFGCode
 from mudpyl.triggers import LineAlterer
 from mudpyl.realms import RootRealm, TriggerMatchingRealm
+from mock import Mock
+from mudpyl.net.telnet import TelnetClientFactory
 import sys
 import re
-
-class FakeTelnet:
-
-    def __init__(self):
-        self.sent = []
-
-    def sendLine(self, line):
-        self.sent.append(line)
-
-class FakeOutputManager:
-
-    def __init__(self):
-        self.fore = object()
-        self.back = object()
-        self.written = []
-
-    def write_to_screen(self, metaline):
-        self.written.append(metaline)
-
-class FakeFactory:
-
-    def __init__(self):
-        self.outputs = FakeOutputManager()
 
 class Test_balance_highlight:
 
@@ -45,7 +24,7 @@ class Test_balance_highlight:
     def test_highlights(self):
         m = Metaline("foo", RunLengthList([(0, 'foo')]), 
                      RunLengthList([(0, 'bar')]))
-        root = RootRealm(FakeFactory())
+        root = RootRealm(Mock(spec = TelnetClientFactory))
         realm = TriggerMatchingRealm(m, root, root)
         match = re.search('foobar', 'foobar')
         self.trig.func(match, realm)

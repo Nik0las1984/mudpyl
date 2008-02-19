@@ -1,27 +1,47 @@
+from __future__ import with_statement
 from mudpyl.mudconnect import main
-from mudpyl import mudconnect
+from mock import Mock, _importer
+from contextlib import contextmanager, nested
 
-class MockReactor:
+@contextmanager
+def patched(target, attribute, new = None):
+    if isinstance(target, basestring):
+        target = _importer(target)
 
-    def __init__(self):
-        self.calls = []
+    if new is None:
+        new = Mock()
 
-    def registerWxApp(self, app):
-        self.calls.append(('registerWxApp', app))
+    original = getattr(target, attribute)
+    setattr(target, attribute, new)
 
-    def connectTCP(self, host, port, fact):
-        self.calls.append(('connectTCP', host, port, fact))
+    try:
+        yield new
+    finally:
+        setattr(target, attribute, original)
 
-    def run(self):
-        self.calls.append(('run',))
+class OurException(Exception):
+    pass
 
-class Test_main:
+def raiser(exp):
+    raise OurException(exp)
 
-    def setUp(self):
-        self.reactor = MockReactor()
-        mudconnect.reactor = self.reactor
+class Test_Main:
 
-    def tearDown(self):
-        del mudconnect.reactor
+    def test_blows_up_on_bad_gui(self):
+        our_options = Mock(methods = ['gui', 'modulename'])
+        our_options.gui = 'foo'
+        our_parser = Mock(methods = ['parse_args', 'error'])
+        our_parser.error = raiser
+        our_parser.parse_args.return_value = our_options
+        our_module = Mock()
+        our_module.return_value = Mock()
+        
+        with nested(patched('mudpyl.mudconnect', 'load_file', our_module),
+                    patched('mudpyl.mudconnect', 'parser', our_parser)):
+            try:
+                main()
+            except OurException:
+                pass
+            else:
+                assert False
 
-    #XXX: actually write some tests? load_file will need to be mocked up.

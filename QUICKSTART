@@ -165,7 +165,7 @@ Or, tying this into the running example::
         port = 23
         aliases = [rilc_mnemonic()]
         triggers = [rilc_trigger()]
-        macros = {from_string('F1'): rilc_macro}
+        macros = {from_string('<F1>'): rilc_macro}
 
 The decorated function needs to be called to actually create an instance of it:
 the object bound to ``rilc_trigger`` is actually a class, not an individual 
