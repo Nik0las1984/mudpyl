@@ -10,6 +10,9 @@ New since 0.2
       and copy forwarding to the output window as macros.
     - library/imperian/balance.py: new file; balance highlighter.
 
+2008-03-09 Sam Pointon <sampointon@gmail.com>
+    - mudconnect.py: now has an option to profile the client's execution
+
 New since 0.1
 -------------
 

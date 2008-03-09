@@ -14,6 +14,8 @@ gui_help = ("The GUI to use. Available options: %s. Default: %%(default)s" %
 
 parser.add_argument('-g', '--gui', default = 'gtk', help = gui_help)
 parser.add_argument("modulename", help = "The module to import")
+parser.add_argument("--profile", type = bool, default = False,
+                    help = "Whether to profile exection. Default: False")
 
 def main():   
     """Launch the client.
@@ -45,7 +47,11 @@ def main():
     #pylint: disable-msg=E1101
 
     reactor.connectTCP(modclass.host, modclass.port, factory)
-    reactor.run()
+    if not options.profile:
+        reactor.run()
+    else:
+        import cProfile
+        cProfile.run("reactor.run()")
 
 if __name__ == '__main__':
     main()

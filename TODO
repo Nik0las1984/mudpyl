@@ -1,6 +1,5 @@
 Features and miscellanea:
  - smarter creation of log files and directories
- - add in some way to profile the client
  - some kind of persistence mechanism?
  - write a manual?
     - related but different: manpages
@@ -18,6 +17,8 @@ Features and miscellanea:
    going on.
  - unicode (\U and \u) escapes in escape_parser.py
  - multiline triggers
+ - ECHO, EOR, ttypes
+ - genuine need for some optimisation: receiving text is just too slow
 
 Screen related:
  - search facility in the output
