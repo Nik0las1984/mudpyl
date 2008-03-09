@@ -67,13 +67,26 @@ class OutputView(gtk.TextView):
 
     def fg_changed(self, change):
         """Change the foreground colour of the text that will be written."""
-        self.fg_tag = self.buffer.create_tag()
-        self.fg_tag.set_property('foreground', '#' + change.tohex())
-        self.fg_tag.set_property('foreground-set', True)
+        #set_property is a bit expensive, and this is effectively inside the
+        #inner loop, so we'll cache as much as we can
+        hexcolour = change.tohex()
+        tag = self.buffer.get_property('tag-table').lookup('fg' + hexcolour)
+        if tag is None:
+            self.fg_tag = self.buffer.create_tag('fg' + hexcolour)
+            self.fg_tag.set_property('foreground', '#' + hexcolour)
+            self.fg_tag.set_property('foreground-set', True)
+        else:
+            self.fg_tag = tag
 
     def bg_changed(self, change):
         """Change the background colour of the text that will be written."""
-        self.bg_tag = self.buffer.create_tag()
-        self.bg_tag.set_property('background', '#' + change.tohex())
-        self.bg_tag.set_property('background-set', True)
+        hexcolour = change.tohex()
+        tag = self.buffer.get_property('tag-table').lookup('bg' + hexcolour)
+        if tag is None:
+            self.bg_tag = self.buffer.create_tag('bg' + hexcolour)
+            self.bg_tag.set_property('background', '#' + hexcolour)
+            self.bg_tag.set_property('background-set', True)
+        else:
+            self.bg_tag = tag
+
 

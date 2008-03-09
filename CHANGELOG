@@ -12,6 +12,8 @@ New since 0.2
 
 2008-03-09 Sam Pointon <sampointon@gmail.com>
     - mudconnect.py: now has an option to profile the client's execution
+    - gtkoutput.py: achieve a speedup by a factor of four by caching colour
+      tags
 
 New since 0.1
 -------------
