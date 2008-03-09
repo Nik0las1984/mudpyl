@@ -1,6 +1,6 @@
 from __future__ import with_statement
 from mudpyl.mudconnect import main
-from mock import Mock, _importer
+from mock import Mock, _importer, patch
 from contextlib import contextmanager, nested
 
 @contextmanager
@@ -19,29 +19,21 @@ def patched(target, attribute, new = None):
     finally:
         setattr(target, attribute, original)
 
-class OurException(Exception):
-    pass
-
-def raiser(exp):
-    raise OurException(exp)
-
 class Test_Main:
 
-    def test_blows_up_on_bad_gui(self):
-        our_options = Mock(methods = ['gui', 'modulename'])
-        our_options.gui = 'foo'
-        our_parser = Mock(methods = ['parse_args', 'error'])
-        our_parser.error = raiser
-        our_parser.parse_args.return_value = our_options
+    @patch('sys', 'argv', ['foo', '-g', 'flarg'])
+    @patch('sys', 'stderr')
+    def test_blows_up_on_bad_gui(self, our_stderr):
         our_module = Mock()
         our_module.return_value = Mock()
         
-        with nested(patched('mudpyl.mudconnect', 'load_file', our_module),
-                    patched('mudpyl.mudconnect', 'parser', our_parser)):
+        with patched('mudpyl.mudconnect', 'load_file', our_module):
             try:
                 main()
-            except OurException:
-                pass
+            except SystemExit:
+                err_string = our_stderr.write.call_args[0][0]
+                print err_string
+                assert "invalid choice: 'flarg'" in err_string
             else:
                 assert False
 

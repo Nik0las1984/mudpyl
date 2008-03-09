@@ -18,7 +18,6 @@ Features and miscellanea:
  - unicode (\U and \u) escapes in escape_parser.py
  - multiline triggers
  - ECHO, EOR, ttypes
- - genuine need for some optimisation: receiving text is just too slow
 
 Screen related:
  - search facility in the output
@@ -49,6 +48,8 @@ Other refactorings:
  - make an abstract GUI interface, allowing for some other implementations 
    This is kind of half done informally, but half not.
  - write RunLengthList using an ordered dict or similar
+ - look at which bits of output_manager really belong there, and which bits
+   should be shipped to html.py
 
 Specific modules under library/:
   - write:

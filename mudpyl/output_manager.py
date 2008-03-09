@@ -15,6 +15,7 @@ class OutputManager(object):
     def __init__(self, factory):
         self.factory = factory
         self.outputs = []
+        self.metaline_peekers = []
         self.last_line_end = None
         self.fore = fg_code(WHITE, False)
         self.back = bg_code(BLACK)
@@ -24,6 +25,10 @@ class OutputManager(object):
     def add_output(self, output):
         """Add another output that wants to receive stuff."""
         self.outputs.append(output)
+
+    def add_metaline_peeker(self, peeker):
+        """Add an object that wants the line-wrapped metalines."""
+        self.metaline_peekers.append(peeker)
 
     def _wrap_line(self, metaline):
         """Break an incoming line into sensible lengths."""
@@ -53,6 +58,9 @@ class OutputManager(object):
         if self.last_line_end is not None:
             if self.last_line_end == 'hard' or not metaline.soft_line_start:
                 metaline.insert(0, '\n')
+
+        for peeker in self.metaline_peekers:
+            peeker.peek_metaline(metaline)
 
         allcolours = list(sorted(metaline.fores.as_pruned_index_list() + 
                                  metaline.backs.as_pruned_index_list()))

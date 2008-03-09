@@ -13,7 +13,9 @@ New since 0.2
 2008-03-09 Sam Pointon <sampointon@gmail.com>
     - mudconnect.py: now has an option to profile the client's execution
     - gtkoutput.py: achieve a speedup by a factor of four by caching colour
-      tags
+      tags and inserting in larger chunks
+    - output_manager.py: new hook - peek_metaline, which passes the whole
+      metaline around after line wrapping
 
 New since 0.1
 -------------

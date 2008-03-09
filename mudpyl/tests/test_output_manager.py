@@ -195,4 +195,22 @@ class Test_write_to_screen:
         self.ml.wrap = True
         self.om.write_to_screen(self.ml)
 
+from mock import sentinel, Mock
 
+class Test_peek_metaline:
+
+    def setUp(self):
+        self.om = OutputManager(None)
+
+    def test_addition(self):
+        self.om.add_metaline_peeker(sentinel.peeker)
+        assert sentinel.peeker in self.om.metaline_peekers
+
+    def test_calls_for_each_written_line(self):
+        ml = Metaline('', RunLengthList([(0, fg_code(WHITE, False))]),
+                      RunLengthList([(0, bg_code(PURPLE))]))
+        m = Mock()
+        self.om.add_metaline_peeker(m)
+        self.om.write_to_screen(ml)
+        assert m.peek_metaline.called
+        assert m.peek_metaline.call_args[0] == (ml,)

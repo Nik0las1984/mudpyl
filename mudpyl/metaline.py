@@ -15,7 +15,7 @@ def iadjust(ind, start, adj):
         return start
     return ind + adj
 
-def _pairwise(seq):
+def pairwise(seq):
     """Return a list pairwise.
 
     Example::
@@ -58,7 +58,7 @@ class RunLengthList(object):
         loops infinitely.
         """
         res = []
-        for (start, val), (end, _) in _pairwise(self.values):
+        for (start, val), (end, _) in pairwise(self.values):
             res += [val] * (end - start)
         #our very last value won't be plucked by the above loop, so we add
         #it here.
@@ -75,7 +75,7 @@ class RunLengthList(object):
         #fact, only the first one being used is the very reason we need to
         #do this: how else will the final value get out there?
         values = self.values + [(object(), None)]
-        for (start, val), (end, _) in _pairwise(values):
+        for (start, val), (end, _) in pairwise(values):
             if start != end and cur != val:
                 cur = val
                 res.append((start, val))

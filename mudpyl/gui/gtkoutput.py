@@ -1,5 +1,6 @@
 """Contains the widget that displays the text from the MUD."""
-from mudpyl.colours import WHITE, BLACK, fg_code, bg_code
+from mudpyl.colours import WHITE, BLACK, fg_code, bg_code, HexFGCode
+from mudpyl.metaline import pairwise
 import gtk
 import pango
 
@@ -16,10 +17,6 @@ class OutputView(gtk.TextView):
         self.gui = gui
         self.buffer = self.get_buffer()
         self.paused = False
-        self.fg_tag = None
-        self.bg_tag = None
-        self.fg_changed(fg_code(WHITE, False))
-        self.bg_changed(bg_code(BLACK))
         self.end_mark = self.buffer.create_mark('end_mark', 
                                                 self.buffer.get_end_iter(), 
                                                 False)
@@ -54,39 +51,49 @@ class OutputView(gtk.TextView):
         #scroll to the end of output
         self.scroll_mark_onscreen(self.end_mark)
 
-    def write_out_span(self, text):
-        """Write a span of text to the window using the current colours.
+    def peek_metaline(self, metaline):
+        """Write a span of text to the window using the colours defined in
+        the other channels.
 
         This will autoscroll to the end if we are not paused.
         """
-        bytes = text.encode('utf-8')
-        self.buffer.insert_with_tags(self.buffer.get_end_iter(), bytes, 
-                                     self.fg_tag, self.bg_tag)
+        bytes = metaline.line.encode('utf-8')
+        offset = self.buffer.get_char_count()
+        self.buffer.insert(self.buffer.get_end_iter(), bytes)
+        self.apply_colours(metaline.fores, offset, len(metaline.line))
+        self.apply_colours(metaline.backs, offset, len(metaline.line))
         if not self.paused:
             self.scroll_mark_onscreen(self.end_mark)
 
-    def fg_changed(self, change):
-        """Change the foreground colour of the text that will be written."""
-        #set_property is a bit expensive, and this is effectively inside the
-        #inner loop, so we'll cache as much as we can
-        hexcolour = change.tohex()
-        tag = self.buffer.get_property('tag-table').lookup('fg' + hexcolour)
-        if tag is None:
-            self.fg_tag = self.buffer.create_tag('fg' + hexcolour)
-            self.fg_tag.set_property('foreground', '#' + hexcolour)
-            self.fg_tag.set_property('foreground-set', True)
-        else:
-            self.fg_tag = tag
+    def apply_colours(self, colours, offset, end_offset):
+        """Apply a RunLengthList of colours to the buffer, starting at
+        offset characters in.
+        """
+        #add a dummy item at the end to make sure that even the very last
+        #of the metaline is covered
+        values = colours.as_pruned_index_list()
+        values.append((end_offset, None))
+        for (start, colour), (end, _) in pairwise(values):
+            tag = self.fetch_tag(colour)
+            start_iter = self.buffer.get_iter_at_offset(start + offset)
+            end_iter = self.buffer.get_iter_at_offset(end + offset)
+            self.buffer.apply_tag(tag, start_iter, end_iter)
+            
+    def fetch_tag(self, colour):
+        """Check to see if a colour is in the tag table. If it isn't, add it.
 
-    def bg_changed(self, change):
-        """Change the background colour of the text that will be written."""
-        hexcolour = change.tohex()
-        tag = self.buffer.get_property('tag-table').lookup('bg' + hexcolour)
-        if tag is None:
-            self.bg_tag = self.buffer.create_tag('bg' + hexcolour)
-            self.bg_tag.set_property('background', '#' + hexcolour)
-            self.bg_tag.set_property('background-set', True)
+        Return's the tag.
+        """
+        hexcolour = colour.tohex()
+        if isinstance(colour, HexFGCode):
+            ground = 'fore'
         else:
-            self.bg_tag = tag
-
+            ground = 'back'
+        name = ground[0] + 'g' + hexcolour
+        tag = self.buffer.get_property('tag-table').lookup(name)
+        if tag is None:
+            tag = self.buffer.create_tag(name)
+            tag.set_property(ground + 'ground', '#' + hexcolour)
+            tag.set_property(ground + 'ground-set', True)
+        return tag
 
