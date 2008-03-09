@@ -12,9 +12,10 @@ known_guis = ['gtk']
 gui_help = ("The GUI to use. Available options: %s. Default: %%(default)s" %
                      ', '.join(known_guis))
 
-parser.add_argument('-g', '--gui', default = 'gtk', help = gui_help)
+parser.add_argument('-g', '--gui', default = 'gtk', help = gui_help,
+                    choices = known_guis)
 parser.add_argument("modulename", help = "The module to import")
-parser.add_argument("--profile", type = bool, default = False,
+parser.add_argument("--profile", action = "store_true",  default = False,
                     help = "Whether to profile exection. Default: False")
 
 def main():   
@@ -29,10 +30,7 @@ def main():
     factory = TelnetClientFactory(modclass.name, modclass.encoding, 
                                   options.modulename)
 
-    if options.gui not in known_guis:
-        parser.error("Unknown GUI given (valid options: %s)" % 
-                                     ', '.join(known_guis))
-    elif options.gui == 'gtk':
+    if options.gui == 'gtk':
         from mudpyl.gui.gtkgui import configure
 
     configure(factory)
@@ -51,7 +49,8 @@ def main():
         reactor.run()
     else:
         import cProfile
-        cProfile.run("reactor.run()")
+        cProfile.runctx("reactor.run()", globals(), locals(),
+                        filename = "mudpyl.prof")
 
 if __name__ == '__main__':
     main()
