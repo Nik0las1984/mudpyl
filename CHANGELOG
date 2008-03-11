@@ -17,6 +17,11 @@ New since 0.2
     - output_manager.py: new hook - peek_metaline, which passes the whole
       metaline around after line wrapping
 
+2008-03-11 Sam Pointon <sapointon@gmail.com>
+    - metaline.py, gtkoutput.py, colours.py: cache stuff for speedups
+    - telnet.py: use dataReceived from twisted HEAD, as it is massively
+      more efficient.
+
 New since 0.1
 -------------
 

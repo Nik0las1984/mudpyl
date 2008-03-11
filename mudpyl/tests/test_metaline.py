@@ -161,6 +161,10 @@ def test_RunLengthList_add_colour_normalises_afterwards():
     r.add_colour(1, 'bar')
     assert r.as_populated_list() == ['foo', 'bar']
 
+def test_as_pruned_index_list_returns_different_lists():
+    r = RunLengthList([(0, 'foo')])
+    assert r.as_pruned_index_list() is not r.as_pruned_index_list()
+
 #XXX: other equality cases
 
 def test_RunLengthList_repr_evauluates_equal():

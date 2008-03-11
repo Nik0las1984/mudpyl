@@ -7,6 +7,9 @@ from mudpyl.output_manager import OutputManager
 from mudpyl.net.mccp import MCCPTransport, COMPRESS2
 from mudpyl.realms import RootRealm
 
+import pprint
+import traceback
+
 #pylint doesn't like Twisted naming conventions
 #pylint: disable-msg= C0103
 
@@ -55,6 +58,75 @@ class TelnetClient(Telnet, LineOnlyReceiver):
         self.transport.their_mccp_active = True
 
     applicationDataReceived = LineOnlyReceiver.dataReceived
+
+    #use dataReceived from Twisted's trunk, for efficiency
+    def dataReceived(self, data):
+        appDataBuffer = []
+
+        for b in data:
+            if self.state == 'data':
+                if b == IAC:
+                    self.state = 'escaped'
+                elif b == '\r':
+                    self.state = 'newline'
+                else:
+                    appDataBuffer.append(b)
+            elif self.state == 'escaped':
+                if b == IAC:
+                    appDataBuffer.append(b)
+                    self.state = 'data'
+                elif b == SB:
+                    self.state = 'subnegotiation'
+                    self.commands = []
+                elif b in (NOP, DM, BRK, IP, AO, AYT, EC, EL, GA):
+                    self.state = 'data'
+                    if appDataBuffer:
+                        self.applicationDataReceived(''.join(appDataBuffer))
+                        del appDataBuffer[:]
+                    self.commandReceived(b, None)
+                elif b in (WILL, WONT, DO, DONT):
+                    self.state = 'command'
+                    self.command = b
+                else:
+                    raise ValueError("Stumped", b)
+            elif self.state == 'command':
+                self.state = 'data'
+                command = self.command
+                del self.command
+                if appDataBuffer:
+                    self.applicationDataReceived(''.join(appDataBuffer))
+                    del appDataBuffer[:]
+                self.commandReceived(command, b)
+            elif self.state == 'newline':
+                if b == '\n':
+                    appDataBuffer.append('\n')
+                elif b == '\0':
+                    appDataBuffer.append('\r')
+                else:
+                    appDataBuffer.append('\r' + b)
+                self.state = 'data'
+            elif self.state == 'subnegotiation':
+                if b == IAC:
+                    self.state = 'subnegotiation-escaped'
+                else:
+                    self.commands.append(b)
+            elif self.state == 'subnegotiation-escaped':
+                if b == SE:
+                    self.state = 'data'
+                    commands = self.commands
+                    del self.commands
+                    if appDataBuffer:
+                        self.applicationDataReceived(''.join(appDataBuffer))
+                        del appDataBuffer[:]
+                    self.negotiate(commands)
+                else:
+                    self.state = 'subnegotiation'
+                    self.commands.append(b)
+            else:
+                raise ValueError("How'd you do this?")
+
+        if appDataBuffer:
+            self.applicationDataReceived(''.join(appDataBuffer))
 
     def close(self):
         """Convenience: close the connection."""

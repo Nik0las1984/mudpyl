@@ -73,9 +73,10 @@ class OutputView(gtk.TextView):
         #of the metaline is covered
         values = colours.as_pruned_index_list()
         values.append((end_offset, None))
+        end_iter = self.buffer.get_iter_at_offset(offset)
         for (start, colour), (end, _) in pairwise(values):
             tag = self.fetch_tag(colour)
-            start_iter = self.buffer.get_iter_at_offset(start + offset)
+            start_iter = end_iter
             end_iter = self.buffer.get_iter_at_offset(end + offset)
             self.buffer.apply_tag(tag, start_iter, end_iter)
             
@@ -89,7 +90,7 @@ class OutputView(gtk.TextView):
             ground = 'fore'
         else:
             ground = 'back'
-        name = ground[0] + 'g' + hexcolour
+        name = ground + hexcolour
         tag = self.buffer.get_property('tag-table').lookup(name)
         if tag is None:
             tag = self.buffer.create_tag(name)

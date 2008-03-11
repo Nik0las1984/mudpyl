@@ -28,17 +28,25 @@ bolded_colours = {BLACK: (0x80, 0x80, 0x80),
                   CYAN: (0x00, 0xFF, 0xFF),
                   WHITE: (0xFF, 0xFF, 0xFF)}
 
+_fg_cache = {}
 def fg_code(code, bold):
     """Wrapper to convert a VT100 colour code to a HexFGCode."""
+    if (code, bold) in _fg_cache:
+        return _fg_cache[(code, bold)]
     if bold:
         dictionary = bolded_colours
     else:
         dictionary = normal_colours
-    return HexFGCode(*dictionary[code])
+    res = HexFGCode(*dictionary[code])
+    _fg_cache[(code, bold)] = res
+    return res
 
+_bg_cache = {}
 def bg_code(code):
     """Wrapper to convert a VT100 colour code to a HexBGCode."""
-    return HexBGCode(*normal_colours[code])
+    res = HexBGCode(*normal_colours[code])
+    _bg_cache = res
+    return res
 
 class _HexCode(object):
     """Base class for hex colour codes.
@@ -53,6 +61,7 @@ class _HexCode(object):
         self.red = red
         self.green = green
         self.blue = blue
+        self.as_hex = ''.join(('%x' % num).zfill(2) for num in self.triple)
 
     def __eq__(self, other):
         return type(self) == type(other) and self.triple == other.triple
@@ -84,7 +93,7 @@ class _HexCode(object):
 
         Suitable for embedding the colours into HTML.
         """
-        return ''.join(('%x' % num).zfill(2) for num in self.triple)
+        return self.as_hex
 
 class HexBGCode(_HexCode):
     """A hex background colour."""

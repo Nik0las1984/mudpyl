@@ -68,6 +68,11 @@ class RunLengthList(object):
 
     def as_pruned_index_list(self):
         """Return an unwrapped unredundant run-length list."""
+        #don't want to share references of mutable data
+        return self.values[:]
+
+    def _normalise(self):
+        """Remove redundancies."""
         res = []
         cur = object() #sentinel
         #we can have None here, because only the first member of the pairwise
@@ -79,11 +84,7 @@ class RunLengthList(object):
             if start != end and cur != val:
                 cur = val
                 res.append((start, val))
-        return res
-
-    def _normalise(self):
-        """Remove redundancies."""
-        self.values = self.as_pruned_index_list()
+        self.values = res
 
     def add_colour(self, ind, value):
         """Add a value starting at a specific point."""
