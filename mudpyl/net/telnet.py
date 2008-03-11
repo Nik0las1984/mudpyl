@@ -1,5 +1,6 @@
 """The actual connection to the MUD."""
-from twisted.conch.telnet import Telnet, GA, IAC
+from twisted.conch.telnet import Telnet, GA, IAC, NOP, DM, BRK, IP, AO, AYT, \
+                                 EC, EL, WILL, WONT, DO, DONT, SB, SE
 from twisted.protocols.basic import LineOnlyReceiver
 from twisted.internet.protocol import ClientFactory
 from mudpyl.net.nvt import ColourCodeParser, make_string_sane
