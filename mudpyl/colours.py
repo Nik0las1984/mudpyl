@@ -44,8 +44,10 @@ def fg_code(code, bold):
 _bg_cache = {}
 def bg_code(code):
     """Wrapper to convert a VT100 colour code to a HexBGCode."""
+    if code in _bg_cache:
+        return _bg_cache[code]
     res = HexBGCode(*normal_colours[code])
-    _bg_cache = res
+    _bg_cache[code] = res
     return res
 
 class _HexCode(object):

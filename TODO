@@ -34,8 +34,6 @@ Test related:
     - most stuff under library/
     - LineAlterer needs some
     - the GTK-specific bits of gui/keychords.py
- - Use a proper mocking system instead of ad-hocking a new set of mock objects
-   in every test file. This might require writing an interface spec.
  - write a few integration tests
 
 Other refactorings:
