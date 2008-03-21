@@ -70,17 +70,15 @@ class ColourCodeParser(object):
         foreground list is made up of two-ples: the first is the integer
         colour, and the second is whether bold is on or off.
         """
-        match = colour_pattern.search(line)
-        
         backs = [(0, self.back)]
         fores = [(0, (self.fore, self.bold))]
         text = ''
+        prev_end = 0
         
-        while match:
-            text += line[:match.start()]
-            line = line[match.end():]
+        for match in colour_pattern.finditer(line):
+            text += line[prev_end:match.start()]
+            prev_end = match.end()
             codes = match.group(1)
-            match = colour_pattern.search(line)
 
             for code in codes.split(';'):
                 code = str(int(code, 10)) #normalisation.
@@ -116,8 +114,8 @@ class ColourCodeParser(object):
         #terminated), and any escape code of the form "\x1b[\r\n30m" or
         #similar is broken anyway. I'll probably be proved wrong somehow
         #on this one...
-        if line:
-            text += line
+        if len(line) - 1 > prev_end:
+            text += line[prev_end:]
 
         return (fores, backs, text)
 

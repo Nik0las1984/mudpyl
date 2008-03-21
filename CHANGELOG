@@ -22,6 +22,9 @@ New since 0.2
     - telnet.py: use dataReceived from twisted HEAD, as it is massively
       more efficient.
 
+2008-03-21 Sam Pointon <sampointon@gmail.com>
+    - nvt.py: _parseline no longer reinvents re.finditer()
+
 New since 0.1
 -------------
 
