@@ -8,9 +8,6 @@ from mudpyl.output_manager import OutputManager
 from mudpyl.net.mccp import MCCPTransport, COMPRESS2
 from mudpyl.realms import RootRealm
 
-import pprint
-import traceback
-
 #pylint doesn't like Twisted naming conventions
 #pylint: disable-msg= C0103
 
@@ -60,8 +57,13 @@ class TelnetClient(Telnet, LineOnlyReceiver):
 
     applicationDataReceived = LineOnlyReceiver.dataReceived
 
-    #use dataReceived from Twisted's trunk, for efficiency
     def dataReceived(self, data):
+        """Receive some data from the MUD's server.
+
+        This function is lifted from Twisted's trunk, for efficiency, and is
+        thus copyright whoever wrote it and under whatever license it's
+        under.
+        """
         appDataBuffer = []
 
         for b in data:

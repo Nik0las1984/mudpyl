@@ -57,7 +57,7 @@ class _HexCode(object):
     is brightest.
     """
 
-    __slots__ = ['red', 'green', 'blue']
+    ground = None
 
     def __init__(self, red, green, blue):
         self.red = red

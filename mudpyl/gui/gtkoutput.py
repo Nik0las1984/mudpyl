@@ -1,5 +1,4 @@
 """Contains the widget that displays the text from the MUD."""
-from mudpyl.colours import WHITE, BLACK, fg_code, bg_code, HexFGCode
 from mudpyl.metaline import pairwise
 import gtk
 import pango
