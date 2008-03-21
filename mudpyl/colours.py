@@ -83,7 +83,7 @@ class _HexCode(object):
         return "<%s %s>" % (type(self).__name__, self.tohex())
 
     def __hash__(self):
-        return hash(type(self)) ^ hash(self.triple)
+        return hash(self.ground) ^ hash(self.triple)
 
     @property
     def triple(self):
@@ -99,9 +99,9 @@ class _HexCode(object):
 
 class HexBGCode(_HexCode):
     """A hex background colour."""
-    pass
+    ground = 'back'
 
 class HexFGCode(_HexCode):
     """A hex foreground colour."""
-    pass
+    ground = 'fore'
 

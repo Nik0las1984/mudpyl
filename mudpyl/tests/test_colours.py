@@ -8,3 +8,9 @@ def test_same_colour_but_different_instances_hash_the_same():
 
 def test_HexBGCode_and_HexFGCode_with_equal_colours_hash_different():
     assert hash(HexFGCode(2, 2, 2)) != hash(HexBGCode(2, 2, 2))
+
+def test_HexBGCOde_ground_is_back():
+    assert HexBGCode(0, 0, 0).ground == 'back'
+
+def test_HexFGCode_ground_is_fore():
+    assert HexFGCode(0, 0, 0).ground == 'fore'

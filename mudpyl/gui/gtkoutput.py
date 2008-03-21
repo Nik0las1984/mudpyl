@@ -86,15 +86,11 @@ class OutputView(gtk.TextView):
         Return's the tag.
         """
         hexcolour = colour.tohex()
-        if isinstance(colour, HexFGCode):
-            ground = 'fore'
-        else:
-            ground = 'back'
-        name = ground + hexcolour
+        name = colour.ground + hexcolour
         tag = self.buffer.get_property('tag-table').lookup(name)
         if tag is None:
             tag = self.buffer.create_tag(name)
-            tag.set_property(ground + 'ground', '#' + hexcolour)
-            tag.set_property(ground + 'ground-set', True)
+            tag.set_property(colour.ground + 'ground', '#' + hexcolour)
+            tag.set_property(colour.ground + 'ground-set', True)
         return tag
 
