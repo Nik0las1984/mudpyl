@@ -1,5 +1,6 @@
 """Utility for passing around lines with their colour information."""
 from bisect import insort
+from itertools import izip, tee, chain
 
 def iadjust(ind, start, adj):
     """Moves the ind along by adj amount, unless ind is before start, when it
@@ -22,7 +23,12 @@ def pairwise(seq):
         >>> pairwise([1, 2, 3, 4])
         [(1, 2), (2, 3), (3, 4)]
     """
-    return zip(seq, seq[1:])
+    a, b = tee(seq)
+    try:
+        b.next()
+    except StopIteration:
+        pass
+    return izip(a, b)
 
 class _LoopingLast(list):
     """A list whose final value is repeated infinitely."""
@@ -43,13 +49,14 @@ class RunLengthList(object):
     """
 
     def __init__(self, values):
-        #make sure we don't choke at a later date on a generator
-        self.values = list(values)
+        #pairwise works off of itertools.tee, so this isn't broken for
+        #generators.
+        self.values = values
+        self._normalise()
         if not self.values:
             raise ValueError("The list of values must not be empty.")
         if self.values[0][0] != 0:
             raise ValueError("All the indices must be specified - no gap!")
-        self._normalise()
 
     def as_populated_list(self):
         """Return a normal array of values. 
@@ -79,7 +86,7 @@ class RunLengthList(object):
         #(index, value) will be used, and it'll only be right at the end. In
         #fact, only the first one being used is the very reason we need to
         #do this: how else will the final value get out there?
-        values = self.values + [(object(), None)]
+        values = chain(self.values, [(object(), None)])
         for (start, val), (end, _) in pairwise(values):
             if start != end and cur != val:
                 cur = val
