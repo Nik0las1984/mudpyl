@@ -111,7 +111,7 @@ now looks like this::
         host = 'foo.org'
         port = 23
         aliases = [rilc_mnemonic()]
-        macros = {from_string('F1'): rilc_macro}
+        macros = {from_string('<F1>'): rilc_macro}
 
 mudpyl uses a special object to represent a keypress. This object can be 
 created from a string representation: this is the ``from_string`` function.
