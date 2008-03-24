@@ -34,7 +34,7 @@ class TestTargetting:
         self.t.set_target.func(mobj, self.amr)
         ml = Metaline('FOO', RunLengthList([(0, None)]), 
                              RunLengthList([(0, None)]))
-        res = self.t.target_seen.match(ml)
+        res = list(self.t.target_seen.match(ml))
         assert res, res
 
     def test_clear_target_nuking_regex(self):

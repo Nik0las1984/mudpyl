@@ -23,16 +23,16 @@ class Test_TellColourer:
     def test_tell_received_matches_on_tells_in_languages(self):
         ml = Metaline('Foo tells you in Foolang, "Bar."',
                       None, None)
-        assert self.tc.tell_received.match(ml)
+        assert list(self.tc.tell_received.match(ml))
 
     def test_tell_sent_matches_on_tells_in_languages(self):
         ml = Metaline('You tell Mister Foo in Barlang, "Qux."',
                       None, None)
-        assert self.tc.tell_sent.match(ml)
+        assert list(self.tc.tell_sent.match(ml))
 
     def test_tell_sent_pattern_is_not_greedy(self):
         ml = Metaline('You tell Foo, "Bar, "baz.""', None, None)
-        match = self.tc.tell_sent.match(ml)
+        match = list(self.tc.tell_sent.match(ml))
         assert match[0].group(1) == 'Foo'
 
     def test_no_tell_sent_doesnt_cock_up(self):
@@ -57,6 +57,6 @@ class Test_TellColourer:
         assert ml_written_2.fores.as_populated_list()[9] == colour_expecting
 
     def test_tell_sending_alias_is_caseless_wrt_matching(self):
-        assert self.tc.sending_tell.match("TELL foo bar")
+        assert list(self.tc.sending_tell.match("TELL foo bar"))
 
     #XXX

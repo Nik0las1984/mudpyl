@@ -9,7 +9,7 @@ class DummyRealm:
 def test_health_update_matching():
     a = Autosipper(10, 10)
     ml = Metaline(' Health   : 5/5     Reserves : 5/5', None, None)
-    assert a.health_update.match(ml)
+    assert list(a.health_update.match(ml))
 
 def test_health_update_max_health_setting():
     m = re.match('(\d+)', '42')

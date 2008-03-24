@@ -142,22 +142,22 @@ def test_non_binding_trigger_makes_a_new_instance_each_time():
 
 def test_trigger_match_returns_list():
     f = non_binding_trigger('foo')(None)
-    res = f().match(Metaline('foo', None, None))
+    res = list(f().match(Metaline('foo', None, None)))
     assert res
 
 def test_trigger_non_match_doesnt_return_list():
     f = non_binding_trigger('bar')(None)
-    res = f().match(Metaline('foo', None, None))
+    res = list(f().match(Metaline('foo', None, None)))
     assert not res
 
 def test_trigger_matches_multiple_times():
     f = non_binding_trigger('foo')(None)
-    res = f().match(Metaline('foofoo', None, None))
+    res = list(f().match(Metaline('foofoo', None, None)))
     assert len(res) == 2
 
 def test_returns_nothing_if_regex_is_None():
     f = non_binding_trigger(None)(None)
-    res = f().match(Metaline('foobar', None, None))
+    res = list(f().match(Metaline('foobar', None, None)))
     assert not res
 
 #XXX: not tested - binding_triggers

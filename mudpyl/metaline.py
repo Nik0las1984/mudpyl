@@ -48,11 +48,12 @@ class RunLengthList(object):
     Bad Things (related to insort, order and consistency) may happen.
     """
 
-    def __init__(self, values):
+    def __init__(self, values, _normalised = False):
         #pairwise works off of itertools.tee, so this isn't broken for
         #generators.
         self.values = values
-        self._normalise()
+        if not _normalised:
+            self._normalise()
         if not self.values:
             raise ValueError("The list of values must not be empty.")
         if self.values[0][0] != 0:
@@ -121,7 +122,10 @@ class RunLengthList(object):
         for num in range(len(self.values)):
             ind, col = self.values[num]
             self.values[num] = (iadjust(ind, start, change), col)
-        self._normalise()
+        if change < 0:
+            #if the change moves things forwards, things may be made redundant
+            #thus we must normalise for this case
+            self._normalise()
 
     def blank_between(self, start, end):
         """Delete a span of values between given indexes."""
@@ -156,7 +160,7 @@ class RunLengthList(object):
 
     def copy(self):
         """Return a deep copy of ourselves."""
-        return RunLengthList(self.as_pruned_index_list())
+        return RunLengthList(self.as_pruned_index_list(), _normalised = True)
 
 class Metaline(object):
     """A line plus some metadata.

@@ -63,7 +63,9 @@ class _HexCode(object):
         self.red = red
         self.green = green
         self.blue = blue
+        #__hash__ gets called in an inner loop, so cache the value.
         self.as_hex = ''.join(('%x' % num).zfill(2) for num in self.triple)
+        self._hashed = hash(self.ground) ^ hash(self.triple)
 
     def __eq__(self, other):
         return type(self) == type(other) and self.triple == other.triple
@@ -83,7 +85,7 @@ class _HexCode(object):
         return "<%s %s>" % (type(self).__name__, self.tohex())
 
     def __hash__(self):
-        return hash(self.ground) ^ hash(self.triple)
+        return self._hashed
 
     @property
     def triple(self):

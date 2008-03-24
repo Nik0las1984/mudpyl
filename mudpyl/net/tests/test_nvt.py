@@ -64,14 +64,15 @@ def test_colour_pattern_matching_multiple():
     assert colour_pattern.search('\x1b[37;41m')
 
 from mudpyl.net.nvt import ColourCodeParser 
-from mudpyl.colours import BLACK, CYAN, WHITE, fg_code, bg_code
+from mudpyl.colours import BLACK, CYAN, WHITE, fg_code, bg_code, YELLOW
 
 def test_ColourCodeParser_fg_change():
     ccp = ColourCodeParser()
     inline = 'foo\x1b[30mbar'
     ml = ccp.parseline(inline)
     assert ml.fores.as_pruned_index_list() == [(0, fg_code(WHITE, False)), 
-                                               (3, fg_code(BLACK, False))]
+                                               (3, fg_code(BLACK, False))], \
+           ml.fores.values
     assert ml.line == 'foobar'
 
 def test_ColourCodeParser_bold_on():
@@ -85,6 +86,7 @@ def test_ColourCodeParser_bold_off():
     ccp = ColourCodeParser()
     inline = '\x1b[1mfoo\x1b[22mbar'
     ml = ccp.parseline(inline)
+    print ml.fores.values
     assert ml.fores.as_pruned_index_list() == [(0, fg_code(WHITE, True)),
                                                (3, fg_code(WHITE, False))]
 
@@ -102,6 +104,12 @@ def test_ColourCodeParser_normalises_ANSI_colours():
     assert ml.fores.as_pruned_index_list() == [(0, fg_code(WHITE, True))], \
            ml.fores.as_pruned_index_list()
 
+def test_ColourCodeParser_deals_with_blank_colours_as_0():
+    ccp = ColourCodeParser()
+    inline = 'foo\x1b[30;mbar'
+    ml = ccp.parseline(inline)
+    assert ml.fores.as_pruned_index_list() == [(0, fg_code(WHITE, False))]
+
 #XXX: test resetting of colours
 
 def test_ColourCodeParser_bg_change():
@@ -113,3 +121,26 @@ def test_ColourCodeParser_bg_change():
     assert ml.backs.as_populated_list() == [bg_code(BLACK)] * 3 + \
                                            [bg_code(CYAN)]
 
+
+def test_ColourCodeParser_no_colours():
+    ccp = ColourCodeParser()
+    inline = 'foo'
+    ml = ccp.parseline(inline)
+    assert ml.fores.values == [(0, fg_code(WHITE, False))]
+    assert ml.backs.values == [(0, bg_code(BLACK))]
+
+def test_ColourCodeParser_no_line():
+    ccp = ColourCodeParser()
+    inline = ''
+    ml = ccp.parseline(inline)
+    assert ml.fores.values == [(0, fg_code(WHITE, False))]
+    assert ml.backs.values == [(0, bg_code(BLACK))]
+
+def test_ColourCodeParser_funky_real_example():
+    ccp = ColourCodeParser()
+    inline = '\x1b[33mfoo\x1b[0m'
+    ml = ccp.parseline(inline)
+    print ml.fores.values
+    assert ml.fores.values == [(0, fg_code(YELLOW, False)),
+                               (3, fg_code(WHITE, False))]
+    assert ml.backs.values == [(0, bg_code(BLACK))]

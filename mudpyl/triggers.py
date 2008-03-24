@@ -14,7 +14,7 @@ class RegexTrigger(ProtoMatcher):
     def match(self, metaline):
         """Test to see if the trigger's regex matches."""
         if self.regex is not None:
-            return list(re.finditer(self.regex, metaline.line))
+            return re.finditer(self.regex, metaline.line)
         else:
             return []
 

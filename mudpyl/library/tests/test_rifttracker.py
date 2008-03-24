@@ -24,12 +24,12 @@ class Test_RiftTracker:
 
     def test_herb_trigger_matches(self):
         ml = Metaline('[ 100] goldenseal root', None, None)
-        assert self.rt.herb_trigger.match(ml)
+        assert list(self.rt.herb_trigger.match(ml))
 
     def test_herb_trigger_matches_multiple_times(self):
         ml = Metaline('[ 100] goldenseal root  [   2] ginseng root',
                       None, None)
-        assert len(self.rt.herb_trigger.match(ml)) == 2
+        assert len(list(self.rt.herb_trigger.match(ml))) == 2
 
     def test_turns_on_looking_with_alias(self):
         amr = AliasMatchingRealm(None, None, self.r, self.r)
@@ -42,11 +42,11 @@ class Test_RiftTracker:
         assert amr.send_to_mud
 
     def test_alias_matches_on_ir(self):
-        assert self.rt.info_rift_alias.match('ir')
+        assert list(self.rt.info_rift_alias.match('ir'))
 
     def test_prompt_trigger_matches_on_prompt(self):
         ml = Metaline('42h, 23m, 5e, 17w cexkdb@-', None, None)      
-        assert self.rt.prompt_trigger.match(ml)
+        assert list(self.rt.prompt_trigger.match(ml))
 
     def test_count_vials_counts_non_doubled_herbs_right(self):
         self.rt.herbs_seen['ginseng'] = 50

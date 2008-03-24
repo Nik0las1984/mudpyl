@@ -7,10 +7,10 @@ class Test_binding_lias:
         pass
 
     def test_match(self):
-        assert self.alias_1.match("foo")
+        assert list(self.alias_1.match("foo"))
 
     def test_multiple_matching(self):
-        assert len(self.alias_1.match('foo foo')) == 2
+        assert len(list(self.alias_1.match('foo foo'))) == 2
 
     def test_identity_of_different_accesses_are_the_same(self):
         assert self.alias_1 is self.alias_1

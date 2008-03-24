@@ -14,12 +14,12 @@ class Test_balance_highlight:
         self.trig = balance_highlight()
 
     def test_matches_on_balance(self):
-        assert self.trig.match(Metaline("You have recovered balance on all "
-                                        "limbs.", None, None))
+        assert list(self.trig.match(Metaline("You have recovered balance on "
+                                             "all limbs.", None, None)))
 
     def test_matches_on_equilibrium(self):
-        assert self.trig.match(Metaline("You have recovered equilibrium.",
-                                        None, None))
+        assert list(self.trig.match(Metaline("You have recovered equilibrium.",
+                                             None, None)))
 
     def test_highlights(self):
         m = Metaline("foo", RunLengthList([(0, 'foo')]), 

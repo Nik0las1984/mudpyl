@@ -26,6 +26,7 @@ class OutputView(gtk.TextView):
         self.set_wrap_mode(gtk.WRAP_CHAR)
         self.modify_base(gtk.STATE_NORMAL, gtk.gdk.Color(0, 0, 0)) #sic
         self.modify_font(pango.FontDescription('monospace 8'))
+        self._tags = {}
 
     def got_focus_cb(self, widget, event):
         """We never want focus; the command line automatically lets us have
@@ -84,12 +85,13 @@ class OutputView(gtk.TextView):
 
         Return's the tag.
         """
-        hexcolour = colour.tohex()
-        name = colour.ground + hexcolour
-        tag = self.buffer.get_property('tag-table').lookup(name)
-        if tag is None:
-            tag = self.buffer.create_tag(name)
-            tag.set_property(colour.ground + 'ground', '#' + hexcolour)
+        #use our own tag table, because GTK's is too slow
+        if colour in self._tags:
+            tag = self._tags[colour]
+        else:
+            tag = self.buffer.create_tag(None)
+            tag.set_property(colour.ground + 'ground', '#' + colour.as_hex)
             tag.set_property(colour.ground + 'ground-set', True)
+            self._tags[colour] = tag
         return tag
 
