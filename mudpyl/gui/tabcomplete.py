@@ -24,7 +24,8 @@ class Trie(object):
         """Retrieve a string based on a prefix."""
         if not key:
             if self.primkey != '':
-                return self.primkey + self.descs[self.primkey]['']
+                desc = self.descs[self.primkey]
+                return self.primkey + desc.get('', extend = True)
             elif extend and self.sorted_keys:
                 #this can happen if we've just been the very final node in a 
                 #trace, where self.primkey represents that we're a leaf node,

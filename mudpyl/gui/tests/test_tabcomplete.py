@@ -108,5 +108,12 @@ class Test_complete_and_keys:
         assert res == 'bazaar', res
         assert ind == 6
 
+    def test_extend_special_case(self):
+        line = 'baz'
+        ind = 3
+        res, ind = self.trie.complete(line, ind)
+        assert res == 'bazaar', res
+        assert ind == 6
+
     #TODO: more edge cases.
 
