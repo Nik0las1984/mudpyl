@@ -59,7 +59,6 @@ class ColourCodeParser(object):
         self.fore = WHITE
         self.back = BLACK
         self.bold = False
-    _reset = __init__
 
     def _parseline(self, line):
         """Feed it lines of VT100-infested text, and it splits it all up.
@@ -81,9 +80,12 @@ class ColourCodeParser(object):
             codes = match.group(1)
 
             for code in codes.split(';'):
-                code = str(int(code, 10)) #normalisation.
-                if code == ALL_RESET:
-                    self._reset()
+                code = code.lstrip('0') #normalisation.
+                if not code:
+                    #leading zeroes been stripped from ALL_RESET
+                    self.fore = WHITE
+                    self.back = BLACK
+                    self.bold = False
                     fores.append((len(text), self.get_fore()))
                     backs.append((len(text), self.back))
                 elif code == BOLDON:
