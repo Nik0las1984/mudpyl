@@ -23,14 +23,15 @@ class Trie(object):
     def get(self, key, extend = False):
         """Retrieve a string based on a prefix."""
         if not key:
-            if self.primkey != '':
-                desc = self.descs[self.primkey]
-                return self.primkey + desc.get('', extend = True)
-            elif extend and self.sorted_keys:
+            primkey = self.sorted_keys[-1]
+            if primkey != '':
+                desc = self.descs[primkey]
+                return primkey + desc.get('', extend = True)
+            elif extend and len(self.sorted_keys) > 1:
                 #this can happen if we've just been the very final node in a 
                 #trace, where self.primkey represents that we're a leaf node,
                 #possibly amongst other things.
-                desc_key = self.sorted_keys[-1]
+                desc_key = self.sorted_keys[-2]
                 return desc_key + self.descs[desc_key]['']
             else:
                 #primkey is ''; we're a leaf node.
@@ -44,23 +45,21 @@ class Trie(object):
     def __getitem__(self, key):
         return self.get(key)
 
-    def add_word(self, key):
+    def _add_word(self, key):
         """Add a new key to the trie."""
-        key = key.lower()
-        if not key:
-            self.sorted_keys.append(self.primkey)
-            self.primkey = ''
-            if '' in self.sorted_keys:
-                self.sorted_keys.remove('')
-        else:
-            first, rest = key[0], key[1:]
-            self.sorted_keys.append(self.primkey)
-            self.primkey = first
-            if first in self.sorted_keys:
-                self.sorted_keys.remove(first)
+        #slice to get the empty string, not an IndexError, if the key is
+        #empty.
+        first = key[0:1]
+        if first in self.sorted_keys:
+            self.sorted_keys.remove(first)
+        self.sorted_keys.append(first)
+        if first:
             if first not in self.descs:
                 self.descs[first] = Trie()
-            self.descs[first].add_word(rest)
+            self.descs[first]._add_word(key[1:])
+
+    def add_word(self, key):
+        self._add_word(key.lower())
 
     def add_line(self, line):
         """Split the line up and add words individually."""
