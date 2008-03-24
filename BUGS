@@ -5,4 +5,3 @@ gui/gtkgui.py:
  - when the selection extends to the very last character, when more text
    is written to screen, that's added to the selection as well.
     - this may be intentional on PyGTK's part
- - recalling a long line from the history doesn't get the right bit visible

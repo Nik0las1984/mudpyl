@@ -27,6 +27,8 @@ New since 0.2
 
 2008-03-24 Sam Pointon <sampointon@gmail.com>
     - matchers.py: match() may now return a generator, not just a list.
+    - gtkcommandline.py: now properly scrolls to the end of a too-long
+      history line.
 
 New since 0.1
 -------------

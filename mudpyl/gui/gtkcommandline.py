@@ -37,10 +37,12 @@ class CommandView(gtk.TextView):
         """Move up (ie, back in time) one command in the history."""
         #cursor will be at the end of the line, as it has no left gravity.
         self.buffer.set_text(self.hist.advance())
+        self.scroll_mark_onscreen(self.buffer.get_insert())
 
     def history_down(self):
         """Move down (ie, forwards in time) one command in the history."""
         self.buffer.set_text(self.hist.retreat())
+        self.scroll_mark_onscreen(self.buffer.get_insert())
 
     def get_all_text(self):
         """Finger-saving mathod to get all the text from the buffer."""
