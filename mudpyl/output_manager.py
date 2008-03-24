@@ -2,8 +2,7 @@
 to logs).
 """
 from textwrap import TextWrapper
-from mudpyl.colours import WHITE, BLACK, HexFGCode, HexBGCode, fg_code, \
-                           bg_code
+from mudpyl.colours import WHITE, BLACK, fg_code, bg_code
 
 class OutputManager(object):
     """Handles:
@@ -17,6 +16,7 @@ class OutputManager(object):
         self.outputs = []
         self.metaline_peekers = []
         self.last_line_end = None
+        #sensible defaults
         self.fore = fg_code(WHITE, False)
         self.back = bg_code(BLACK)
         self.wrapper = TextWrapper(width = 100, 
@@ -62,8 +62,8 @@ class OutputManager(object):
         for peeker in self.metaline_peekers:
             peeker.peek_metaline(metaline)
 
-        allcolours = list(sorted(metaline.fores.as_pruned_index_list() + 
-                                 metaline.backs.as_pruned_index_list()))
+        allcolours = sorted(metaline.fores.as_pruned_index_list() + 
+                            metaline.backs.as_pruned_index_list())
 
         self._actually_write_to_screen(allcolours, metaline.line)
 
@@ -101,11 +101,11 @@ class OutputManager(object):
     def _change_colour(self, change):
         """Change the colour that new text will be written as.
         """
-        if isinstance(change, HexBGCode):
+        if change.ground == 'back':
             self.back = change
             for output in self.outputs:
                 output.bg_changed(change)
-        elif isinstance(change, HexFGCode):
+        elif change.ground == 'fore':
             self.fore = change
             for output in self.outputs:
                 output.fg_changed(change)

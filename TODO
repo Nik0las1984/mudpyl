@@ -1,6 +1,5 @@
 Features and miscellanea:
  - smarter creation of log files and directories
- - some kind of persistence mechanism?
  - write a manual?
     - related but different: manpages
  - MXP? May be too heavyweight to do nicely and keep the core small.
@@ -18,6 +17,8 @@ Features and miscellanea:
  - unicode (\U and \u) escapes in escape_parser.py
  - multiline triggers
  - ECHO, EOR, ttypes
+ - a wizard to create a main module, plus a way to run them without the 
+   command line.
 
 Screen related:
  - search facility in the output
