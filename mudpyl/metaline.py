@@ -74,11 +74,6 @@ class RunLengthList(object):
             res.append(self.values[-1][1])
         return _LoopingLast(res)
 
-    def as_pruned_index_list(self):
-        """Return an unwrapped unredundant run-length list."""
-        #don't want to share references of mutable data
-        return self.values[:]
-
     def _normalise(self):
         """Remove redundancies."""
         res = []
@@ -152,15 +147,15 @@ class RunLengthList(object):
         self.add_colour(start, value)
 
     def __eq__(self, other):
-        return self.as_pruned_index_list() == other.as_pruned_index_list()
+        return self.values == other.values
 
     def __repr__(self):
-        return 'RunLengthList(%r)' % (self.as_pruned_index_list(),)
+        return 'RunLengthList(%r)' % (self.values,)
     __str__ = __repr__
 
     def copy(self):
         """Return a deep copy of ourselves."""
-        return RunLengthList(self.as_pruned_index_list(), _normalised = True)
+        return RunLengthList(self.values[:], _normalised = True)
 
 class Metaline(object):
     """A line plus some metadata.

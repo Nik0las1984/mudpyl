@@ -105,7 +105,7 @@ class Test_LineAlterer:
     def test_change_fore(self):
         self.la.change_fore(0, 9, 'foo')
         res = self.la.apply(self.ml)
-        assert res.fores.as_pruned_index_list() == [(0, 'foo'),
+        assert res.fores.values[:] == [(0, 'foo'),
                                                     (9, 'C')], \
                res.fores.values      
 
@@ -121,7 +121,7 @@ class Test_LineAlterer:
         expected = [(0, fg_code(RED, True)),
                     (7, fg_code(CYAN, False)),
                     (13, fg_code(WHITE, False))]
-        assert res.fores.as_pruned_index_list() == expected, \
+        assert res.fores.values[:] == expected, \
                res.fores.values
 
 from mudpyl.triggers import non_binding_trigger

@@ -1,3 +1,11 @@
+New since 0.3
+-------------
+
+2008-03-31 Sam Pointon <sampointon@gmail.com>
+    - telnet.py: remove now dulicated code from twisted 8.0
+    - metaline.py: remove as_pruned_index_list; serves no use now. .values[:]
+      does everything in a shorter and more idiomatic way.
+
 New since 0.2
 -------------
 

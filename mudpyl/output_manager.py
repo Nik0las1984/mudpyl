@@ -62,8 +62,8 @@ class OutputManager(object):
         for peeker in self.metaline_peekers:
             peeker.peek_metaline(metaline)
 
-        allcolours = sorted(metaline.fores.as_pruned_index_list() + 
-                            metaline.backs.as_pruned_index_list())
+        allcolours = sorted(metaline.fores.values[:] + 
+                            metaline.backs.values[:])
 
         self._actually_write_to_screen(allcolours, metaline.line)
 

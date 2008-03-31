@@ -54,6 +54,6 @@ class TestTargetting:
         a = ti.alterer
         self.t.target_seen.func(mobj, ti)
         res = a.apply(ml)
-        assert res.fores.as_pruned_index_list() == [(0, 'foo'),
+        assert res.fores.values[:] == [(0, 'foo'),
                                                     (4, fg_code(RED, True)),
                                                     (7, 'foo')]
