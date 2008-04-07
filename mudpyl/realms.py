@@ -22,7 +22,6 @@ class RootRealm(object):
         self.aliases = []
         self.baked_in_macros = gui_macros.copy()
         self.macros = self.baked_in_macros.copy()
-        self.ga_as_line_end = True
         self.modules_loaded = set()
         self._escape_parser = EscapeParser()
         self.tracing = False

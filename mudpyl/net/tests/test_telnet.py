@@ -145,14 +145,6 @@ class Test_receiving_lines:
         lines = [line for ((line,), kwargs) in self.e.receive.call_args_list]
         assert lines == expected, lines
 
-    def test_ga_received_respects_ga_as_line_end_flag(self):
-        self.e.ga_as_line_end = False
-        expected = [Metaline('foo', self.fores, self.backs, wrap = True,
-                             line_end = None)]
-        self.tc.dataReceived("foo" + IAC + GA)
-        lines = [line for ((line,), kwargs) in self.e.receive.call_args_list]
-        assert lines == expected, lines
-
     def test_lineReceived_sends_line_on(self):
         self.tc.lineReceived("foo")
         lines = [line for ((line,), kwargs) in self.e.receive.call_args_list]

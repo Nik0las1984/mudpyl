@@ -6,6 +6,9 @@ New since 0.3
     - metaline.py: remove as_pruned_index_list; serves no use now. .values[:]
       does everything in a shorter and more idiomatic way.
 
+2008-04-07 Sam Pointon <sampointon@gmail.com>
+    - realms.py, telnet.py: ripped out useless line ending option
+
 New since 0.2
 -------------
 

@@ -343,9 +343,6 @@ class TestOtherStuff:
     def setUp(self):
         self.realm = RootRealm(None)
         self.realm.telnet = self.telnet = Mock(spec = TelnetClient)
-    
-    def test_ga_as_line_end_is_defaultly_True(self):
-        assert self.realm.ga_as_line_end
 
     def test_close_closes_telnet(self):
         self.realm.close()

@@ -16,7 +16,7 @@ class Trie(object):
     #pylint: enable-msg= E0602
 
     def __init__(self):
-        self.primkey = ''
+        #TODO: could unify these in an odict
         self.sorted_keys = []
         self.descs = {}
 

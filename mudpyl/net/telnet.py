@@ -1,6 +1,5 @@
 """The actual connection to the MUD."""
-from twisted.conch.telnet import Telnet, GA, IAC, NOP, DM, BRK, IP, AO, AYT, \
-                                 EC, EL, WILL, WONT, DO, DONT, SB, SE
+from twisted.conch.telnet import Telnet, GA, IAC
 from twisted.protocols.basic import LineOnlyReceiver
 from twisted.internet.protocol import ClientFactory
 from mudpyl.net.nvt import ColourCodeParser, make_string_sane
@@ -99,10 +98,7 @@ class TelnetClient(Telnet, LineOnlyReceiver):
         line = line.decode(self.factory.encoding)
         metaline = self._colourparser.parseline(make_string_sane(line))
         if from_ga:
-            if self.factory.realm.ga_as_line_end:
-                metaline.line_end = 'soft'
-            else:
-                metaline.line_end = None
+            metaline.line_end = 'soft'
         else:
             metaline.line_end = 'hard'
         metaline.wrap = True
