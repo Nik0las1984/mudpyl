@@ -9,21 +9,21 @@ class Test_Adding:
 
     def test_add_word_adds_to_the_trie(self):
         self.trie.add_word('foo')
-        assert self.trie.get('foo') == 'foo'
+        assert self.trie._fetch('foo') == 'foo'
 
     def test_add_word_is_caseless(self):
         self.trie.add_word("FOO")
-        assert self.trie.get('foo') == 'foo'
+        assert self.trie._fetch('foo') == 'foo'
 
     def test_add_line_adds_all_words_in_line(self):
         self.trie.add_line('foo bar baz')
-        assert self.trie.get('foo') == 'foo'
-        assert self.trie.get('bar') == 'bar'
-        assert self.trie.get('baz') == 'baz'
+        assert self.trie._fetch('foo') == 'foo'
+        assert self.trie._fetch('bar') == 'bar'
+        assert self.trie._fetch('baz') == 'baz'
 
     def test_add_line_adds_words_in_the_order_they_appear(self):
         self.trie.add_line('bar, baz')
-        assert self.trie.get('ba') == 'baz'
+        assert self.trie._fetch('ba') == 'baz'
 
     def test_add_line_works_nicely_with_complete(self):
         self.trie.add_line(' foo bar ')

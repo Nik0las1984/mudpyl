@@ -9,6 +9,9 @@ New since 0.3
 2008-04-07 Sam Pointon <sampointon@gmail.com>
     - realms.py, telnet.py: ripped out useless line ending option
 
+2008-04-08 Sam Pointon <sampointon@gmail.com>
+    - tabcomplete.py: made to use the _ordereddict module, removed get method
+
 New since 0.2
 -------------
 

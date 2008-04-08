@@ -31,8 +31,8 @@ Or, from a shell with ``easy_install`` visible::
     easy_install mudpyl
 
 PyGTK is needed by the gtkgui, which is currently the only GUI avabilable;
-Twisted and argparse are also needed. peak.util.extremes is required by an 
-optional module.
+Twisted, ordereddict and argparse are also needed. peak.util.extremes is 
+required by an optional module.
 
 **NOTE**: mudpyl requires python 2.6 (grab it from the trunk, or an alpha when
 one is released). This is because it uses a new feature in the stdlib module

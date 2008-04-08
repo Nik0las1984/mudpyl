@@ -1,8 +1,9 @@
 """Utilities for implementing tab-completion.
 """
+from _ordereddict import ordereddict
 import re
 
-class Trie(object):
+class Trie(ordereddict):
     """A tree of dictionaries, representing a set of strings sorted by prefix
     """
 
@@ -15,50 +16,46 @@ class Trie(object):
 
     #pylint: enable-msg= E0602
 
-    def __init__(self):
-        #TODO: could unify these in an odict
-        self.sorted_keys = []
-        self.descs = {}
+    #pylint is also not very good at picking up methods of classes defined
+    #in C
+    #pylint: disable-msg= E1101
 
-    def get(self, key, extend = False):
+    def _fetch(self, key, extend = False):
         """Retrieve a string based on a prefix."""
         if not key:
-            primkey = self.sorted_keys[-1]
+            primkey = self.keys()[-1]
             if primkey != '':
-                desc = self.descs[primkey]
-                return primkey + desc.get('', extend = True)
-            elif extend and len(self.sorted_keys) > 1:
+                desc = self[primkey]
+                return primkey + desc._fetch('', extend = True)
+            elif extend and len(self) > 1:
                 #this can happen if we've just been the very final node in a 
                 #trace, where self.primkey represents that we're a leaf node,
                 #possibly amongst other things.
-                desc_key = self.sorted_keys[-2]
-                return desc_key + self.descs[desc_key]['']
+                desc_key = self.keys()[-2]
+                return desc_key + self[desc_key]._fetch('')
             else:
                 #primkey is ''; we're a leaf node.
                 return ''
         else:
-            if key[0] in self.descs:
-                return key[0] + self.descs[key[0]].get(key[1:], extend)
+            if key[0] in self:
+                return key[0] + self[key[0]]._fetch(key[1:], extend)
             else:
                 raise KeyError("%s not found!" % key)
 
-    def __getitem__(self, key):
-        return self.get(key)
-
     def _add_word(self, key):
-        """Add a new key to the trie."""
+        """Add a new key to the trie casefully."""
         #slice to get the empty string, not an IndexError, if the key is
         #empty.
         first = key[0:1]
-        if first in self.sorted_keys:
-            self.sorted_keys.remove(first)
-        self.sorted_keys.append(first)
+        trie = self.get(first, Trie())
+        self[first] = trie
         if first:
-            if first not in self.descs:
-                self.descs[first] = Trie()
-            self.descs[first]._add_word(key[1:])
+            trie._add_word(key[1:])
+            
+    #pylint: enable-msg = E1101
 
     def add_word(self, key):
+        """Add a word to the trie caselessly."""
         self._add_word(key.lower())
 
     def add_line(self, line):
@@ -84,16 +81,16 @@ class Trie(object):
                         for c in self.splitting_chars) + 1
         try:
             wordend = min(line.find(c, ind) for c in self.splitting_chars 
-                            if c in line[ind:])
+                          if c in line[ind:])
         except ValueError: #none in the line beyond the index
             wordend = len(line)
         #all our keys are lowercase. Ditto values.
         oldword = line[wordstart:wordend].lower()
         try:
-            newword = self[oldword]
+            newword = self._fetch(oldword)
             if newword == oldword:
                 #try and find a word that's longer.
-                newword = self.get(oldword, True)
+                newword = self._fetch(oldword, True)
         except KeyError:
             pass
         else:
