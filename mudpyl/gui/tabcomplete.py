@@ -20,6 +20,9 @@ class Trie(ordereddict):
     #in C
     #pylint: disable-msg= E1101
 
+    def __init__(self, *args, **kwargs):
+        ordereddict.__init__(self, kvio = True, *args, **kwargs)
+
     def _fetch(self, key, extend = False):
         """Retrieve a string based on a prefix."""
         if not key:

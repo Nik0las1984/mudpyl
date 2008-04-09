@@ -115,5 +115,12 @@ class Test_complete_and_keys:
         assert res == 'bazaar', res
         assert ind == 6
 
+    def test_does_right_thing_with_ordering(self):
+        self.trie.add_word("frobble")
+        self.trie.add_word("frobulate")
+        self.trie.add_word("frobble")
+        res, ind = self.trie.complete('frob', 4)
+        assert res == 'frobble', res
+
     #TODO: more edge cases.
 
