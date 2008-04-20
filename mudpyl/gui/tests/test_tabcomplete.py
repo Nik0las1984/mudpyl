@@ -112,8 +112,8 @@ class Test_complete_and_keys:
         line = 'baz'
         ind = 3
         res, ind = self.trie.complete(line, ind)
-        assert res == 'bazaar', res
-        assert ind == 6
+        assert res == 'baza', res
+        assert ind == 4
 
     def test_does_right_thing_with_ordering(self):
         self.trie.add_word("frobble")
@@ -121,6 +121,14 @@ class Test_complete_and_keys:
         self.trie.add_word("frobble")
         res, ind = self.trie.complete('frob', 4)
         assert res == 'frobble', res
+
+
+def test_retrieves_shorter_but_more_recent_word_without_extend():
+    trie = Trie()
+    trie.add_word("zeepf")
+    trie.add_word("zee")
+    res, ind = trie.complete("ze", 1)
+    assert res == "zee", res
 
     #TODO: more edge cases.
 

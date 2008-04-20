@@ -29,7 +29,7 @@ class Trie(ordereddict):
             primkey = self.keys()[-1]
             if primkey != '':
                 desc = self[primkey]
-                return primkey + desc._fetch('', extend = True)
+                return primkey + desc._fetch('', extend)
             elif extend and len(self) > 1:
                 #this can happen if we've just been the very final node in a 
                 #trace, where self.primkey represents that we're a leaf node,
