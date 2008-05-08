@@ -109,7 +109,7 @@ class RootRealm(object):
         message = time.strftime("Connection closed at %H:%M:%S.")
         colour = HexFGCode(0xFF, 0xAA, 0x00) #lovely orange
         metaline = Metaline(message, RunLengthList([(0, colour)]),
-                             RunLengthList([(0, bg_code(BLACK))]))
+                            RunLengthList([(0, bg_code(BLACK))]))
         self.write(metaline)
         for receiver in self.connection_event_receivers:
             receiver.connection_lost()
@@ -125,7 +125,7 @@ class RootRealm(object):
         message = time.strftime("Connection opened at %H:%M:%S.")
         colour = HexFGCode(0xFF, 0xAA, 0x00) #lovely orange
         metaline = Metaline(message, RunLengthList([(0, colour)]),
-                      RunLengthList([(0, bg_code(BLACK))]))
+                            RunLengthList([(0, bg_code(BLACK))]))
         self.write(metaline)
         for receiver in self.connection_event_receivers:
             receiver.connection_made()

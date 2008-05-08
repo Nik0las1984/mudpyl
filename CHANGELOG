@@ -12,6 +12,9 @@ New since 0.3
 2008-04-08 Sam Pointon <sampointon@gmail.com>
     - tabcomplete.py: made to use the _ordereddict module, removed get method
 
+2008-05-08 Sam Pointon <sampointon@gmail.com>
+    - library/achaea/fishing.py: new module
+
 New since 0.2
 -------------
 

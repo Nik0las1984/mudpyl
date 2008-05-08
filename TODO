@@ -54,6 +54,7 @@ Specific modules under library/:
   - write:
     - the Big Bad Combat System
     - automapper
+    - prompt time receipt shower
   - targetting.py wants multiple targets and target switching added.
   - colourtells.py:
      - should also colour TELLS and SHOWTELL.

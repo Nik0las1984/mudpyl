@@ -20,7 +20,7 @@ class OutputManager(object):
         self.fore = fg_code(WHITE, False)
         self.back = bg_code(BLACK)
         self.wrapper = TextWrapper(width = 100, 
-                                  drop_whitespace = False)
+                                   drop_whitespace = False)
 
     def add_output(self, output):
         """Add another output that wants to receive stuff."""
@@ -62,8 +62,7 @@ class OutputManager(object):
         for peeker in self.metaline_peekers:
             peeker.peek_metaline(metaline)
 
-        allcolours = sorted(metaline.fores.values[:] + 
-                            metaline.backs.values[:])
+        allcolours = sorted(metaline.fores.values + metaline.backs.values)
 
         self._actually_write_to_screen(allcolours, metaline.line)
 
