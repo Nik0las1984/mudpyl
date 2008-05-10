@@ -18,13 +18,18 @@ def send_later(realm, delay, line):
 class FishingSystem(BaseModule):
     """Module for deepsea fishing."""
 
+    def __init__(self, realm):
+        BaseModule.__init__(self, realm)
+        self.stopped_reeling = False
+
     #make pylint give the 'unused argument' stuff a rest
     #pylint: disable-msg=W0613
     @binding_trigger("Relaxing the tension on your line, you are able to "
                      "reel again\.")
     def reel_trigger(self, match, realm):
         """Re-reel our line to catch that fish."""
-        realm.send("reel line")
+        if not self.stopped_reeling:
+            realm.send("reel line")
 
     @binding_alias("^bc$")
     def cast_alias(self, match, realm):
@@ -54,6 +59,7 @@ class FishingSystem(BaseModule):
     def start_reeling_trigger(self, match, realm):
         """Okay, let's start reelin once we get balance."""
         send_later(realm, 3, "reel line")
+        self.stopped_reeling = False
 
     @binding_trigger("You (?:quickly reel in a |reel in the last bit of "
                      "line and your struggle is over)|With a final tug, you "
@@ -62,6 +68,7 @@ class FishingSystem(BaseModule):
     def recast_trigger(self, match, realm):
         """Reeling over, let's recast."""
         realm.send("bc")
+        self.stopped_reeling = True
 
     @property
     def triggers(self):

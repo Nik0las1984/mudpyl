@@ -202,3 +202,12 @@ def test_add_colour_works_on_top_of_existing_colour_definition():
     rl.add_colour(2, -20) #deliberately try and get it to the left
     assert rl.values == [(0, 'foo'), (2, -20)]
 
+def test_blank_between_second_argument_None_blanks_to_end():
+    rl = RunLengthList([(0, 'foo'), (2, 'bar'), (4, 'baz')])
+    rl.blank_between(1, None)
+    assert rl.values == [(0, 'foo')]
+
+def test_change_between_changes_to_end_if_second_argument_None():
+    rl = RunLengthList([(0, 'foo'), (2, 'bar'), (4, 'baz')])
+    rl.change_between(1, None, 'qux')
+    assert rl.values == [(0, 'foo'), (1, 'qux')]

@@ -123,12 +123,16 @@ class RunLengthList(object):
             self._normalise()
 
     def blank_between(self, start, end):
-        """Delete a span of values between given indexes."""
+        """Delete a span of values between given indexes.
+
+        If end is None, it blanks all the way to the end."""
         if start == 0:
             raise ValueError("The start of the list may not be blanked.")
-        #don't lose the information about what colour we end with
-        self._make_explicit(end)
-        res = [val for val in self.values if not start <= val[0] < end]
+        if end is not None:
+            #don't lose the information about what colour we end with
+            self._make_explicit(end)
+        res = [val for val in self.values if not (start <= val[0] and
+                                            (val[0] < end or end is None))]
         self.values = res
         self._normalise()
 
@@ -139,10 +143,13 @@ class RunLengthList(object):
     def change_between(self, start, end, value):
         """Replace a whole span of values with a new one.
         
-        This preserves the implied colour at the end.
+        This preserves the implied colour at the end. If end is None, then
+        this changes all the way to the end.
         """
-        self._make_explicit(end)
-        res = [val for val in self.values if not start <= val[0] < end]
+        if end is not None:
+            self._make_explicit(end)
+        res = [val for val in self.values if not (start <= val[0] and
+                                             (val[0] < end or end is None))]
         self.values = res
         self.add_colour(start, value)
 

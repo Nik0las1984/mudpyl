@@ -5,6 +5,7 @@ Features and miscellanea:
  - MXP? May be too heavyweight to do nicely and keep the core small.
  - rename Metaline.insert to insert_after, and add a new method called 
    insert_before.
+    - also related: metaline concatenation
  - have something line instance_macro.
  - should TriggerMatchingRealm get send_after?
  - more complex logging of errors than going to stdout. Pop up a dialogue box,
@@ -54,7 +55,6 @@ Specific modules under library/:
   - write:
     - the Big Bad Combat System
     - automapper
-    - prompt time receipt shower
   - targetting.py wants multiple targets and target switching added.
   - colourtells.py:
      - should also colour TELLS and SHOWTELL.

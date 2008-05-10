@@ -15,6 +15,12 @@ New since 0.3
 2008-05-08 Sam Pointon <sampointon@gmail.com>
     - library/achaea/fishing.py: new module
 
+2008-05-10 Sam Pointon <sampointon@gmail.com>
+    - library/achaea/fishing.py: smarter about stopping reeling
+    - library/achaea/prompttime.py: new module
+    - metaline.py: some methods now accept None as a second parameter to mean
+                   'all the way to the end'
+
 New since 0.2
 -------------
 

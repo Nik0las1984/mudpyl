@@ -124,6 +124,14 @@ class Test_LineAlterer:
         assert res.fores.values[:] == expected, \
                res.fores.values
 
+    def test_change_fore_with_no_right_bound(self):
+        ml = Metaline("foobarbaz", RunLengthList([(0, fg_code(WHITE, False))]),
+                      RunLengthList([(0, None)]))
+        self.la.change_fore(3, None, fg_code(RED, False))
+        res = self.la.apply(ml)
+        assert res.fores.values == [(0, fg_code(WHITE, False)),
+                                    (3, fg_code(RED, False))]
+
 from mudpyl.triggers import non_binding_trigger
 
 def test_non_binding_trigger():
