@@ -19,7 +19,9 @@ New since 0.3
     - library/achaea/fishing.py: smarter about stopping reeling
     - library/achaea/prompttime.py: new module
     - metaline.py: some methods now accept None as a second parameter to mean
-                   'all the way to the end'
+      'all the way to the end'. New function simpleml when you just want
+      one back/fore colour. Now supports the insertion of metalines into 
+      metalines.
 
 New since 0.2
 -------------

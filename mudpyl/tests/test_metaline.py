@@ -87,6 +87,17 @@ def test_change_fore_with_trailing_colours():
     ml.change_fore(0, 3, 'baz')
     assert ml.fores.values == [(0, 'baz'), (3, 'foo'), (7, 'bar')]
 
+def test_insert_metaline():
+    ml_one = Metaline('foo baz', RunLengthList([(0, 'foo'), (4, 'baz')]),
+                      RunLengthList([(0, 'foo'), (4, 'baz')]))
+    ml_two = simpleml('bar ', 'bar', 'bar')
+    ml_one.insert_metaline(4, ml_two)
+    assert ml_one == Metaline("foo bar baz",
+                              RunLengthList([(0, 'foo'), (4, 'bar'),
+                                             (8, 'baz')]),
+                              RunLengthList([(0, 'foo'), (4, 'bar'),
+                                             (8, 'baz')]))
+
 from mudpyl.metaline import RunLengthList
 
 def test_RunLengthList_as_populated_list():
@@ -161,6 +172,25 @@ def test_copy_returns_different_lists():
     r = RunLengthList([(0, 'foo')])
     assert r.values[:] is not r.copy().values
 
+def test_RunLengthList_insertion():
+    r1 = RunLengthList([(0, 'foo'), (2, 'qux')])
+    r2 = RunLengthList([(0, 'bar'), (2, 'baz')])
+    r1.insert_list_at(1, 3, r2)
+    assert r1.values == [(0, 'foo'), (1, 'bar'), (3, 'baz'), (4, 'foo'),
+                         (5, 'qux')], r1.values
+
+def test_RunLengthList_insertion_normalisation():
+    r1 = RunLengthList([(0, 'foo'), (1, 'bar')])
+    r2 = RunLengthList([(0, 'foo'), (1, 'bar')])
+    r1.insert_list_at(1, 2, r2)
+    assert r1.values == [(0, 'foo'), (2, 'bar')], r1.values
+
+def test_inserted_list_gets_chopped_if_not_enough_length():
+    r1 = RunLengthList([(0, 'foo'), (1, 'bar')])
+    r2 = RunLengthList([(0, 'baz'), (2, 'qux')])
+    r1.insert_list_at(1, 1, r2)
+    assert r1.values == [(0, 'foo'), (1, 'baz'), (2, 'bar')]
+    
 #XXX: other equality cases
 
 def test_RunLengthList_repr_evauluates_equal():
@@ -211,3 +241,11 @@ def test_change_between_changes_to_end_if_second_argument_None():
     rl = RunLengthList([(0, 'foo'), (2, 'bar'), (4, 'baz')])
     rl.change_between(1, None, 'qux')
     assert rl.values == [(0, 'foo'), (1, 'qux')]
+
+from mudpyl.metaline import simpleml
+from mock import sentinel
+
+def test_simpleml_creates_equivalent_metaline():
+    ml = simpleml("foo", sentinel.fore, sentinel.back)
+    assert ml == Metaline("foo", RunLengthList([(0, sentinel.fore)]),
+                          RunLengthList([(0, sentinel.back)]))

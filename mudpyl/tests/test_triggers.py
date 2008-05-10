@@ -1,5 +1,5 @@
 from mudpyl.triggers import LineAlterer
-from mudpyl.metaline import Metaline, RunLengthList
+from mudpyl.metaline import Metaline, RunLengthList, simpleml
 from mudpyl.colours import HexFGCode, CYAN, WHITE, RED, fg_code
 
 class Test_LineAlterer:
@@ -107,7 +107,7 @@ class Test_LineAlterer:
         res = self.la.apply(self.ml)
         assert res.fores.values[:] == [(0, 'foo'),
                                                     (9, 'C')], \
-               res.fores.values      
+               res.fores.values
 
     def test_change_fore_with_trailing_colours(self):
         #don't know why, but this test exposed what looked like a quasi-random
@@ -131,6 +131,29 @@ class Test_LineAlterer:
         res = self.la.apply(ml)
         assert res.fores.values == [(0, fg_code(WHITE, False)),
                                     (3, fg_code(RED, False))]
+
+    def test_insert_metaline(self):
+        ml_one = simpleml('foo', 'foo', 'foo')
+        self.la.insert_metaline(1, simpleml('bar', 'bar', 'bar'))
+        res = self.la.apply(ml_one)
+        assert res == Metaline('fbaroo',
+                               RunLengthList([(0, 'foo'), (1, 'bar'),
+                                              (4, 'foo')]),
+                               RunLengthList([(0, 'foo'), (1, 'bar'),
+                                              (4, 'foo')]))
+
+    def test_insert_metaline_then_insert_bumps(self):
+        ml_ins = simpleml('foo', 'foo', 'foo')
+        self.la.insert_metaline(1, ml_ins)
+        self.la.insert(2, 'baz')
+        res = self.la.apply(simpleml('bar', 'bar', 'bar'))
+        assert res.line == 'bfooabazr', res.line
+
+    def test_insert_then_insert_metaline_bumps(self):
+        self.la.insert(1, 'foo')
+        self.la.insert_metaline(2, simpleml('bar', 'bar', 'bar'))
+        res = self.la.apply(simpleml('baz', None, None))
+        assert res.line == "bfooabarz", res.line
 
 from mudpyl.triggers import non_binding_trigger
 

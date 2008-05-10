@@ -41,6 +41,10 @@ class LineAlterer(object):
         """Change a span's foreground."""
         self._changes.append(('change_fore', start, end, colour))
 
+    def insert_metaline(self, start, metaline):
+        """Insert a coloured metaline."""
+        self._changes.append(("insert_metaline", start, metaline))
+
     def change_back(self, start, end, colour):
         """Change a span's background."""
         self._changes.append(('change_back', start, end, colour))
@@ -53,7 +57,7 @@ class LineAlterer(object):
                 meth, mstart, mend = change
                 res.append((meth, iadjust(mstart, start, adjustment), 
                             iadjust(mend, start, adjustment)))
-            elif change[0] == 'insert':
+            elif change[0] in ('insert', 'insert_metaline'):
                 meth, mstart, text = change
                 res.append((meth, iadjust(mstart, start, adjustment), text))
             elif change[0] in ('change_fore', 'change_back'):
@@ -80,6 +84,9 @@ class LineAlterer(object):
             elif meth == 'insert':
                 start, text = args
                 self._alter(start, len(text))
+            elif meth == "insert_metaline":
+                start, ins_metaline = args
+                self._alter(start, len(ins_metaline.line))
             getattr(metaline, meth)(*args)
         return metaline
 

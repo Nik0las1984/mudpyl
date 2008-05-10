@@ -1,5 +1,5 @@
 """Utility for passing around lines with their colour information."""
-from bisect import insort
+from bisect import insort, bisect
 from itertools import izip, tee, chain
 
 def iadjust(ind, start, adj):
@@ -153,6 +153,18 @@ class RunLengthList(object):
         self.values = res
         self.add_colour(start, value)
 
+    def insert_list_at(self, start, length, rll):
+        """Insert the list of values at the given position, shifting all the
+        values right of that by the length given.
+        """
+        self.index_adjust(start, length)
+        self._make_explicit(start + length)
+        ind = bisect(self.values, (start, None))
+        self.values[ind:ind] = [(pos + start, val)
+                                for (pos, val) in rll.values
+                                if pos < length]
+        self._normalise()
+
     def __eq__(self, other):
         return self.values == other.values
 
@@ -198,6 +210,13 @@ class Metaline(object):
         self.backs.index_adjust(start, len(text))
         self.line = self.line[:start] + text + self.line[start:]
 
+    def insert_metaline(self, start, metaline):
+        """Insert a metaline at a given point."""
+        length = len(metaline.line)
+        self.fores.insert_list_at(start, length, metaline.fores)
+        self.backs.insert_list_at(start, length, metaline.backs)
+        self.line = self.line[:start] + metaline.line + self.line[start:]
+
     def change_fore(self, start, end, colour):
         """Change the foreground of a span of text."""
         self.fores.change_between(start, end, colour)
@@ -224,3 +243,8 @@ class Metaline(object):
                (self.line, self.fores, self.backs, self.soft_line_start,
                 self.line_end, self.wrap)
     __str__ = __repr__
+
+def simpleml(line, fore, back):
+    """Simplified wrapper for creating simple metalines."""
+    return Metaline(line, RunLengthList([(0, fore)]),
+                    RunLengthList([(0, back)]))
