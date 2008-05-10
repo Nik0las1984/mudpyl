@@ -16,12 +16,14 @@ New since 0.3
     - library/achaea/fishing.py: new module
 
 2008-05-10 Sam Pointon <sampointon@gmail.com>
-    - library/achaea/fishing.py: smarter about stopping reeling
+    - library/achaea/fishing.py: smarter about stopping reeling and not 
+      wasting bait.
     - library/achaea/prompttime.py: new module
     - metaline.py: some methods now accept None as a second parameter to mean
       'all the way to the end'. New function simpleml when you just want
       one back/fore colour. Now supports the insertion of metalines into 
       metalines.
+    - realms.py: simplify using simpleml
 
 New since 0.2
 -------------

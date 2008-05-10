@@ -34,7 +34,7 @@ class FishingSystem(BaseModule):
     @binding_alias("^bc$")
     def cast_alias(self, match, realm):
         """Send out our fishing line."""
-        #TODO: make this take the bait off, so we don't waste bait
+        realm.send("get carp from pole")
         realm.send("put fish in tank")
         realm.send("get carp from tank")
         realm.send("bait hook with carp")

@@ -2,7 +2,7 @@
 from code import InteractiveConsole
 from mudpyl.escape_parser import EscapeParser
 from mudpyl.colours import fg_code, bg_code, BLACK, WHITE, HexFGCode
-from mudpyl.metaline import Metaline, RunLengthList
+from mudpyl.metaline import Metaline, simpleml
 from mudpyl.triggers import TriggerMatchingRealm
 from mudpyl.aliases import AliasMatchingRealm
 from mudpyl.modules import load_file
@@ -108,8 +108,7 @@ class RootRealm(object):
         """
         message = time.strftime("Connection closed at %H:%M:%S.")
         colour = HexFGCode(0xFF, 0xAA, 0x00) #lovely orange
-        metaline = Metaline(message, RunLengthList([(0, colour)]),
-                            RunLengthList([(0, bg_code(BLACK))]))
+        metaline = simpleml(message, colour, bg_code(BLACK))
         self.write(metaline)
         for receiver in self.connection_event_receivers:
             receiver.connection_lost()
@@ -124,8 +123,7 @@ class RootRealm(object):
         """The MUD's been connected to."""
         message = time.strftime("Connection opened at %H:%M:%S.")
         colour = HexFGCode(0xFF, 0xAA, 0x00) #lovely orange
-        metaline = Metaline(message, RunLengthList([(0, colour)]),
-                            RunLengthList([(0, bg_code(BLACK))]))
+        metaline = simpleml(message, colour, bg_code(BLACK))
         self.write(metaline)
         for receiver in self.connection_event_receivers:
             receiver.connection_made()
@@ -177,9 +175,9 @@ class RootRealm(object):
         if not isinstance(line, (basestring, Metaline)):
             line = str(line)
         if isinstance(line, basestring):
-            line = Metaline(line, RunLengthList([(0, fg_code(WHITE, False))]),
-                                  RunLengthList([(0, bg_code(BLACK))]),
-                            wrap = False, soft_line_start = soft_line_start)
+            line = simpleml(line, fg_code(WHITE, False), bg_code(BLACK))
+            line.wrap = False
+            line.soft_line_start = soft_line_start
         #we don't need to close off the ends of the note, because thanks to
         #the magic of the ColourCodeParser, each new line is started by the
         #implied colour, so notes can't bleed out into text (though the 
