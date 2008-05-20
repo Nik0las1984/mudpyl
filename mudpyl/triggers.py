@@ -61,7 +61,7 @@ class LineAlterer(object):
                 self._changes[ind] = (meth, iadjust(mstart, start, adj), text)
             elif change[0] in ('change_fore', 'change_back'):
                 meth, mstart, mend, colour = change
-                self._changed[ind] = (meth, iadjust(mstart, start, adj), 
+                self._changes[ind] = (meth, iadjust(mstart, start, adj), 
                                       iadjust(mend, start, adj), colour)
 
     def apply(self, metaline):

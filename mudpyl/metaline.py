@@ -206,8 +206,9 @@ class Metaline(object):
 
     def insert(self, start, text):
         """Insert a span of text."""
-        self.fores.index_adjust(start, len(text))
-        self.backs.index_adjust(start, len(text))
+        #use max to stop the start of the string ever being uncoloured
+        self.fores.index_adjust(max(1, start), len(text))
+        self.backs.index_adjust(max(1, start), len(text))
         self.line = self.line[:start] + text + self.line[start:]
 
     def insert_metaline(self, start, metaline):

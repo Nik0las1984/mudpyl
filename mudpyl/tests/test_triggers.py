@@ -1,6 +1,7 @@
 from mudpyl.triggers import LineAlterer
 from mudpyl.metaline import Metaline, RunLengthList, simpleml
 from mudpyl.colours import HexFGCode, CYAN, WHITE, RED, fg_code
+from mock import sentinel
 
 class Test_LineAlterer:
 
@@ -91,6 +92,14 @@ class Test_LineAlterer:
         self.la.insert(3, 'bar')
         res = self.la.apply(self.ml)
         assert res.line == 'spfooabarm eggs ham'
+
+    def test_insert_then_change_fore_adjusts_expectedly(self):
+        self.la.insert(0, "foo")
+        self.la.change_fore(1, 4, sentinel.fore)
+        res = self.la.apply(self.ml)
+        assert res.fores.values == [(0, 'A'),
+                                    (4, sentinel.fore),
+                                    (7, 'C')], res.fores.values
 
     #XXX: test chaining. Each method must be tested before an insert and a
     #     delete.

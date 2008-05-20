@@ -17,6 +17,12 @@ def test_Metaline_insert_inserts_text():
     m.insert(3, 'bar')
     assert m.line == 'foobarbaz', m.line
 
+def test_Metaline_insert_at_0_doesnt_leave_start_uncoloured():
+    ml = simpleml('foo', sentinel.fore, sentinel.back)
+    ml.insert(0, 'bar')
+    assert ml.fores.values == [(0, sentinel.fore)]
+    assert ml.backs.values == [(0, sentinel.back)]
+
 def test_Metaline_insert_fg_bg_on_too_long():
     fores, backs = RunLengthList([(0, 'foo')]), RunLengthList([(0, 'bar')])
     m = Metaline('foo', fores.copy(), backs.copy())
