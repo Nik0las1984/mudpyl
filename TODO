@@ -5,7 +5,6 @@ Features and miscellanea:
  - MXP? May be too heavyweight to do nicely and keep the core small.
  - rename Metaline.insert to insert_after, and add a new method called 
    insert_before.
-    - also related: metaline concatenation
  - have something line instance_macro.
  - should TriggerMatchingRealm get send_after?
  - more complex logging of errors than going to stdout. Pop up a dialogue box,
@@ -25,7 +24,6 @@ Screen related:
  - search facility in the output
  - or, even better than pausing: screen splitting
    - or, new window opening?
- - something to show you when each line arrived.
  - a MORE thing to show when more stuff's arrived and we're paused.
 
 Test related:

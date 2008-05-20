@@ -17,8 +17,8 @@ class Trie(ordereddict):
     #pylint: enable-msg= E0602
 
     #pylint is also not very good at picking up methods of classes defined
-    #in C
-    #pylint: disable-msg= E1101
+    #in C; also, we only call protected methods on our own classes
+    #pylint: disable-msg= E1101,W0212
 
     def __init__(self, *args, **kwargs):
         ordereddict.__init__(self, kvio = True, *args, **kwargs)
@@ -55,7 +55,7 @@ class Trie(ordereddict):
         if first:
             trie._add_word(key[1:])
             
-    #pylint: enable-msg = E1101
+    #pylint: enable-msg = E1101, W0212
 
     def add_word(self, key):
         """Add a word to the trie caselessly."""

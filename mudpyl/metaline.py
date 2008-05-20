@@ -216,6 +216,9 @@ class Metaline(object):
         self.fores.insert_list_at(start, length, metaline.fores)
         self.backs.insert_list_at(start, length, metaline.backs)
         self.line = self.line[:start] + metaline.line + self.line[start:]
+        #make ourselves look tidier
+        self.fores.blank_between(len(self.line), None)
+        self.backs.blank_between(len(self.line), None)
 
     def change_fore(self, start, end, colour):
         """Change the foreground of a span of text."""
@@ -243,6 +246,11 @@ class Metaline(object):
                (self.line, self.fores, self.backs, self.soft_line_start,
                 self.line_end, self.wrap)
     __str__ = __repr__
+
+    def __add__(self, other):
+        res = self.copy()
+        res.insert_metaline(len(self.line), other)
+        return res
 
 def simpleml(line, fore, back):
     """Simplified wrapper for creating simple metalines."""

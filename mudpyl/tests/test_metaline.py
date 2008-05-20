@@ -98,6 +98,15 @@ def test_insert_metaline():
                               RunLengthList([(0, 'foo'), (4, 'bar'),
                                              (8, 'baz')]))
 
+def test_insert_metaline_tidies_when_inserted_at_end():
+    res = simpleml("foo", sentinel.foofore, sentinel.fooback) + \
+          simpleml("bar", sentinel.barfore, sentinel.barback)
+    assert res.fores.values == [(0, sentinel.foofore),
+                                (3, sentinel.barfore)]
+    assert res.backs.values == [(0, sentinel.fooback),
+                                (3, sentinel.barback)]
+    
+
 from mudpyl.metaline import RunLengthList
 
 def test_RunLengthList_as_populated_list():
@@ -249,3 +258,19 @@ def test_simpleml_creates_equivalent_metaline():
     ml = simpleml("foo", sentinel.fore, sentinel.back)
     assert ml == Metaline("foo", RunLengthList([(0, sentinel.fore)]),
                           RunLengthList([(0, sentinel.back)]))
+
+def test_Metaline_addition_normal():
+    res = simpleml("foo", sentinel.fore, sentinel.back) + \
+          simpleml("bar", sentinel.fore2, sentinel.back2)
+    assert res.line == "foobar", res.line
+    assert res.fores.values == [(0, sentinel.fore),
+                                (3, sentinel.fore2)]
+    assert res.backs.values == [(0, sentinel.back),
+                                (3, sentinel.back2)]
+
+def test_Metaline_addition_first_has_trailling_colours():
+    ml = simpleml("foo", sentinel.foofore, sentinel.fooback)
+    ml.change_fore(0, 4, sentinel.foofore2)
+    res = ml + simpleml("bar", sentinel.barfore, sentinel.barback)
+    assert res.fores.values == [(0, sentinel.foofore2),
+                                (3, sentinel.barfore)], res.fores.values

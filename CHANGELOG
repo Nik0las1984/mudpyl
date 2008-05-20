@@ -25,6 +25,10 @@ New since 0.3
       metalines.
     - realms.py: simplify using simpleml
 
+2008-05-20 Sam Pointon <sampointon@gmail.com>
+    - metaline.py: insert_metaline now no longer leaves trailling colours
+      behind. Implemented __add__.
+
 New since 0.2
 -------------
 

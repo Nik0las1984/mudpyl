@@ -35,7 +35,6 @@ class FishingSystem(BaseModule):
     def cast_alias(self, match, realm):
         """Send out our fishing line."""
         realm.send("get carp from pole")
-        realm.send("put fish in tank")
         realm.send("get carp from tank")
         realm.send("bait hook with carp")
         #wait for balance
