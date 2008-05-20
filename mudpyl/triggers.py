@@ -49,32 +49,29 @@ class LineAlterer(object):
         """Change a span's background."""
         self._changes.append(('change_back', start, end, colour))
 
-    def _alter(self, start, adjustment):
+    def _alter(self, start, adj):
         """Change the indices to account for deletions and insertions."""
-        res = deque()
-        for change in self._changes:
+        for ind, change in enumerate(self._changes):
             if change[0] == 'delete':
                 meth, mstart, mend = change
-                res.append((meth, iadjust(mstart, start, adjustment), 
-                            iadjust(mend, start, adjustment)))
+                self._changes[ind] = (meth, iadjust(mstart, start, adj), 
+                                      iadjust(mend, start, adj))
             elif change[0] in ('insert', 'insert_metaline'):
                 meth, mstart, text = change
-                res.append((meth, iadjust(mstart, start, adjustment), text))
+                self._changes[ind] = (meth, iadjust(mstart, start, adj), text)
             elif change[0] in ('change_fore', 'change_back'):
                 meth, mstart, mend, colour = change
-                res.append((meth, iadjust(mstart, start, adjustment), 
-                            iadjust(mend, start, adjustment), colour))
-        self._changes = res
+                self._changed[ind] = (meth, iadjust(mstart, start, adj), 
+                                      iadjust(mend, start, adj), colour)
 
     def apply(self, metaline):
         """Apply our changes to a metaline.
 
         This LineAlterer is no good after doing this, so copy it if it needs
-        to be reused.
+        to be reused. The metaline passed in, however, is left pristine.
         """
         metaline = metaline.copy()
-        while self._changes:
-            change = self._changes.popleft()
+        for change in self._changes:
             meth = change[0]
             args = change[1:]
             if meth == 'delete':
