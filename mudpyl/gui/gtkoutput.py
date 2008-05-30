@@ -38,7 +38,7 @@ class OutputView(gtk.TextView):
         """Stop autoscrolling to new data."""
         if not self.paused:
             self.paused = True
-            self.gui.paused_label.set_text("PAUSED")
+            self.gui.paused_label.set_markup("PAUSED")
 
     def unpause(self):
         """Restart autoscrolling to new data.
@@ -47,7 +47,7 @@ class OutputView(gtk.TextView):
         """
         if self.paused:
             self.paused = False
-            self.gui.paused_label.set_text("")
+            self.gui.paused_label.set_markup("")
         #scroll to the end of output
         self.scroll_mark_onscreen(self.end_mark)
 
@@ -64,6 +64,10 @@ class OutputView(gtk.TextView):
         self.apply_colours(metaline.backs, offset, len(metaline.line))
         if not self.paused:
             self.scroll_mark_onscreen(self.end_mark)
+        else:
+            self.gui.paused_label.set_markup("<span foreground='#FFFFFF' "
+                                                   "background='#000000'>"
+                                               "MORE - PAUSED</span>")
 
     def apply_colours(self, colours, offset, end_offset):
         """Apply a RunLengthList of colours to the buffer, starting at

@@ -47,8 +47,7 @@ class AntitheftSystem(EarlyInitialisingModule):
         for pat, items in self.protected:
             if pat.match(match.group(1)):
                 for item in items:
-                    realm.send("#repeat 3 put money in %s" % 
-                                                                      item)
+                    realm.send("#repeat 3 put money in %s" % item)
 
     @binding_trigger("^You (?:drop|remove) (.*)\.$")
     def removed(self, match, realm):

@@ -29,6 +29,10 @@ New since 0.3
     - metaline.py: insert_metaline now no longer leaves trailling colours
       behind. Implemented __add__.
 
+2008-05-30 Sam Pointon <sampointon@gmail.com>
+    - gui/gtkoutput.py: add a visual indication for when more text arrives
+      if the window is paused.
+
 New since 0.2
 -------------
 
