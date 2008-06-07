@@ -1,19 +1,10 @@
 from mudpyl.gui.gtkoutput import OutputView
-
-class DummyLabel:
-
-    def set_text(self, text):
-        pass
-
-class DummyGUI:
-
-    def __init__(self):
-        self.paused_label = DummyLabel()
+from mock import Mock
 
 class TestPausing:
 
     def setUp(self):
-        self.output_view = OutputView(DummyGUI())
+        self.output_view = OutputView(Mock())
 
     def test_paused_is_defaultly_false(self):
         assert not self.output_view.paused

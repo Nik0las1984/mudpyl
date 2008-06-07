@@ -39,14 +39,14 @@ class MCCPTransport(Protocol, ProtocolTransportMixin):
         """We've lost the connection. Inform our protocol."""
         #make sure nothing's trapped in our buffers
         if self.their_mccp_active:
-        	#this can occur if the last thing the MUD sent was compressed with
-        	#Z_FINISH as an option. Dunno what's so special about that that
-        	#needs it kept in an internal buffer of decompressobj, but that's
-        	#how it is.
+            #this can occur if the last thing the MUD sent was compressed with
+            #Z_FINISH as an option. Dunno what's so special about that that
+            #needs it kept in an internal buffer of decompressobj, but that's
+            #how it is.
             self.protocol.dataReceived(self.decompressor.flush())
         else:
-        	#This primarily occurs when self.later is just an IAC. In fact, I
-        	#think that's the only condition that can lead to this.
+            #This primarily occurs when self.later is just an IAC. In fact, I
+            #think that's the only condition that can lead to this.
             self.protocol.dataReceived(self.later)
         self.protocol.connectionLost(reason)
 

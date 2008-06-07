@@ -33,6 +33,10 @@ New since 0.3
     - gui/gtkoutput.py: add a visual indication for when more text arrives
       if the window is paused.
 
+2008-06-07 Sam Pointon <sampointon@gmail.com>
+    - gui/gtkcommandline.py, net/telnet.py, realms.py: implement proper
+      handling of ECHO telnet option.
+
 New since 0.2
 -------------
 

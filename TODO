@@ -16,7 +16,7 @@ Features and miscellanea:
    going on.
  - unicode (\U and \u) escapes in escape_parser.py
  - multiline triggers
- - ECHO, EOR, ttypes
+ - EOR, ttypes, LINEMODE
  - a wizard to create a main module, plus a way to run them without the 
    command line.
 

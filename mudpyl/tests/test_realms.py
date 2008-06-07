@@ -332,7 +332,15 @@ class Test_send:
                               RunLengthList([(0, bg_code(BLACK))]))]
 
         assert self.lines_gotten == expecting
-                              
+
+    def test_server_echo_defaultly_False(self):
+        assert not self.realm.server_echo
+
+    def test_doesnt_echo_if_server_echo_is_True(self):
+        self.realm.server_echo = True
+        self.realm.send("Foo")
+        assert self.lines_gotten == []
+
 #XXX: not tested still - TriggerMatchingRealm
 #also not tested: send() and default echoing in MatchingRealms
 

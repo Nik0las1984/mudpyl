@@ -17,7 +17,7 @@ def test_TelnetclientFactory_sets_main_module_name():
     c = TelnetClientFactory(None, None, o)
     assert c.main_module_name is o
 
-from mudpyl.net.telnet import TelnetClient
+from mudpyl.net.telnet import TelnetClient, ECHO
 from mudpyl.net.mccp import COMPRESS2
 
 class Test_LineReceiver_aspects:
@@ -112,6 +112,37 @@ class Test_MCCP:
     def test_close_loses_connection(self):
         self.tc.close()
         assert self.t.lost_connection
+
+class Test_server_echo_setting:
+
+    def setUp(self):
+        self.f = TelnetClientFactory(None, 'ascii', None)
+        self.f.gui = Mock()
+        self.tc = TelnetClient(self.f)
+        self.tc.transport = FakeTransport()
+
+    def test_allows_enabling(self):
+        res = self.tc.enableRemote(ECHO)
+        assert res
+
+    def test_enable_sets_server_echo_to_True(self):
+        self.tc.enableRemote(ECHO)
+        assert self.f.realm.server_echo
+
+    def test_enable_hides_input_box_but_grabs_focus(self):
+        self.tc.enableRemote(ECHO)
+        assert self.f.gui.command_line.hide.called
+        assert self.f.gui.command_line.grab_focus.called
+
+    def test_disable_sets_server_echo_to_False(self):
+        self.tc.enableRemote(ECHO)
+        self.tc.disableRemote(ECHO)
+        assert not self.f.realm.server_echo
+
+    def test_disable_shows_input_box_and_grabs_focus(self):
+        self.tc.disableRemote(ECHO)
+        assert self.f.gui.command_line.show.called
+        assert self.f.gui.command_line.grab_focus.called
 
 from mudpyl.metaline import Metaline, RunLengthList
 from mudpyl.colours import fg_code, RED, WHITE, BLACK, bg_code

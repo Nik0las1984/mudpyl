@@ -1,5 +1,5 @@
 """The actual connection to the MUD."""
-from twisted.conch.telnet import Telnet, GA, IAC
+from twisted.conch.telnet import Telnet, GA, IAC, ECHO
 from twisted.protocols.basic import LineOnlyReceiver
 from twisted.internet.protocol import ClientFactory
 from mudpyl.net.nvt import ColourCodeParser, make_string_sane
@@ -39,6 +39,14 @@ class TelnetClient(Telnet, LineOnlyReceiver):
         if option == COMPRESS2:
             self.allowing_compress = True
             return True
+        elif option == ECHO:
+            self.factory.realm.server_echo = True
+            #hide the command line. This won't stop a determined cracker
+            #getting the password if it's typed in (eg, shift-home will select
+            #and then they can copy), but it stops shoulder-surfing at least
+            self.factory.gui.command_line.hide()
+            self.factory.gui.command_line.grab_focus()
+            return True
         else:
             return False
 
@@ -46,6 +54,10 @@ class TelnetClient(Telnet, LineOnlyReceiver):
         """Allow MCCP to be turned off."""
         if option == COMPRESS2:
             self.allowing_compress = False
+        elif option == ECHO:
+            self.factory.realm.server_echo = False
+            self.factory.gui.command_line.show()
+            self.factory.gui.command_line.grab_focus()
 
     def turn_on_compression(self, bytes):
         """Actually enable MCCP."""

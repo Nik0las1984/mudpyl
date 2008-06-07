@@ -25,6 +25,7 @@ class RootRealm(object):
         self.modules_loaded = set()
         self._escape_parser = EscapeParser()
         self.tracing = False
+        self.server_echo = False
         self.console_ns = {'realm': self}
         self.console = InteractiveConsole(self.console_ns)
 
@@ -204,6 +205,7 @@ class RootRealm(object):
 
     def send(self, line, echo = True):
         """Match aliases against the line and perhaps send it to the MUD."""
+        echo = not self.server_echo and echo
         realm = AliasMatchingRealm(line, echo, parent = self,
                                    root = self)
         realm.process()

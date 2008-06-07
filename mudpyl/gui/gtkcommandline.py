@@ -62,7 +62,8 @@ class CommandView(gtk.TextView):
         text = self.get_all_text()
         self.buffer.set_text('')
         self.realm.receive_gui_line(text)
-        self.hist.add_command(text)
+        if not self.realm.server_echo:
+            self.hist.add_command(text)
 
     def tab_complete(self):
         """Tab-completion."""
