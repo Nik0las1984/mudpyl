@@ -37,6 +37,10 @@ New since 0.3
     - gui/gtkcommandline.py, net/telnet.py, realms.py: implement proper
       handling of ECHO telnet option.
 
+2008-06-15 Sam Pointon <sampointon@gmail.com>
+    - metaline.py: reimplmeneted in terms of sorteddict. Added get_colour_at,
+      removed as_populated_index_list.
+
 New since 0.2
 -------------
 

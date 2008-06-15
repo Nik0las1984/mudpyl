@@ -39,6 +39,7 @@ class RunLengthList(sorteddict):
         for key, val in self.items():
             if val == prev_val:
                 del self[key]
+            prev_val = val
 
     def add_colour(self, ind, value):
         """Add a value starting at a specific point."""
