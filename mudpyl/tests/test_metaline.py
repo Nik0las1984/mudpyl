@@ -166,7 +166,7 @@ def test_RunLengthList_add_colour_normalises_afterwards():
 
 def test_copy_returns_different_lists():
     r = RunLengthList([(0, 'foo')])
-    assert r.items()[:] is not r.copy().items()
+    assert r.items() is not r.copy().items()
 
 def test_RunLengthList_insertion():
     r1 = RunLengthList([(0, 'foo'), (2, 'qux')])

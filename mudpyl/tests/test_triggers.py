@@ -114,7 +114,7 @@ class Test_LineAlterer:
     def test_change_fore(self):
         self.la.change_fore(0, 9, 'foo')
         res = self.la.apply(self.ml)
-        assert res.fores.items()[:] == [(0, 'foo'),
+        assert res.fores.items() == [(0, 'foo'),
                                                     (9, 'C')], \
                res.fores.items()
 
@@ -130,7 +130,7 @@ class Test_LineAlterer:
         expected = [(0, fg_code(RED, True)),
                     (7, fg_code(CYAN, False)),
                     (13, fg_code(WHITE, False))]
-        assert res.fores.items()[:] == expected, \
+        assert res.fores.items() == expected, \
                res.fores.items()
 
     def test_change_fore_with_no_right_bound(self):

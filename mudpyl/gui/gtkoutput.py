@@ -89,7 +89,7 @@ class OutputView(gtk.TextView):
         """
         #add a dummy item at the end to make sure that even the very last
         #of the metaline is covered
-        values = colours.items()[:]
+        values = colours.items()
         values.append((end_offset, None))
         end_iter = self.buffer.get_iter_at_offset(offset)
         for (start, colour), (end, _) in pairwise(values):
