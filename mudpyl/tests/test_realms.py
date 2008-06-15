@@ -90,13 +90,13 @@ class Test_write:
 
     def test_no_colourbleed_fg(self):
         self.realm.write("eggs")
-        cols = self.lines_gotten[0].fores.values[:]
+        cols = self.lines_gotten[0].fores.items()[:]
         expected = [(0, fg_code(WHITE, False))]
         assert cols == expected, (cols, expected)
 
     def test_no_colourbleed_bg(self):
         self.realm.write("eggs")
-        cols = self.lines_gotten[0].backs.values[:]
+        cols = self.lines_gotten[0].backs.items()[:]
         assert cols ==  [(0, bg_code(BLACK))], cols
 
     def test_passes_on_wrap_default(self):

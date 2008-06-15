@@ -97,9 +97,9 @@ class Test_LineAlterer:
         self.la.insert(0, "foo")
         self.la.change_fore(1, 4, sentinel.fore)
         res = self.la.apply(self.ml)
-        assert res.fores.values == [(0, 'A'),
+        assert res.fores.items() == [(0, 'A'),
                                     (4, sentinel.fore),
-                                    (7, 'C')], res.fores.values
+                                    (7, 'C')], res.fores.items()
 
     #XXX: test chaining. Each method must be tested before an insert and a
     #     delete.
@@ -114,9 +114,9 @@ class Test_LineAlterer:
     def test_change_fore(self):
         self.la.change_fore(0, 9, 'foo')
         res = self.la.apply(self.ml)
-        assert res.fores.values[:] == [(0, 'foo'),
+        assert res.fores.items()[:] == [(0, 'foo'),
                                                     (9, 'C')], \
-               res.fores.values
+               res.fores.items()
 
     def test_change_fore_with_trailing_colours(self):
         #don't know why, but this test exposed what looked like a quasi-random
@@ -130,15 +130,15 @@ class Test_LineAlterer:
         expected = [(0, fg_code(RED, True)),
                     (7, fg_code(CYAN, False)),
                     (13, fg_code(WHITE, False))]
-        assert res.fores.values[:] == expected, \
-               res.fores.values
+        assert res.fores.items()[:] == expected, \
+               res.fores.items()
 
     def test_change_fore_with_no_right_bound(self):
         ml = Metaline("foobarbaz", RunLengthList([(0, fg_code(WHITE, False))]),
                       RunLengthList([(0, None)]))
         self.la.change_fore(3, None, fg_code(RED, False))
         res = self.la.apply(ml)
-        assert res.fores.values == [(0, fg_code(WHITE, False)),
+        assert res.fores.items() == [(0, fg_code(WHITE, False)),
                                     (3, fg_code(RED, False))]
 
     def test_insert_metaline(self):
