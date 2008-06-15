@@ -24,32 +24,32 @@ class Test_LineAlterer:
     def test_delete_adjusts_fore_indices(self):
         self.la.delete(1, 2)
         res = self.la.apply(self.ml)
-        assert res.fores.as_populated_list() == ['A', 'B', 'B', 'C']
+        assert res.fores.items() == [(0, 'A'), (1, 'B'), (3, 'C')]
 
     def test_delete_right_on_fore_colour_start_doesnt_remove_colour(self):
         self.la.delete(1, 3)
         res = self.la.apply(self.ml)
-        assert res.fores.as_populated_list() == ['A', 'B', 'C']
+        assert res.fores.items() == [(0, 'A'), (1, 'B'), (2, 'C')]
 
     def test_delete_over_whole_fore_colour_range_does_remove_colour(self):
         self.la.delete(2, 4)
         res = self.la.apply(self.ml)
-        assert res.fores.as_populated_list() == ['A', 'A', 'C']
+        assert res.fores.items() == [(0, 'A'), (2, 'C')]
 
     def test_delete_adjusts_back_indices(self):
         self.la.delete(1, 2)
         res = self.la.apply(self.ml)
-        assert res.backs.as_populated_list() == ['D', 'E', 'E', 'F']
+        assert res.backs.items() == [(0, 'D'), (1, 'E'), (3, 'F')]
 
     def test_delete_right_on_back_colour_start_doesnt_remove_colour(self):
         self.la.delete(1, 3)
         res = self.la.apply(self.ml)
-        assert res.backs.as_populated_list() == ['D', 'E', 'F']
+        assert res.backs.items() == [(0, 'D'), (1, 'E'), (2, 'F')]
 
     def test_delete_over_whole_back_colour_range_does_remove_colour(self):
         self.la.delete(2, 4)
         res = self.la.apply(self.ml)
-        assert res.backs.as_populated_list() == ['D', 'D', 'F']
+        assert res.backs.items() == [(0, 'D'),(2, 'F')]
 
     def test_delete_happens_after_delete_ahead_in_string(self):
         self.la.delete(1, 2)

@@ -67,13 +67,18 @@ class RunLengthList(sorteddict):
     def index_adjust(self, start, change):
         """Move the values along a specific amount."""
         new_keys = [iadjust(ind, start, change) for ind in self]
-        self._non_perm_setkeys(new_keys)
+        self._rename_keys(new_keys)
         if change < 0:
             #if the change moves things forwards, things may be made redundant
             #thus we must normalise for this case
             self._normalise()
 
-    def _non_perm_setkeys(self, new_keys):
+    def _rename_keys(self, new_keys):
+        """This may leave the RunLengthList non-normalised, depending on the
+        new keys.
+
+        Also might be slow.
+        """
         self.setitems(zip(new_keys, self.values()))
 
     def blank_between(self, start, end):
@@ -94,6 +99,7 @@ class RunLengthList(sorteddict):
         if end is not None:
             #don't lose the ending colour information
             self._make_explicit(end)
+        #could really do with slice deletion for sorteddicts :(
         res = [val for val in self.items() if not (start <= val[0] and
                                                    (val[0] < end or
                                                     end is None))]

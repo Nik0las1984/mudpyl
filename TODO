@@ -44,7 +44,6 @@ Other refactorings:
    Twisted koolaid.
  - make an abstract GUI interface, allowing for some other implementations 
    This is kind of half done informally, but half not.
- - write RunLengthList using an ordered dict or similar
  - look at which bits of output_manager really belong there, and which bits
    should be shipped to html.py
 

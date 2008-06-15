@@ -118,9 +118,6 @@ def test_ColourCodeParser_bg_change():
     ml = ccp.parseline(inline)
     assert ml.backs.items() == [(0, bg_code(BLACK)),
                                                (3, bg_code(CYAN))]
-    assert ml.backs.as_populated_list() == [bg_code(BLACK)] * 3 + \
-                                           [bg_code(CYAN)]
-
 
 def test_ColourCodeParser_no_colours():
     ccp = ColourCodeParser()

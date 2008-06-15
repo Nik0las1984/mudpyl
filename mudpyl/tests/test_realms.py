@@ -459,8 +459,8 @@ class Test_connection_events:
         assert self.realm.write.called
         ml = self.realm.write.call_args[0][0]
         assert ml.line == 'FOOBAR'
-        assert ml.fores.as_populated_list() == [HexFGCode(0xFF, 0xAA, 0x00)]
-        assert ml.backs.as_populated_list() == [bg_code(BLACK)]
+        assert ml.fores.items() == [(0, HexFGCode(0xFF, 0xAA, 0x00))]
+        assert ml.backs.items() == [(0, bg_code(BLACK))]
 
     @patch('mudpyl.realms', 'time')
     def test_connection_made_writes_message(self, our_time):
@@ -470,8 +470,8 @@ class Test_connection_events:
         assert self.realm.write.called
         ml = self.realm.write.call_args[0][0]
         assert ml.line == 'FOOBAR'
-        assert ml.fores.as_populated_list() == [HexFGCode(0xFF, 0xAA, 0x00)]
-        assert ml.backs.as_populated_list() == [bg_code(BLACK)]
+        assert ml.fores.items() == [(0, HexFGCode(0xFF, 0xAA, 0x00))]
+        assert ml.backs.items() == [(0, bg_code(BLACK))]
 
     def test_passes_on_connection_made(self):
         self.realm.connection_made()

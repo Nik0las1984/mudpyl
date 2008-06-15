@@ -261,3 +261,19 @@ def test_Metaline_addition_first_has_trailling_colours():
     res = ml + simpleml("bar", sentinel.barfore, sentinel.barback)
     assert res.fores.items() == [(0, sentinel.foofore2),
                                 (3, sentinel.barfore)], res.fores.items()
+
+def test_get_colour_at_works_for_index_0():
+    rll = RunLengthList({0: 'foo', 1: 'bar'})
+    assert rll.get_colour_at(0) == 'foo'
+
+def test_get_colour_at_works_after_last_index():
+    rll = RunLengthList({0: 'foo', 2: 'bar'})
+    assert rll.get_colour_at(10) == 'bar'
+
+def test_get_colour_at_works_right_before_colour_change():
+    rll = RunLengthList({0: 'foo', 2: 'bar'})
+    assert rll.get_colour_at(1) == 'foo'
+
+def test_get_colour_at_works_on_colour_change():
+    rll = RunLengthList({0: 'foo', 2: 'bar'})
+    assert rll.get_colour_at(2) == 'bar'
