@@ -6,6 +6,9 @@ from mudpyl.net.nvt import ColourCodeParser, make_string_sane
 from mudpyl.output_manager import OutputManager
 from mudpyl.net.mccp import MCCPTransport, COMPRESS2
 from mudpyl.realms import RootRealm
+import re
+
+broken_line_ending_pattern = re.compile("([^\r]|^)\n\r")
 
 #pylint doesn't like Twisted naming conventions
 #pylint: disable-msg= C0103
@@ -24,6 +27,7 @@ class TelnetClient(Telnet, LineOnlyReceiver):
         self.factory = factory
         self.allowing_compress = False
         self._colourparser = ColourCodeParser()
+        self.fix_broken_godwars_line_endings = True
 
     def connectionMade(self):
         """Call our superclasses.
@@ -65,6 +69,12 @@ class TelnetClient(Telnet, LineOnlyReceiver):
         if not self.allowing_compress or bytes:
             return
         self.transport.their_mccp_active = True
+
+    def dataReceived(self, data):
+        if self.fix_broken_godwars_line_endings:
+            while broken_line_ending_pattern.match(data):
+                data = re.sub(broken_line_ending_pattern, "\\1\r\n", data, 1)
+        Telnet.dataReceived(self, data)
 
     applicationDataReceived = LineOnlyReceiver.dataReceived
 
