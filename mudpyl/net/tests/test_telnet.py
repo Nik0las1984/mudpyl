@@ -144,7 +144,7 @@ class Test_server_echo_setting:
         assert self.f.gui.command_line.show.called
         assert self.f.gui.command_line.grab_focus.called
 
-from mudpyl.metaline import Metaline, RunLengthList
+from mudpyl.metaline import Metaline, RunLengthList, simpleml
 from mudpyl.colours import fg_code, RED, WHITE, BLACK, bg_code
 from twisted.conch.telnet import IAC, GA, BS, VT
 
@@ -207,6 +207,33 @@ class Test_receiving_lines:
                              wrap = True)]
         self.tc.lineReceived('bar\x92baz')
         lines = [line for ((line,), kwargs) in self.e.receive.call_args_list]
+        assert lines == expected, lines
+
+    def test_receives_repeated_normal_CR_LF_in_broken_godwars_mode_fine(self):
+        self.tc.fix_broken_godwars_line_endings = True
+        self.tc.dataReceived("foo\r\n\r\n")
+        expected = [simpleml("foo", fg_code(WHITE, False), bg_code(BLACK)),
+                    simpleml("", fg_code(WHITE, False), bg_code(BLACK))]
+        for ml in expected:
+            ml.wrap = True
+        lines = [line for ((line,), kwargs) in self.e.receive.call_args_list]
+        assert lines == expected, lines
+
+    def test_fixes_LF_CR_normally(self):
+        self.tc.fix_broken_godwars_line_endings = True
+        self.tc.dataReceived("foo\n\r")
+        expected = [simpleml("foo", fg_code(WHITE, False), bg_code(BLACK))]
+        expected[0].wrap = True
+        lines = [line for ((line,), kwargs) in self.e.receive.call_args_list]
+        assert lines == expected, lines
+
+    def test_fixes_LF_CR_at_start(self):
+        self.tc.fix_broken_godwars_line_endings = True
+        self.tc.dataReceived("\n\r")
+        expected = [simpleml("", fg_code(WHITE, False), bg_code(BLACK))]
+        expected[0].wrap = True
+        lines = [line for ((line,), kwargs) in self.e.receive.call_args_list]
+        print expected
         assert lines == expected, lines
 
 def test_connectionLost_sends_connection_closed_to_the_outputs():

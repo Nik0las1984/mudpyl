@@ -41,6 +41,9 @@ New since 0.3
     - metaline.py: reimplmeneted in terms of sorteddict. Added get_colour_at,
       removed as_populated_index_list.
 
+2008-06-27 Sam Pointon <sampointon@gmail.com>
+    - net/telnet.py: now automatically fixes Godwars II's broken line endings
+
 New since 0.2
 -------------
 
