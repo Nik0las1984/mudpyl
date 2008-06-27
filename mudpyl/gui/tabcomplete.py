@@ -47,13 +47,17 @@ class Trie(ordereddict):
 
     def _add_word(self, key):
         """Add a new key to the trie casefully."""
-        #slice to get the empty string, not an IndexError, if the key is
-        #empty.
-        first = key[0:1]
-        trie = self.get(first, Trie())
-        self[first] = trie
-        if first:
-            trie._add_word(key[1:])
+        trie = self
+        for char in key:
+            #use this construct rather than .get() because constructing a Trie
+            #is expensive when it gets run a lot
+            if char in trie:
+                child = trie[char]
+            else:
+                child = Trie()
+            trie[char] = child
+            trie = child
+        trie[''] = Trie()
             
     #pylint: enable-msg = E1101, W0212
 
