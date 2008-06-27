@@ -37,8 +37,12 @@ New since 0.3
     - gui/gtkcommandline.py, net/telnet.py, realms.py: implement proper
       handling of ECHO telnet option.
 
+2008-06-26 Sam Pointon <sampointon@gmail.com>
+    - net/telnet.py: now automatically fixes Godwars II's broken line endings
+
 2008-06-27 Sam Pointon <sampointon@gmail.com>
-    - net/telnet.py :now automatically fixes Godwars II's broken line endings
+    - gui/tabcomplete.py: sped up _add_word by making it non-recursive and
+      less wasteful.
 
 New since 0.2
 -------------
