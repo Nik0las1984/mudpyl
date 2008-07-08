@@ -6,8 +6,8 @@ class HitTracker(EarlyInitialisingModule):
     """Tracks the previous attack that you've been hit by."""
 
     def __init__(self, attacks):
-        self.attack_type = None
         self.illusioned = False
+        self.attacks_this_round = []
         self.triggers = [self.make_trigger(pat, attack_type, set(affs))
                          for pat, attack_type, affs in attacks]
 
@@ -23,7 +23,16 @@ class HitTracker(EarlyInitialisingModule):
 
     def hit(self, attack_type):
         """Set our previous attack type."""
-        self.attack_type = attack_type
+        self.attacks_this_round.append(attack_type)
+
+    @property
+    def attack_type(self):
+        """Return the type of the last attack, or None if there were none
+        yet this round."""
+        if not self.attacks_this_round:
+            return None
+        else:
+            return self.attacks_this_round[-1]
 
     def __call__(self, realm):
         realm.hit_tracker = self

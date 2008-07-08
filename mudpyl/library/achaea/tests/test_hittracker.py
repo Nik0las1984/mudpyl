@@ -20,7 +20,7 @@ def test_calls_hit_when_afflictions_contains_appropriate_afflictions():
 
 def test_sets_illusioned_to_false_when_afflicted_properly():
     realm = Mock()
-    realm.root.aff_tracker.afflictions = set(['spam'])
+    realm.root.aff_tracker.afflictions = set(['spam', 'eggs'])
     attacks = [('foo', 'bar', ['spam'])]
     ht = HitTracker(attacks)
     trig = ht.triggers[0]
@@ -29,7 +29,7 @@ def test_sets_illusioned_to_false_when_afflicted_properly():
     
 def test_still_calls_hit_when_not_afflicted_correctly():
     realm = Mock()
-    realm.root.aff_tracker.afflictions = set()
+    realm.root.aff_tracker.afflictions = set(['eggs'])
     attacks = [('foo', 'bar', ['spam'])]
     ht = HitTracker(attacks)
     ht.hit = Mock()
@@ -56,3 +56,12 @@ def test_adds_itself_as_hit_tracker_to_the_root_realm():
     realm = Mock()
     ht(realm)
     assert realm.hit_tracker is ht
+
+def test_hit_appends_to_attacks_this_round():
+    ht = HitTracker([])
+    ht.hit('foo')
+    assert ['foo'] ==  ht.attacks_this_round
+
+def test_attack_type_is_None_with_no_attacks():
+    ht = HitTracker([])
+    assert ht.attack_type is None

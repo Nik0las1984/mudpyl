@@ -65,5 +65,6 @@ Specific modules under library/:
      - support for priest-mode (make mana sipping a higher priority)?
   - achaea/afftracker.py:
      - some kind of support for data files of afflictions
-     - be wary of defs that block afflictions (eg, fitness stops asthma)
+  - achaea/hittracker.py:
+     - timer-based anti-illusion
 

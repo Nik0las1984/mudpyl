@@ -6,12 +6,13 @@ class AffTracker(EarlyInitialisingModule):
     """Tracks afflictions and adds them to a set of afflictions."""
 
     def __init__(self, affpats):
+        self.illusioned = False
         self.afflictions = set()
         self.afflicted_this_round = set()
-        self.triggers = [self.make_aff_trigger(pat, aff, attacks)
-                         for pat, aff, attacks in affpats]
+        self.triggers = [self.make_aff_trigger(pat, aff, attacks, set(prereq))
+                         for pat, aff, attacks, prereq in affpats]
 
-    def make_aff_trigger(self, pat, aff, attacks):
+    def make_aff_trigger(self, pat, aff, attacks, prereq):
         """Constructs a trigger for the given attern, affliction name and
         the attacks that can cause it.
         """
@@ -22,6 +23,7 @@ class AffTracker(EarlyInitialisingModule):
             """
             if realm.root.hit_tracker.attack_type in attacks:
                 self.afflicted(aff)
+                self.illusioned = not self.afflictions >= prereq
         return aff_message_seen()
 
     def afflicted(self, affliction):

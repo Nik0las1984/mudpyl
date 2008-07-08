@@ -46,6 +46,7 @@ New since 0.3
 
 2008-07-08 Sam Pointon <sampointon@gmail.com>
     - mudpyl/library/achaea/afftracker.py, hittracker.py: new modules
+    - mudpyl/library/imperian/autosipper.py moved to mudpyl/library/
 
 New since 0.2
 -------------

@@ -2,14 +2,14 @@ from mudpyl.library.achaea.afftracker import AffTracker
 from mock import Mock, sentinel
 
 def test_creates_triggers_with_patterns_given():
-    affpats = [('foo', 'bar', []),
-               ('baz', 'qux', [])]
+    affpats = [('foo', 'bar', [], []),
+               ('baz', 'qux', [], [])]
     a = AffTracker(affpats)
     trig_pats = [trig.regex.pattern for trig in a.triggers]
     assert set(trig_pats) == set(['foo', 'baz'])
 
 def test_trigger_calls_afflicted_with_given_name():
-    pats = [('foo', 'bar', [sentinel.attack_type])]
+    pats = [('foo', 'bar', [sentinel.attack_type], [])]
     a = AffTracker(pats)
     trig = a.triggers[0]
     a.afflicted = Mock()
@@ -19,13 +19,33 @@ def test_trigger_calls_afflicted_with_given_name():
     assert a.afflicted.call_args_list == [(('bar',), {})]
 
 def test_trigger_doesnt_call_afflicted_if_attack_type_is_wrong():
-    pats = [('foo', 'bar', [sentinel.attack_type])]
+    pats = [('foo', 'bar', [sentinel.attack_type], [])]
     a = AffTracker(pats)
     trig = a.triggers[0]
     a.afflicted = Mock()
     trig.func(sentinel.match, Mock())
     assert not a.afflicted.called
 
+def test_trigger_sets_illusioned_if_not_afflicted_right():
+    pats = [('foo', 'bar', [sentinel.attack_type], ['qux'])]
+    a = AffTracker(pats)
+    a.afflictions.add('spam')
+    realm = Mock()
+    realm.root.hit_tracker.attack_type = sentinel.attack_type
+    trig = a.triggers[0]
+    trig.func(sentinel.match, realm)
+    assert a.illusioned
+
+def test_triger_doesnt_set_illusioned_if_afflicted_right():
+    pats = [('foo', 'bar', [sentinel.attack_type], ['qux'])]
+    a = AffTracker(pats)
+    a.afflictions.add('qux')
+    realm = Mock()
+    realm.root.hit_tracker.attack_type = sentinel.attack_type
+    trig = a.triggers[0]
+    trig.func(sentinel.match, realm)
+    assert not a.illusioned
+    
 def test_afflicted_adds_affliction_to_set_for_round_if_not_in_afflictions():
     a = AffTracker([])
     a.afflicted(sentinel.affliction)
