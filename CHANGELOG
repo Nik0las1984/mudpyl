@@ -45,7 +45,7 @@ New since 0.3
       less wasteful.
 
 2008-07-08 Sam Pointon <sampointon@gmail.com>
-    - mudpyl/library/achaea/afftracker.py: new module
+    - mudpyl/library/achaea/afftracker.py, hittracker.py: new modules
 
 New since 0.2
 -------------

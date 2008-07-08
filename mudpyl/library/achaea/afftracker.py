@@ -6,6 +6,7 @@ class AffTracker(EarlyInitialisingModule):
     """Tracks afflictions and adds them to a set of afflictions."""
 
     def __init__(self, affpats):
+        self.afflictions = set()
         self.afflicted_this_round = set()
         self.triggers = [self.make_aff_trigger(pat, aff, attacks)
                          for pat, aff, attacks in affpats]
@@ -19,10 +20,16 @@ class AffTracker(EarlyInitialisingModule):
             """Check that it was possible to be hit by the affliction, then
             add it to our set of afflictions.
             """
-            if realm.hit_tracker.attack_type in attacks:
+            if realm.root.hit_tracker.attack_type in attacks:
                 self.afflicted(aff)
         return aff_message_seen()
 
     def afflicted(self, affliction):
         """Mark ourselves as afflicted this round."""
-        self.afflicted_this_round.add(affliction)
+        if affliction not in self.afflictions:
+            self.afflicted_this_round.add(affliction)
+            self.afflictions.add(affliction)
+
+    def __call__(self, realm):
+        realm.aff_tracker = self
+        EarlyInitialisingModule.__call__(self, realm)
