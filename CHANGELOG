@@ -44,6 +44,9 @@ New since 0.3
     - gui/tabcomplete.py: sped up _add_word by making it non-recursive and
       less wasteful.
 
+2008-07-08 Sam Pointon <sampointon@gmail.com>
+    - mudpyl/library/achaea/afftracker.py: new module
+
 New since 0.2
 -------------
 

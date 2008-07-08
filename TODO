@@ -63,4 +63,7 @@ Specific modules under library/:
   - imperian/autosipper.py: 
      - make it less trusting and add timeouts.
      - support for priest-mode (make mana sipping a higher priority)?
+  - achaea/afftracker.py:
+     - some kind of support for data files of afflictions
+     - be wary of defs that block afflictions (eg, fitness stops asthma)
 
