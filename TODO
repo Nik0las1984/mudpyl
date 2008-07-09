@@ -60,7 +60,7 @@ Specific modules under library/:
   - colourtells.py:
      - should also colour TELLS and SHOWTELL.
      - should have a SHOWTELLCOLOURS alias
-  - imperian/autosipper.py: 
+  - autosipper.py: 
      - make it less trusting and add timeouts.
      - support for priest-mode (make mana sipping a higher priority)?
   - achaea/afftracker.py:

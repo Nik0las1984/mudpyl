@@ -48,6 +48,11 @@ New since 0.3
     - mudpyl/library/achaea/afftracker.py, hittracker.py: new modules
     - mudpyl/library/imperian/autosipper.py moved to mudpyl/library/
 
+2008-07-09 Sam Pointon <sampointon@gmail.com>
+    - mudpyl/library/autosipper.py: removed Imperian-specific parts
+    - mudpyl/library/imperian/autosipper.py: reconstituted
+    - mudpyl/library/achaea/autosipper.py: new module
+
 New since 0.2
 -------------
 

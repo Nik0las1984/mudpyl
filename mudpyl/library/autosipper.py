@@ -1,12 +1,12 @@
 """Automatically sips health.
 
-For: Imperian.
+For: IRE MUDs.
 """
 from mudpyl.modules import EarlyInitialisingModule
 from mudpyl.aliases import binding_alias
 from mudpyl.triggers import binding_trigger
 
-class Autosipper(EarlyInitialisingModule):
+class GenericAutosipper(EarlyInitialisingModule):
 
     """Automatically sips health and tracks what its sip threshold should be.
     """
@@ -23,12 +23,13 @@ class Autosipper(EarlyInitialisingModule):
 #are actually perfectly harmless.
 #pylint: disable-msg=W0613
 
-    @binding_trigger('^H:(\d+) M:(\d+) E:\d+ W:\d+ <.*>')
+    @binding_trigger(None)
     def prompt_seen(self, match, realm):
         """We've seen a prompt. Do we need to sip?"""
         health, mana = match.groups()
         health = int(health)
         mana = int(mana)
+        #TODO: account for anorexia, pausing, etc
 
         if self.state == 'sip balance':
             if health <= self.health_threshold:
@@ -55,19 +56,6 @@ class Autosipper(EarlyInitialisingModule):
         """We've gotten sip balance back."""
         if self.state == 'off balance':
             self.state = 'sip balance'
-
-    @binding_trigger('^ Health   : \d+/(\d+)\s*Reserves : \d+/\d+$')
-    def health_update(self, match, realm):
-        """Recalcuate our sipping threshold based on SCORE."""
-        self.max_health = int(match.group(1))
-        self.calculate_threshold()
-
-    @binding_trigger('^ Mana     : \d+/(\d+)\s*Reserves : \d+/\d+$')
-    def mana_update(self, match, realm):
-        """Recalcuate our sipping threshold based on SCORE."""
-        self.max_mana = int(match.group(1))
-        self.calculate_threshold()
-
 #pylint: enable-msg=W0613
 
     @property
@@ -82,9 +70,5 @@ class Autosipper(EarlyInitialisingModule):
         return [self.sip_health, self.sip_mana]
 
     def calculate_threshold(self):
-        """Calculate the threshold where we should start sipping at."""
-        healthsip = (self.max_health * 11 * 0.15 + 100) / 11
-        self.health_threshold = self.max_health - healthsip
-
-        manasip = (self.max_mana * 11 * 0.15 + 100) / 11
-        self.mana_threshold = self.max_mana - manasip
+        """Work out what our sipping thresholds are."""
+        raise NotImplementedError
