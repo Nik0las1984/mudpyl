@@ -28,3 +28,9 @@ class Autosipper(GenericAutosipper):
         """Recalcuate our sipping threshold based on SCORE."""
         self.max_health = int(match.group(1))
         self.calculate_threshold()
+
+    @property
+    def triggers(self):
+        #XXX: clumsy
+        return [self.mana_update, self.health_update] + \
+               GenericAutosipper.triggers.fget(self)

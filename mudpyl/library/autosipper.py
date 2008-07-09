@@ -61,8 +61,7 @@ class GenericAutosipper(EarlyInitialisingModule):
     @property
     def triggers(self):
         """The triggers we want added."""
-        return [self.prompt_seen, self.got_balance, self.health_update,
-                self.mana_update]
+        return [self.prompt_seen, self.got_balance]
 
     @property
     def aliases(self):

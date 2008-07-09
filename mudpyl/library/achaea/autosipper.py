@@ -24,3 +24,8 @@ class AchaeanAutosipper(GenericAutosipper):
         """Record what our maximum health and mana are."""
         self.max_health, self.max_mana = match.groups()
         self.calculate_threshold()
+
+    @property
+    def triggers(self):
+        #XXX: this is more than a bit clumsy
+        return [self.set_max_values] + GenericAutosipper.triggers.fget(self)
