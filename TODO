@@ -67,4 +67,5 @@ Specific modules under library/:
      - some kind of support for data files of afflictions
   - achaea/hittracker.py:
      - timer-based anti-illusion
+     - limb hit tracking
 

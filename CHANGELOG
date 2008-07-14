@@ -53,6 +53,9 @@ New since 0.3
     - mudpyl/library/imperian/autosipper.py: reconstituted
     - mudpyl/library/achaea/autosipper.py: new module
 
+2008-07-14 Sam Pointon <sampointon@gmail.com>
+    - mudpyl/library/afftracker.py, hittracker.py: combined into curing.py
+
 New since 0.2
 -------------
 
