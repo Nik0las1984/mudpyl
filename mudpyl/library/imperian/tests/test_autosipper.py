@@ -6,11 +6,6 @@ class DummyRealm:
     class root:
         tracing = False
 
-def test_health_update_matching():
-    a = Autosipper(10, 10)
-    ml = Metaline(' Health   : 5/5     Reserves : 5/5', None, None)
-    assert list(a.health_update.match(ml))
-
 def test_health_update_max_health_setting():
     m = re.match('(\d+)', '42')
     a = Autosipper(10, 10)
@@ -18,3 +13,8 @@ def test_health_update_max_health_setting():
     assert a.max_health == 42
 
 #XXX
+
+def test_health_update_matching():
+    a = Autosipper(10, 10)
+    ml = Metaline(' Health   : 5/5     Reserves : 5/5', None, None)
+    assert list(a.health_update.match(ml))
