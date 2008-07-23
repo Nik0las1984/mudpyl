@@ -19,6 +19,10 @@ Features and miscellanea:
  - EOR, ttypes, LINEMODE
  - a wizard to create a main module, plus a way to run them without the 
    command line.
+ - alternative tab completion, for when you don't just want the most recent
+   word seen. (NB: the Trie data structure loses information; imagine if
+   foobar, foospam, foobaz were entered - we don't know if foospam or foobar
+   came first)
 
 Screen related:
  - search facility in the output

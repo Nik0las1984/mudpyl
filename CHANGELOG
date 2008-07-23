@@ -60,6 +60,9 @@ New since 0.3
 2008-07-14 Sam Pointon <sampointon@gmail.com>
     - mudpyl/library/afftracker.py, hittracker.py: combined into curing.py
 
+2008-07-23 Sam Pointon <sampointon@gmail.com>
+    - realms.py, matchers.py: new method, trace.
+
 New since 0.2
 -------------
 

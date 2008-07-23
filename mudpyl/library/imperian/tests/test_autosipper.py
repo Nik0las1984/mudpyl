@@ -1,15 +1,12 @@
 from mudpyl.library.imperian.autosipper import Autosipper
 from mudpyl.metaline import Metaline
+from mock import Mock
 import re
-
-class DummyRealm:
-    class root:
-        tracing = False
 
 def test_health_update_max_health_setting():
     m = re.match('(\d+)', '42')
     a = Autosipper(10, 10)
-    a.health_update(m, DummyRealm())
+    a.health_update(m, Mock())
     assert a.max_health == 42
 
 #XXX

@@ -1,6 +1,6 @@
 from mudpyl.matchers import ProtoMatcher, BaseMatchingRealm
 from mudpyl.realms import RootRealm
-from mock import Mock, patch
+from mock import Mock, patch, sentinel
 import traceback
 
 class Test__call__:
@@ -9,7 +9,6 @@ class Test__call__:
         self.m = ProtoMatcher(func = self.func)
         self.realm = Mock(spec = BaseMatchingRealm)
         self.realm.root = Mock(spec = RootRealm)
-        self.realm.root.tracing = False
         self.matches = []
 
     def func(self, match, realm):
@@ -22,16 +21,10 @@ class Test__call__:
         assert len(self.matches) == 1
         assert self.matches[0] is o
 
-    def test_doesnt_trace_if_told_not_to(self):
+    def test_traces_calls(self):
         self.m(None, self.realm)
-        assert not self.realm.write.called
-
-    def test_traces_if_told_to(self):
-        self.realm.root.tracing = True
-        self.m(None, self.realm)
-        arg = ('TRACE: %s matched!' % self.m)
-        print self.realm.write.call_args_list
-        assert self.realm.write.call_args_list == [((arg,), {})]
+        arg = '%s matched!' % self.m
+        assert self.realm.trace.call_args_list == [((arg,), {})]
 
     def bad_func(self, match, info):
         raise Exception
@@ -53,3 +46,13 @@ class Test__call__:
             pass
         else:
             assert False
+
+class TestBaseMatchingRealm:
+
+    def setUp(self):
+        self.realm = BaseMatchingRealm(Mock(), Mock())
+
+    def test_forwards_traces_to_parent(self):
+        self.realm.trace(sentinel.trace)
+        assert self.realm.parent.trace.call_args_list == [((sentinel.trace,),
+                                                           {})]
