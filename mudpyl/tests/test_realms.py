@@ -540,3 +540,60 @@ class Test_reload:
         self.realm.reload_main_module()
         assert self.realm.load_module.called
         assert self.realm.load_module.call_args[0] == (sentinel.Module,)
+
+class TestTracing:
+
+    def setUp(self):
+        self.factory = TelnetClientFactory(None, None, sentinel.ModuleName)
+        self.realm = RootRealm(self.factory)
+
+    def test_trace_on_sets_tracing_to_True(self):
+        self.realm.trace = Mock()
+        self.realm.trace_on()
+        assert self.realm.tracing
+
+    def test_tracing_is_off_by_default(self):
+        assert not self.realm.tracing
+
+    def test_trace_off_sets_tracing_to_False(self):
+        self.realm.tracing = True
+        self.realm.trace = Mock()
+        self.realm.trace_off()
+        assert not self.realm.tracing
+
+    def test_trace_on_writes_a_message(self):
+        self.realm.trace = Mock()
+        self.realm.trace_on()
+        assert self.realm.trace.call_args_list == [(('Tracing enabled!',),
+                                                    {})]
+
+    def test_trace_on_writes_nothing_if_already_tracing(self):
+        self.realm.tracing = True
+        self.realm.trace = Mock()
+        self.realm.trace_on()
+        assert not self.realm.trace.called
+
+    def test_trace_off_writes_a_message(self):
+        self.realm.tracing = True
+        self.realm.trace = Mock()
+        self.realm.trace_off()
+        assert self.realm.trace.call_args_list == [(('Tracing disabled!',),
+                                                    {})]
+
+    def test_trace_off_writes_nothing_if_not_already_tracing(self):
+        self.realm.trace = Mock()
+        self.realm.trace_off()
+        assert not self.realm.trace.called
+
+    def test_trace_delegates_to_write_if_tracing(self):
+        self.realm.tracing = True
+        self.realm.write = Mock()
+        self.realm.trace("FOO BAR BAZ")
+        print self.realm.write.call_args_list
+        assert self.realm.write.call_args_list == [(("TRACE: FOO BAR BAZ",),
+                                                    {})]
+
+    def test_trace_writes_nothing_if_not_tracing(self):
+        self.realm.write = Mock()
+        self.realm.trace("FOO BAR BAZ")
+        assert not self.realm.write.called

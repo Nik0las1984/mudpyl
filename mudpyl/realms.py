@@ -133,13 +133,13 @@ class RootRealm(object):
         """Turn tracing (verbose printing to the output screen) on."""
         if not self.tracing:
             self.tracing = True
-            self.write("TRACE: Tracing enabled!")
+            self.trace("Tracing enabled!")
 
     def trace_off(self):
         """Turn tracing off."""
         if self.tracing:
+            self.trace("Tracing disabled!")
             self.tracing = False
-            self.write("TRACE: Tracing disabled!")
 
     def maybe_do_macro(self, chord):
         """Try and run a macro against the given keychord.
@@ -187,6 +187,13 @@ class RootRealm(object):
         
         for receiver in self.peeking_receivers:
             receiver.peek_line(line.line)
+
+    def trace(self, line):
+        """Write the argument to the screen if we are tracing, elsewise do
+        nothing.
+        """
+        if self.tracing:
+            self.write("TRACE: " + line)
 
     #Going towards the MUD.
 
