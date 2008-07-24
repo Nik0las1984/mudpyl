@@ -121,17 +121,28 @@ class BaseMatchingRealm(object):
 
     """A realm representing the matching of triggers or aliases."""
 
-    def __init__(self, root, parent):
+    def __init__(self, root, parent, send_line_to_mud):
         self.root = root
         self.parent = parent
         self._writing_after = []
+        self.send_line_to_mud = send_line_to_mud
+
+    def _write_after(self):
+        """Write everything we've been waiting to."""
+        for noteline, sls, message_type in self._writing_after:
+            if message_type == 'write':
+                self.parent.write(noteline, sls)
+            elif message_type == 'trace':
+                self.parent.trace(noteline)
+            else:
+                raise RuntimeError("dunno what %s is" % message_type)
 
     def write(self, line, soft_line_start = False):
         """Write a line to the screen.
 
         This buffers until the original line has been displayed or echoed.
         """
-        self._writing_after.append((line, soft_line_start))
+        self._writing_after.append((line, soft_line_start, 'write'))
 
     def send(self, line, echo = False):
         """Send a line to the MUD immediately."""
@@ -151,4 +162,4 @@ class BaseMatchingRealm(object):
 
     def trace(self, line):
         """Forward the debugging decision to our parent."""
-        self.parent.trace(line)
+        self._writing_after.append((line, False, 'trace'))

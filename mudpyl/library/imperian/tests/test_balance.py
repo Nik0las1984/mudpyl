@@ -4,7 +4,7 @@ from mudpyl.colours import HexFGCode
 from mudpyl.triggers import LineAlterer
 from mudpyl.realms import RootRealm, TriggerMatchingRealm
 from mudpyl.net.telnet import TelnetClientFactory
-import sys
+from mock import Mock
 import re
 
 class Test_balance_highlight:
@@ -20,7 +20,7 @@ class Test_balance_highlight:
         m = Metaline("foo", RunLengthList([(0, 'foo')]), 
                      RunLengthList([(0, 'bar')]))
         root = RootRealm(TelnetClientFactory(None, None, None))
-        realm = TriggerMatchingRealm(m, root, root)
+        realm = TriggerMatchingRealm(m, root, root, Mock())
         match = re.search('foobar', 'foobar')
         self.trig.func(match, realm)
         res = realm.alterer.apply(m)

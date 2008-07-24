@@ -20,25 +20,27 @@ from mudpyl.aliases import AliasMatchingRealm
 class Test_AliasMatchingRealm:
 
     def test_default_is_to_send_to_mud(self):
-        a = AliasMatchingRealm(None, None, None, None)
+        a = AliasMatchingRealm(None, None, None, None, None)
         assert a.send_to_mud
 
     def test_echo_setting(self):
         o = object()
-        a = AliasMatchingRealm(None, o, None, None)
+        a = AliasMatchingRealm(None, o, None, None, None)
         assert a.echo is o
 
     def test_setting_line(self):
         o = object()
-        a = AliasMatchingRealm(o, None, None, None)
+        a = AliasMatchingRealm(o, None, None, None, None)
         assert a.line is o
 
     def test_setting_parent(self):
         o = object()
-        a = AliasMatchingRealm(None, None, parent = o, root = None)
+        a = AliasMatchingRealm(None, None, parent = o, root = None,
+                               send_line_to_mud = None)
         assert a.parent is o
 
     def test_setting_root(self):
         o = object()
-        a = AliasMatchingRealm(None, None, parent = None, root = o)
+        a = AliasMatchingRealm(None, None, parent = None, root = o,
+                               send_line_to_mud = None)
         assert a.root is o

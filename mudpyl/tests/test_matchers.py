@@ -46,13 +46,3 @@ class Test__call__:
             pass
         else:
             assert False
-
-class TestBaseMatchingRealm:
-
-    def setUp(self):
-        self.realm = BaseMatchingRealm(Mock(), Mock())
-
-    def test_forwards_traces_to_parent(self):
-        self.realm.trace(sentinel.trace)
-        assert self.realm.parent.trace.call_args_list == [((sentinel.trace,),
-                                                           {})]

@@ -59,6 +59,11 @@ New since 0.3
 2008-07-23 Sam Pointon <sampointon@gmail.com>
     - realms.py, matchers.py: new method, trace.
 
+2008-07-24 Sam Pointon <sampointon@gmail.com>
+    - realms.py, matchers.py, triggers.py, aliases.py: fixed the order that
+      trace writes are shown; matching realms now take an extra argument, the
+      send_line_to_mud, a function.
+
 New since 0.2
 -------------
 

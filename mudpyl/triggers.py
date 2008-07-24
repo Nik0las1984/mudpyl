@@ -108,8 +108,8 @@ class TriggerMatchingRealm(BaseMatchingRealm):
     .parent, which is the Realm up one level from this one.
     """
 
-    def __init__(self, metaline, root, parent):
-        BaseMatchingRealm.__init__(self, root, parent)
+    def __init__(self, metaline, root, parent, send_line_to_mud):
+        BaseMatchingRealm.__init__(self, root, parent, send_line_to_mud)
         self.metaline = metaline
         self.alterer = LineAlterer()
         self.display_line = True
@@ -120,13 +120,12 @@ class TriggerMatchingRealm(BaseMatchingRealm):
         metaline = self.alterer.apply(self.metaline)
         if self.display_line:
             self.parent.write(metaline)
-        for noteline, sls in self._writing_after:
-            self.parent.write(noteline, sls)
+        self._write_after()
 
     def send(self, line, echo = False):
         """Send a line to the MUD."""
         #need to spin a new realm out here to make sure that the writings from
         #the alias go after ours.
-        realm = AliasMatchingRealm(line, echo, parent = self, 
-                                   root = self.root)
+        realm = AliasMatchingRealm(line, echo, parent = self, root = self.root,
+                                   send_line_to_mud = self.send_line_to_mud)
         realm.process()

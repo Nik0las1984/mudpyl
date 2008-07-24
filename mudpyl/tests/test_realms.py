@@ -1,6 +1,6 @@
 from mudpyl.realms import RootRealm
 from mudpyl.colours import fg_code, bg_code, WHITE, BLACK, HexFGCode
-from mudpyl.metaline import Metaline, RunLengthList
+from mudpyl.metaline import Metaline, RunLengthList, simpleml
 from mudpyl.triggers import binding_trigger
 from mudpyl.aliases import binding_alias
 from mudpyl.net.telnet import TelnetClientFactory, TelnetClient
@@ -133,6 +133,44 @@ class Test_write:
         print expected
         assert self.lines_gotten == expected
 
+    def tracer(self, match, realm):
+        realm.trace("Foo")
+
+    tracing_trigger = binding_trigger("baz")(tracer)
+    tracing_alias = binding_alias("baz")(tracer)
+
+    def test_trace_writes_after_during_matching_triggers(self):
+        self.realm.tracing = True
+        self.realm.triggers.append(self.tracing_trigger)
+        inline = Metaline('baz', set(), set())
+        self.realm.receive(inline)
+        expected_lines = [simpleml("TRACE: %s matched!" % self.tracing_trigger,
+                                   fg_code(WHITE, False), bg_code(BLACK)),
+                          simpleml("TRACE: Foo", fg_code(WHITE, False),
+                                   bg_code(BLACK))]
+        print self.lines_gotten
+        print
+        expected = [inline] + expected_lines
+        print expected
+        assert self.lines_gotten == expected
+
+    def test_trace_writes_after_during_alias_matching(self):
+        self.realm.tracing = True
+        self.realm.aliases.append(self.tracing_alias)
+        inline = Metaline('baz', RunLengthList([(0, fg_code(WHITE, False))]),
+                          RunLengthList([(0, bg_code(BLACK))]),
+                          soft_line_start = True)
+        self.realm.send('baz')
+        expected_lines = [simpleml("TRACE: %s matched!" % self.tracing_alias,
+                                   fg_code(WHITE, False), bg_code(BLACK)),
+                          simpleml("TRACE: Foo", fg_code(WHITE, False),
+                                   bg_code(BLACK))]
+        print self.lines_gotten
+        print
+        expected = [inline] + expected_lines
+        print expected
+        assert self.lines_gotten == expected
+
     def test_write_sends_peek_line(self):
         p = Mock()
         self.realm.add_peeker(p)
@@ -149,6 +187,7 @@ class Test_receive:
         self.fact.outputs.fore = self.fore
         self.fact.outputs.back = self.back
         self.realm = self.fact.realm
+        self.realm.telnet = Mock()
         self.ml = Metaline('foo', set(), set())
         self.ml2 = Metaline("bar", None, None)
 

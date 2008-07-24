@@ -16,7 +16,7 @@ class TestTargetting:
         self.r.triggers = []
         self.r.aliases = []
         self.t = Targetter(self.r)
-        self.amr = AliasMatchingRealm('foo', True, self.r, self.r)
+        self.amr = AliasMatchingRealm('foo', True, self.r, self.r, Mock())
 
     def test_set_target_default_regex(self):
         assert self.t.target_seen.regex is None
@@ -50,7 +50,7 @@ class TestTargetting:
     def test_target_seen_highlighting(self):
         ml = Metaline('bar foo baz', RunLengthList([(0, 'foo')]), 
                       RunLengthList([(0, 'bar')]))
-        ti = TriggerMatchingRealm(ml, self.r, self.r)
+        ti = TriggerMatchingRealm(ml, self.r, self.r, Mock())
         a = ti.alterer
         self.t.target_seen.func(mobj, ti)
         res = a.apply(ml)
