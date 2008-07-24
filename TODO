@@ -67,9 +67,7 @@ Specific modules under library/:
   - autosipper.py: 
      - make it less trusting and add timeouts.
      - support for priest-mode (make mana sipping a higher priority)?
-  - achaea/afftracker.py:
-     - some kind of support for data files of afflictions
-  - achaea/hittracker.py:
+  - achaea/curer.py:
      - timer-based anti-illusion
      - limb hit tracking
 

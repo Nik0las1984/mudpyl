@@ -30,14 +30,18 @@ def test_actually_write_to_screen():
                  ('change', fg_code(WHITE, True)),
                  ('text', 'spam'),
                  ('change', bg_code(BLUE)),
-                 ('text', 'eggsblah')]
+                 ('text', 'eggsblah'),
+                 ('change', fg_code(GREEN, False)),
+                 ('change', bg_code(PURPLE))]
     om.add_output(DummyOutput(expecting))
     colours = [(3, fg_code(BLUE, False)), 
                (6, bg_code(PURPLE)), 
                (6, fg_code(GREEN, True)),
                (9, bg_code(GREEN)), 
                (12, fg_code(WHITE, True)), 
-               (16, bg_code(BLUE))]
+               (16, bg_code(BLUE)),
+               (500, fg_code(GREEN, False)),
+               (501, bg_code(PURPLE))]
     text = 'nulfoobarbazspameggsblah'
     om._actually_write_to_screen(colours, text)
 
