@@ -192,8 +192,12 @@ class RootRealm(object):
         """Write the argument to the screen if we are tracing, elsewise do
         nothing.
         """
+        self._trace_with(line, self)
+
+    def _trace_with(self, line, realm):
+        """Write the line via the realm if we're tracing."""
         if self.tracing:
-            self.write("TRACE: " + line)
+            realm.write("TRACE: " + line)
 
     #Going towards the MUD.
 

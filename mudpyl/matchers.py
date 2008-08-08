@@ -129,20 +129,15 @@ class BaseMatchingRealm(object):
 
     def _write_after(self):
         """Write everything we've been waiting to."""
-        for noteline, sls, message_type in self._writing_after:
-            if message_type == 'write':
-                self.parent.write(noteline, sls)
-            elif message_type == 'trace':
-                self.parent.trace(noteline)
-            else:
-                raise RuntimeError("dunno what %s is" % message_type)
+        for noteline, sls in self._writing_after:
+            self.parent.write(noteline, sls)
 
     def write(self, line, soft_line_start = False):
         """Write a line to the screen.
 
         This buffers until the original line has been displayed or echoed.
         """
-        self._writing_after.append((line, soft_line_start, 'write'))
+        self._writing_after.append((line, soft_line_start))
 
     def send(self, line, echo = False):
         """Send a line to the MUD immediately."""
@@ -162,4 +157,8 @@ class BaseMatchingRealm(object):
 
     def trace(self, line):
         """Forward the debugging decision to our parent."""
-        self._writing_after.append((line, False, 'trace'))
+        self.parent._trace_with(line, self)
+
+    def _trace_with(self, line, realm):
+        """Forward a trace request up the stack of realms."""
+        self.parent._trace_with(line, realm)

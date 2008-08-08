@@ -585,6 +585,7 @@ class TestTracing:
     def setUp(self):
         self.factory = TelnetClientFactory(None, None, sentinel.ModuleName)
         self.realm = RootRealm(self.factory)
+        self.realm.telnet = Mock()
 
     def test_trace_on_sets_tracing_to_True(self):
         self.realm.trace = Mock()
@@ -636,3 +637,19 @@ class TestTracing:
         self.realm.write = Mock()
         self.realm.trace("FOO BAR BAZ")
         assert not self.realm.write.called
+
+    @binding_trigger("Foo")
+    def trace_twiddling_trigger(self, match, realm):
+        realm.display_line = False
+        self.realm.tracing = True
+        realm.trace('Foo')
+        self.realm.tracing = False
+        realm.trace("Bar")
+
+    def test_trace_remembers_tracing_when_attempted(self):
+        self.realm.write = Mock()
+        self.realm.triggers.append(self.trace_twiddling_trigger)
+        self.realm.receive(simpleml("Foo", None, None))
+        print self.realm.write.call_args_list
+        assert self.realm.write.call_args_list == [(("TRACE: Foo", False),
+                                                    {})]

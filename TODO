@@ -55,6 +55,7 @@ Other refactorings:
  - write RunLengthList using an ordered dict or similar
  - look at which bits of output_manager really belong there, and which bits
    should be shipped to html.py
+ - split the module handling bit away from RootRealm
 
 Specific modules under library/:
   - write:
