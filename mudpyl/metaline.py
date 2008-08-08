@@ -253,6 +253,26 @@ class Metaline(object):
         res.insert_metaline(len(self.line), other)
         return res
 
+    def wrapped(self, wrapper):
+        """Break outself up with newlines."""
+        #this function does similar stuff to what LineAlterer does...
+        if not self.wrap:
+            return self
+        
+        metaline = self.copy()
+        line = wrapper.fill(self.line)
+        print repr(line)
+        #we start at 0, because we're guaranteed to never start on a newline.
+        prev = 0
+        #adjust the indices to account for the newlines
+        for _ in range(line.count('\n')):
+            #add one to account for the newline we just hit.
+            ind = line.index('\n', prev + 1)
+            metaline.insert(ind, '\n')
+            prev = ind
+
+        return metaline
+
 def simpleml(line, fore, back):
     """Simplified wrapper for creating simple metalines."""
     return Metaline(line, RunLengthList([(0, fore)]),
