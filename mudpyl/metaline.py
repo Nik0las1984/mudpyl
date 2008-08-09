@@ -261,7 +261,6 @@ class Metaline(object):
         
         metaline = self.copy()
         line = wrapper.fill(self.line)
-        print repr(line)
         #we start at 0, because we're guaranteed to never start on a newline.
         prev = 0
         #adjust the indices to account for the newlines
