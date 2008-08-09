@@ -37,8 +37,8 @@ class AliasMatchingRealm(BaseMatchingRealm):
     .parent is who we report to
     """
 
-    def __init__(self, line, echo, root, parent):
-        BaseMatchingRealm.__init__(self, root, parent)
+    def __init__(self, line, echo, root, parent, send_line_to_mud):
+        BaseMatchingRealm.__init__(self, root, parent, send_line_to_mud)
         self.line = line
         self._sending_after = []
         self.send_to_mud = True
@@ -60,10 +60,9 @@ class AliasMatchingRealm(BaseMatchingRealm):
         if self.send_to_mud:
             if self.echo:
                 self.parent.write(self.line, soft_line_start = True)
-            self.root.send_line_to_mud(self.line)
+            self.send_line_to_mud(self.line)
 
-        for noteline, sls in self._writing_after:
-            self.parent.write(noteline, sls)
+        self._write_after()
 
         for sendline, echo in self._sending_after:
             self.parent.send(sendline, echo)

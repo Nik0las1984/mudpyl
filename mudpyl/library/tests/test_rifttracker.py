@@ -1,6 +1,7 @@
 from mudpyl.library.rifttracker import RiftTracker
 from mudpyl.metaline import Metaline, RunLengthList
 from mudpyl.realms import RootRealm, AliasMatchingRealm, TriggerMatchingRealm
+from mock import Mock
 import re
 
 class Test_RiftTracker:
@@ -11,14 +12,14 @@ class Test_RiftTracker:
 
     def test_ignores_rift_information_if_not_asked_for(self):
         m = re.match('\[(5)\] (ginseng root)', '[5] ginseng root')
-        tmr = TriggerMatchingRealm(None, self.r, self.r)
+        tmr = TriggerMatchingRealm(None, self.r, self.r, Mock())
         self.rt.herb_trigger.func(m, tmr)
         assert self.rt.herbs_seen['ginseng'] == 0
 
     def test_picks_up_rift_information_if_asked_for(self):
         self.rt.looking_for_herbs = True
         m = re.match('\[(5)\] (ginseng root)', '[5] ginseng root')
-        tmr = TriggerMatchingRealm(None, self.r, self.r)
+        tmr = TriggerMatchingRealm(None, self.r, self.r, Mock())
         self.rt.herb_trigger.func(m, tmr)
         assert self.rt.herbs_seen['ginseng'] == 5
 
@@ -32,12 +33,12 @@ class Test_RiftTracker:
         assert len(list(self.rt.herb_trigger.match(ml))) == 2
 
     def test_turns_on_looking_with_alias(self):
-        amr = AliasMatchingRealm(None, None, self.r, self.r)
+        amr = AliasMatchingRealm(None, None, self.r, self.r, Mock())
         self.rt.info_rift_alias.func(None, amr)
         assert self.rt.looking_for_herbs == True
 
     def test_still_sends_ir_to_MUD(self):
-        amr = AliasMatchingRealm(None, None, self.r, self.r)
+        amr = AliasMatchingRealm(None, None, self.r, self.r, Mock())
         self.rt.info_rift_alias.func(None, amr)
         assert amr.send_to_mud
 

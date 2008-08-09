@@ -29,27 +29,12 @@ class OutputManager(object):
     def add_metaline_peeker(self, peeker):
         """Add an object that wants the line-wrapped metalines."""
         self.metaline_peekers.append(peeker)
-
-    def _wrap_line(self, metaline):
-        """Break an incoming line into sensible lengths."""
-        #this needs to be before the futzing with NLs and GA, because textwrap
-        #obliterates all other newlines.
-        line = self.wrapper.fill(metaline.line)
-        #we start at 0, because we're guaranteed to never start on a newline.
-        prev = 0
-        #adjust the indices to account for the newlines
-        for _ in range(line.count('\n')):
-            #add one to account for the newline we just hit.
-            ind = line.index('\n', prev + 1)
-            metaline.insert(ind, '\n')
-            prev = ind
-
-        return metaline
         
     def write_to_screen(self, metaline):
         """Write the line to the logs and screen."""
-        if metaline.wrap:
-            metaline = self._wrap_line(metaline)
+        #this needs to be before the futzing with NLs and GA, because textwrap
+        #obliterates all other newlines.
+        metaline = metaline.wrapped(self.wrapper)
 
         #we don't actually append newlines at the end, but the start. This
         #simplifies things, because we don't use a newline where a soft line

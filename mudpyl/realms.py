@@ -164,8 +164,8 @@ class RootRealm(object):
     def receive(self, metaline):
         """Match a line against the triggers and perhaps display it on screen.
         """
-        realm = TriggerMatchingRealm(metaline, parent = self,
-                                     root = self)
+        realm = TriggerMatchingRealm(metaline, parent = self,  root = self,
+                                     send_line_to_mud = self.telnet.sendLine)
         realm.process()
 
     def write(self, line, soft_line_start = False):
@@ -192,8 +192,12 @@ class RootRealm(object):
         """Write the argument to the screen if we are tracing, elsewise do
         nothing.
         """
+        self._trace_with(line, self)
+
+    def _trace_with(self, line, realm):
+        """Write the line via the realm if we're tracing."""
         if self.tracing:
-            self.write("TRACE: " + line)
+            realm.write("TRACE: " + line)
 
     #Going towards the MUD.
 
@@ -213,11 +217,7 @@ class RootRealm(object):
     def send(self, line, echo = True):
         """Match aliases against the line and perhaps send it to the MUD."""
         echo = not self.server_echo and echo
-        realm = AliasMatchingRealm(line, echo, parent = self,
-                                   root = self)
+        realm = AliasMatchingRealm(line, echo, parent = self, root = self,
+                                   send_line_to_mud = self.telnet.sendLine)
         realm.process()
-
-    def send_line_to_mud(self, line):
-        """Send a line to the MUD."""
-        self.telnet.sendLine(line)
 

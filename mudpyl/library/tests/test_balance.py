@@ -25,7 +25,7 @@ class Test_balance_highlight:
         m = Metaline("foo", RunLengthList([(0, 'foo')]), 
                      RunLengthList([(0, 'bar')]))
         root = RootRealm(Mock(spec = TelnetClientFactory))
-        realm = TriggerMatchingRealm(m, root, root)
+        realm = TriggerMatchingRealm(m, root, root, Mock())
         match = re.search('foobar', 'foobar')
         self.trig.func(match, realm)
         res = realm.alterer.apply(m)

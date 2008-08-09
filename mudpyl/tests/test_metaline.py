@@ -277,3 +277,61 @@ def test_get_colour_at_works_right_before_colour_change():
 def test_get_colour_at_works_on_colour_change():
     rll = RunLengthList({0: 'foo', 2: 'bar'})
     assert rll.get_colour_at(2) == 'bar'
+
+class TrackingRunLengthList(RunLengthList):
+
+    def __init__(self, *args):
+        self.adjustments = []
+        RunLengthList.__init__(self, *args)
+
+    def index_adjust(self, index, adjustment):
+        RunLengthList.index_adjust(self, index, adjustment)   
+        self.adjustments.append((index, adjustment))
+
+    def copy(self):
+        return self
+
+from textwrap import TextWrapper
+
+class Testwrap_line:
+
+    def setUp(self):
+        self.wrapper = TextWrapper(width = 10, drop_whitespace = False)
+        self.fores = TrackingRunLengthList([(0, 'fore')])
+        self.backs = TrackingRunLengthList([(0, 'back')])
+    
+    def ml(self, line):
+        return Metaline(line, self.fores, self.backs, wrap = True)
+
+    def test_no_alteration_too_short(self):
+        line = 'foo'
+        res = self.ml(line).wrapped(self.wrapper)
+        assert res.line == line, line
+        assert self.fores.adjustments == self.backs.adjustments == []
+    
+    def test_no_adjustment_break_on_space_no_adjustment(self):
+        line = 'foobarbaz quux'
+        res = self.ml(line).wrapped(self.wrapper)
+        assert res.line == 'foobarbaz \nquux', res.line
+        assert self.fores.adjustments == self.backs.adjustments == [(10, 1)]
+
+    def test_adjustment_break_in_middle_of_word(self):
+        line = 'foobarbazquux'
+        res = self.ml(line).wrapped(self.wrapper)
+        assert res.line == 'foobarbazq\nuux'
+        assert self.fores.adjustments == self.backs.adjustments == \
+               [(10, 1)]
+
+    def test_mixed_break_without_broken_textwrap(self):
+        line = 'foo bar baz quuxfoobarbaz foobarbazquux foo'
+        res = self.ml(line).wrapped(self.wrapper)
+        assert res.line == \
+                     'foo bar \nbaz quuxfo\nobarbaz fo\nobarbazquu\nx foo',\
+               repr(res.line)
+        assert self.fores.adjustments == self.backs.adjustments == \
+               [(8, 1), (19, 1), (30, 1), (41, 1)], self.fores.adjustments
+
+    def test_returns_self_if_wrap_is_False(self):
+        ml = self.ml("foobarbazqux")
+        ml.wrap = False
+        assert ml.wrapped(self.wrapper) == ml

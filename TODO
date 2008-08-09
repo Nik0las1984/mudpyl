@@ -54,6 +54,7 @@ Other refactorings:
    This is kind of half done informally, but half not.
  - look at which bits of output_manager really belong there, and which bits
    should be shipped to html.py
+ - split the module handling bit away from RootRealm
 
 Specific modules under library/:
   - write:
@@ -66,9 +67,7 @@ Specific modules under library/:
   - autosipper.py: 
      - make it less trusting and add timeouts.
      - support for priest-mode (make mana sipping a higher priority)?
-  - achaea/afftracker.py:
-     - some kind of support for data files of afflictions
-  - achaea/hittracker.py:
+  - achaea/curer.py:
      - timer-based anti-illusion
      - limb hit tracking
 
