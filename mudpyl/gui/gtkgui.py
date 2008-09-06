@@ -16,20 +16,16 @@ class TimeOnlineLabel(gtk.Label):
         self.looping_call = LoopingCall(self.update_time)
         self.start_time = None
 
-    def connection_made(self):
+    def start_counting(self):
         """Start ticking."""
         self.start_time = datetime.now()
         #don't leave our display blank
         self.update_time()
         self.looping_call.start(0.5) #update it twice per second
 
-    def connection_lost(self):
+    def stop_counting(self):
         """We only count time online; stop counting."""
         self.looping_call.stop()
-
-    def close(self):
-        """GTK garbage collects for us."""
-        pass
 
     def update_time(self):
         """Should tick once a second. Displays the current running count of
@@ -48,6 +44,7 @@ class GUI(gtk.Window):
         gtk.Window.__init__(self)
         self.outputs = outputs
         self.realm = realm
+        self.realm.addProtocol(self)
         realm.factory.gui = self
         self.command_line = CommandView(self)
         self.output_window = OutputView(self)
@@ -57,15 +54,26 @@ class GUI(gtk.Window):
         self.time_online = TimeOnlineLabel()
         self._make_widget_body()
 
+    def connectionMade(self):
+        self.time_online.start_counting()
+
+    def connectionLost(self):
+        self.time_online.stop_counting()
+
+    def close(self):
+        #GTK does all the destruction for us.
+        pass
+
+    def metalineReceived(self, metaline):
+        plain_line = metaline.line.replace('\n', '')
+        self.command_line.add_line_to_tabdict(plain_line)
+        self.output_window.show_metaline(metaline)
+
     def _make_widget_body(self):
         """Put it all together."""
         self.set_title("%s - mudpyl" % self.realm.factory.name)
         self.connect('destroy', self.destroy_cb)
         self.maximize() #sic
-
-        self.outputs.add_metaline_peeker(self.output_window)
-        self.realm.add_connection_receiver(self.time_online)
-        self.realm.add_peeker(self.command_line)
 
         #never have hscrollbars normally, always have vscrollbars
         self.scrolled_out.set_policy(gtk.POLICY_NEVER, gtk.POLICY_ALWAYS)

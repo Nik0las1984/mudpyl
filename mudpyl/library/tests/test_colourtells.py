@@ -1,14 +1,16 @@
 from mudpyl.library.colourtells import TellColourer
-from mudpyl.metaline import RunLengthList, Metaline
+from mudpyl.metaline import RunLengthList, Metaline, simpleml
 from mudpyl.net.telnet import TelnetClientFactory, TelnetClient
 from mudpyl.output_manager import OutputManager
+from mudpyl.colours import WHITE, BLACK, fg_code, bg_code
 from mock import Mock
 
 class Test_TellColourer:
 
     def setUp(self):
         self.fact = TelnetClientFactory(None, 'ascii', None)
-        self.fact.outputs = Mock(spec = OutputManager)
+        self.p = Mock()
+        self.fact.realm.addProtocol(self.p)
         self.fact.realm.telnet = Mock(spec = TelnetClient)
         self.tc = TellColourer(self.fact.realm)
 
@@ -36,25 +38,24 @@ class Test_TellColourer:
         assert match[0].group(1) == 'Foo'
 
     def test_no_tell_sent_doesnt_cock_up(self):
-        ml = Metaline('Bar tells you, "Blah."', RunLengthList([(0, None)]), 
-                      RunLengthList([(0, None)]))
-        self.fact.realm.receive(ml)
-        ml_written = self.fact.outputs.write_to_screen.call_args[0][0]
+        ml = simpleml('Bar tells you, "Blah."', fg_code(WHITE, False),
+                      bg_code(BLACK))
+        self.fact.realm.metalineReceived(ml)
+        ml_written = self.p.metalineReceived.call_args[0][0]
         colour_expecting = ml_written.fores.as_populated_list()[0]
 
         self.fact.realm.send("tell baz blah")
-        ml = Metaline("Whom do you wish to tell to?", 
-                      RunLengthList([(0, None)]),
-                      RunLengthList([(0, None)]))
-        self.fact.realm.receive(ml)
+        ml = simpleml("Whom do you wish to tell to?", fg_code(WHITE, False),
+                      bg_code(BLACK))
+        self.fact.realm.metalineReceived(ml)
 
         self.fact.realm.send("tell bar blah")
-        ml = Metaline('You tell Bar, "Blah."', RunLengthList([(0, None)]),
-                      RunLengthList([(0, None)]))
-        self.fact.realm.receive(ml)
-        ml_written_2 = self.fact.outputs.write_to_screen.call_args[0][0]
+        ml = simpleml('You tell Bar, "Blah."', fg_code(WHITE, False),
+                      bg_code(BLACK))
+        self.fact.realm.metalineReceived(ml)
+        ml_written_2 = self.p.metalineReceived.call_args[0][0]
 
-        assert ml_written_2.fores.as_populated_list()[9] == colour_expecting
+        assert ml_written_2.fores.as_populated_list()[10] == colour_expecting
 
     def test_tell_sending_alias_is_caseless_wrt_matching(self):
         assert list(self.tc.sending_tell.match("TELL foo bar"))

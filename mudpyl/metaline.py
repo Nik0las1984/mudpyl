@@ -256,6 +256,9 @@ class Metaline(object):
     def wrapped(self, wrapper):
         """Break outself up with newlines."""
         #this function does similar stuff to what LineAlterer does...
+        #there's a very slight speedup by avoiding using fill and count('\n')
+        #and instead iterating over the result of wrap, but it's not a big
+        #enough win at the moment to justify the obfuscation
         if not self.wrap:
             return self
         

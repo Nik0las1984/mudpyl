@@ -7,6 +7,7 @@ from mudpyl.triggers import TriggerMatchingRealm
 from mudpyl.aliases import AliasMatchingRealm
 from mudpyl.modules import load_file
 from mudpyl.gui.bindings import gui_macros
+from textwrap import TextWrapper
 import traceback
 import time
 
@@ -28,9 +29,11 @@ class RootRealm(object):
         self.server_echo = False
         self.console_ns = {'realm': self}
         self.console = InteractiveConsole(self.console_ns)
+        self._last_line_end = None
+        self.wrapper = TextWrapper(width = 100, 
+                                   drop_whitespace = False)
 
-        self.connection_event_receivers = []
-        self.peeking_receivers = []
+        self.protocols = []
         self._closing_down = False
 
     #Bidirectional, or just ambivalent, functions.
@@ -79,29 +82,19 @@ class RootRealm(object):
         It is guaranteed that, on registered connection event receivers,
         connection_lost will be called before close.
         """
-        if self.telnet is not None:
+        if not self._closing_down:
             #lose the connection first.
             self.telnet.close()
         else:
             #connection's already lost, we don't need to wait
-            for receiver in self.connection_event_receivers:
-                receiver.close()
-        self.telnet = None
+            for prot in self.protocols:
+                prot.close()
         self._closing_down = True
 
-    def add_connection_receiver(self, receiver):
-        """Register a receiver for close, connection_made and connection_lost
-        events.
-        """
-        self.connection_event_receivers.append(receiver)
+    def addProtocol(self, protocol):
+        self.protocols.append(protocol)
 
-    def add_peeker(self, receiver):
-        """Register a receiver that will have its peek_line method called
-        with every line being written to screen.
-        """
-        self.peeking_receivers.append(receiver)
-
-    def connection_lost(self):
+    def connectionLost(self):
         """The link to the MUD died.
 
         It is guaranteed that this will be called before close on connection
@@ -111,23 +104,23 @@ class RootRealm(object):
         colour = HexFGCode(0xFF, 0xAA, 0x00) #lovely orange
         metaline = simpleml(message, colour, bg_code(BLACK))
         self.write(metaline)
-        for receiver in self.connection_event_receivers:
-            receiver.connection_lost()
+        for prot in self.protocols:
+            prot.connectionLost()
         #we might be waiting on the connection to die before we send out
         #close events
-        self.telnet = None
         if self._closing_down:
-            for receiver in self.connection_event_receivers:
-                receiver.close()
+            for prot in self.protocols:
+                prot.close()
+        self._closing_down = True
 
-    def connection_made(self):
+    def connectionMade(self):
         """The MUD's been connected to."""
         message = time.strftime("Connection opened at %H:%M:%S.")
         colour = HexFGCode(0xFF, 0xAA, 0x00) #lovely orange
         metaline = simpleml(message, colour, bg_code(BLACK))
         self.write(metaline)
-        for receiver in self.connection_event_receivers:
-            receiver.connection_made()
+        for prot in self.protocols:
+            prot.connectionMade()
 
     def trace_on(self):
         """Turn tracing (verbose printing to the output screen) on."""
@@ -161,7 +154,7 @@ class RootRealm(object):
 
     #Going towards the screen
 
-    def receive(self, metaline):
+    def metalineReceived(self, metaline):
         """Match a line against the triggers and perhaps display it on screen.
         """
         realm = TriggerMatchingRealm(metaline, parent = self,  root = self,
@@ -176,17 +169,32 @@ class RootRealm(object):
         if not isinstance(line, (basestring, Metaline)):
             line = str(line)
         if isinstance(line, basestring):
-            line = simpleml(line, fg_code(WHITE, False), bg_code(BLACK))
-            line.wrap = False
-            line.soft_line_start = soft_line_start
+            metaline = simpleml(line, fg_code(WHITE, False), bg_code(BLACK))
+            metaline.wrap = False
+            metaline.soft_line_start = soft_line_start
+        else:
+            metaline = line
         #we don't need to close off the ends of the note, because thanks to
         #the magic of the ColourCodeParser, each new line is started by the
         #implied colour, so notes can't bleed out into text (though the 
         #reverse can be true).
-        self.factory.outputs.write_to_screen(line)
-        
-        for receiver in self.peeking_receivers:
-            receiver.peek_line(line.line)
+
+        #this needs to be before the futzing with NLs and GA, because textwrap
+        #obliterates all other newlines.
+        metaline = metaline.wrapped(self.wrapper)
+
+        #we don't actually append newlines at the end, but the start. This
+        #simplifies things, because we don't use a newline where a soft line
+        #end meets a soft line start, so there's only one place in this code
+        #that can add newlines.
+        if self._last_line_end is not None:
+            if self._last_line_end == 'hard' or not metaline.soft_line_start:
+                metaline.insert(0, '\n')
+                
+        for prot in self.protocols:
+            prot.metalineReceived(metaline)
+
+        self._last_line_end = metaline.line_end
 
     def trace(self, line):
         """Write the argument to the screen if we are tracing, elsewise do

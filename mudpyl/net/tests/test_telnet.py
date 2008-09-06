@@ -153,7 +153,6 @@ class Test_receiving_lines:
     def setUp(self):
         self.f = TelnetClientFactory(None, 'ascii', None)
         self.f.realm = self.e = Mock(spec = RootRealm)
-        self.e.ga_as_line_end = True
         self.tc = TelnetClient(self.f)
         self.tc.transport = FakeTransport()
         self.fores = RunLengthList([(0, fg_code(WHITE, False))])
@@ -164,7 +163,8 @@ class Test_receiving_lines:
                              line_end = 'soft')]
         self.tc.dataReceived("foo" + IAC + GA)
         print expected
-        lines = [line for ((line,), kwargs) in self.e.receive.call_args_list]
+        lines = [line for ((line,), kwargs)
+                 in self.e.metalineReceived.call_args_list]
         assert lines == expected, lines
 
     def test_ga_received_flushes_out_the_buffer(self):
@@ -173,31 +173,36 @@ class Test_receiving_lines:
                     Metaline('', self.fores, self.backs, wrap = True,
                              line_end = 'soft')]
         self.tc.dataReceived('foo' + IAC + GA + IAC + GA)
-        lines = [line for ((line,), kwargs) in self.e.receive.call_args_list]
+        lines = [line for ((line,), kwargs)
+                 in self.e.metalineReceived.call_args_list]
         assert lines == expected, lines
 
     def test_lineReceived_sends_line_on(self):
         self.tc.lineReceived("foo")
-        lines = [line for ((line,), kwargs) in self.e.receive.call_args_list]
+        lines = [line for ((line,), kwargs)
+                 in self.e.metalineReceived.call_args_list]
         assert lines == [Metaline('foo', self.fores, self.backs, wrap = True)]
 
     def test_lineReceived_parses_colours(self):
         expected = [Metaline('foo', RunLengthList([(0, fg_code(RED, False))]),
                              self.backs, wrap = True)]
         self.tc.lineReceived('\x1b[31mfoo')
-        lines = [line for ((line,), kwargs) in self.e.receive.call_args_list]
+        lines = [line for ((line,), kwargs)
+                 in self.e.metalineReceived.call_args_list]
         assert lines == expected, lines
 
     def test_lineReceived_works_via_dataReceived(self):
         expected = [Metaline('foo', self.fores, self.backs, wrap = True)]
         self.tc.dataReceived('foo\r\n')
-        lines = [line for ((line,), kwargs) in self.e.receive.call_args_list]
+        lines = [line for ((line,), kwargs)
+                 in self.e.metalineReceived.call_args_list]
         assert lines == expected, lines
 
     def test_lineReceived_cleans_out_VT100_stuff(self):
         expected = [Metaline('foo', self.fores, self.backs, wrap = True)]
         self.tc.lineReceived('fooQ' + BS + VT)
-        lines = [line for ((line,), kwargs) in self.e.receive.call_args_list]
+        lines = [line for ((line,), kwargs)
+                 in self.e.metalineReceived.call_args_list]
         assert lines == expected, lines
 
     def test_lineReceived_decodes_data(self):
@@ -206,7 +211,8 @@ class Test_receiving_lines:
         expected = [Metaline(u"bar\u2019baz", self.fores, self.backs, 
                              wrap = True)]
         self.tc.lineReceived('bar\x92baz')
-        lines = [line for ((line,), kwargs) in self.e.receive.call_args_list]
+        lines = [line for ((line,), kwargs)
+                 in self.e.metalineReceived.call_args_list]
         assert lines == expected, lines
 
     def test_receives_repeated_normal_CR_LF_in_broken_godwars_mode_fine(self):
@@ -216,7 +222,8 @@ class Test_receiving_lines:
                     simpleml("", fg_code(WHITE, False), bg_code(BLACK))]
         for ml in expected:
             ml.wrap = True
-        lines = [line for ((line,), kwargs) in self.e.receive.call_args_list]
+        lines = [line for ((line,), kwargs)
+                 in self.e.metalineReceived.call_args_list]
         assert lines == expected, lines
 
     def test_fixes_LF_CR_normally(self):
@@ -224,7 +231,8 @@ class Test_receiving_lines:
         self.tc.dataReceived("foo\n\r")
         expected = [simpleml("foo", fg_code(WHITE, False), bg_code(BLACK))]
         expected[0].wrap = True
-        lines = [line for ((line,), kwargs) in self.e.receive.call_args_list]
+        lines = [line for ((line,), kwargs)
+                 in self.e.metalineReceived.call_args_list]
         assert lines == expected, lines
 
     def test_fixes_LF_CR_at_start(self):
@@ -232,7 +240,8 @@ class Test_receiving_lines:
         self.tc.dataReceived("\n\r")
         expected = [simpleml("", fg_code(WHITE, False), bg_code(BLACK))]
         expected[0].wrap = True
-        lines = [line for ((line,), kwargs) in self.e.receive.call_args_list]
+        lines = [line for ((line,), kwargs)
+                 in self.e.metalineReceived.call_args_list]
         print expected
         assert lines == expected, lines
 
@@ -243,7 +252,7 @@ def test_connectionLost_sends_connection_closed_to_the_outputs():
 
     telnet.connectionLost(None)
 
-    assert r.connection_lost.called
+    assert r.connectionLost.called
 
 def test_connectionMade_sends_connection_opened_to_the_outputs():
     f = TelnetClientFactory(None, 'ascii', None)
@@ -252,4 +261,4 @@ def test_connectionMade_sends_connection_opened_to_the_outputs():
 
     telnet.connectionMade()
 
-    assert r.connection_made.called
+    assert r.connectionMade.called

@@ -18,7 +18,7 @@ def test_adding_to_tabdict():
     o = CommandView(d)
     o.tabdict = DummyTabdict()
     line = 'Foo; bar baz qux. Quux! QUUUX!!!'
-    o.peek_line(line)
+    o.add_line_to_tabdict(line)
     assert o.tabdict.lines == [line]
 
 

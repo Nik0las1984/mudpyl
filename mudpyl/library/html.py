@@ -38,7 +38,6 @@ body {
     def __init__(self, outputs, realm, logformat):
         self.outputs = outputs
         outputs.add_output(self)
-        realm.add_connection_receiver(self)
         self.log = open(time.strftime(logformat) % 
                                    {'name': self.outputs.factory.name}, 'a')
         self.log.write(self.log_preamble)
@@ -65,10 +64,10 @@ body {
             self.log.write(self.log_postamble)
             self.log.close()
 
-    def connection_made(self):
+    def connectionMade(self):
         """The realm sends out the 'coonection made at X' notes."""
         pass
-    connection_lost = connection_made
+    connectionLost = connectionMade
 
 class HTMLLoggingModule(BaseModule):
     """A module that logs to disk."""
