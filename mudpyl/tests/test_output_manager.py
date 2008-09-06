@@ -87,6 +87,14 @@ def test_forwards_connectionLost():
     calls = [name for (name, a, kw) in o.method_calls]
     assert calls == ['connectionLost']
 
+def test_forwards_close():
+    om = OutputManager(Mock())
+    o = Mock()
+    om.add_output(o)
+    om.close()
+    calls = [name for (name, a, kw) in o.method_calls]
+    assert calls == ['close']
+
 def test_adds_itself_to_realm():
     f = Mock()
     om = OutputManager(f)

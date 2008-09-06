@@ -78,4 +78,8 @@ class OutputManager(object):
         for output in self.outputs:
             output.connectionLost()
 
+    def close(self):
+        for output in self.outputs:
+            output.close()
+
 
