@@ -74,6 +74,13 @@ New since 0.3
     - output_manager.py, metaline.py: removed OutputManager._wrap_line, added
       Metaline.wrapped
 
+2008-09-06 Sam Pointon <sampointon@gmail.com>
+    - realms.py: removed connection_event_receivers, metaline_peekers, and
+      associated methods; added addOutput that subsumes both. Renamed
+      receive to metalineReceived.
+    - output_manager.py: moved an awful lot of stuff to realms.py, renamed
+      accordingly.
+
 New since 0.2
 -------------
 

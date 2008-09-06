@@ -34,7 +34,7 @@ class TelnetClient(Telnet, LineOnlyReceiver):
         
         Late initialisation should also go here.
         """
-        self.factory.realm.connection_made()
+        self.factory.realm.connectionMade()
         Telnet.connectionMade(self)
         LineOnlyReceiver.connectionMade(self)
 
@@ -101,7 +101,7 @@ class TelnetClient(Telnet, LineOnlyReceiver):
         #flush out the buffer
         if self._buffer:
             self.lineReceived(self._buffer)
-        self.factory.realm.connection_lost()
+        self.factory.realm.connectionLost()
 
     def ga_received(self, _):
         """A GA's been received. We treat these kind of like line endings."""
@@ -124,7 +124,7 @@ class TelnetClient(Telnet, LineOnlyReceiver):
         else:
             metaline.line_end = 'hard'
         metaline.wrap = True
-        self.factory.realm.receive(metaline)
+        self.factory.realm.metalineReceived(metaline)
 
 class TelnetClientFactory(ClientFactory):
 
@@ -135,8 +135,8 @@ class TelnetClientFactory(ClientFactory):
         self.name = name
         self.encoding = encoding
         self.main_module_name = main_module_name
-        self.outputs = OutputManager(self)
         self.realm = RootRealm(self)
+        self.outputs = OutputManager(self)
 
     protocol = TelnetClient
 

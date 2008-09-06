@@ -1,7 +1,6 @@
 """Orchestrates and coordinates the writing of output (eg, to screen and 
 to logs).
 """
-from textwrap import TextWrapper
 from mudpyl.colours import WHITE, BLACK, fg_code, bg_code
 
 class OutputManager(object):
@@ -14,44 +13,19 @@ class OutputManager(object):
     def __init__(self, factory):
         self.factory = factory
         self.outputs = []
-        self.metaline_peekers = []
-        self.last_line_end = None
         #sensible defaults
         self.fore = fg_code(WHITE, False)
         self.back = bg_code(BLACK)
-        self.wrapper = TextWrapper(width = 100, 
-                                   drop_whitespace = False)
+        factory.realm.addProtocol(self)
 
     def add_output(self, output):
         """Add another output that wants to receive stuff."""
         self.outputs.append(output)
-
-    def add_metaline_peeker(self, peeker):
-        """Add an object that wants the line-wrapped metalines."""
-        self.metaline_peekers.append(peeker)
         
-    def write_to_screen(self, metaline):
+    def metalineReceived(self, metaline):
         """Write the line to the logs and screen."""
-        #this needs to be before the futzing with NLs and GA, because textwrap
-        #obliterates all other newlines.
-        metaline = metaline.wrapped(self.wrapper)
-
-        #we don't actually append newlines at the end, but the start. This
-        #simplifies things, because we don't use a newline where a soft line
-        #end meets a soft line start, so there's only one place in this code
-        #that can add newlines.
-        if self.last_line_end is not None:
-            if self.last_line_end == 'hard' or not metaline.soft_line_start:
-                metaline.insert(0, '\n')
-
-        for peeker in self.metaline_peekers:
-            peeker.peek_metaline(metaline)
-
         allcolours = sorted(metaline.fores.items() + metaline.backs.items())
-
         self._actually_write_to_screen(allcolours, metaline.line)
-
-        self.last_line_end = metaline.line_end
 
     def _actually_write_to_screen(self, allcolours, line):
         """Actually break the string up into coloured chunks, and feed these
@@ -95,5 +69,17 @@ class OutputManager(object):
                 output.fg_changed(change)
         else:
             raise RuntimeError("Dunno what %r is." % change)
+
+    def connectionMade(self):
+        for output in self.outputs:
+            output.connectionMade()
+
+    def connectionLost(self):
+        for output in self.outputs:
+            output.connectionLost()
+
+    def close(self):
+        for output in self.outputs:
+            output.close()
 
 

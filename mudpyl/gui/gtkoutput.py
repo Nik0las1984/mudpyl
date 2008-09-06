@@ -65,7 +65,7 @@ class OutputView(gtk.TextView):
         #scroll to the end of output
         self.scroll_mark_onscreen(self.end_mark)
 
-    def peek_metaline(self, metaline):
+    def show_metaline(self, metaline):
         """Write a span of text to the window using the colours defined in
         the other channels.
 

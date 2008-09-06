@@ -213,12 +213,14 @@ class Metaline(object):
     def wrapped(self, wrapper):
         """Break outself up with newlines."""
         #this function does similar stuff to what LineAlterer does...
+        #there's a very slight speedup by avoiding using fill and count('\n')
+        #and instead iterating over the result of wrap, but it's not a big
+        #enough win at the moment to justify the obfuscation
         if not self.wrap:
             return self
         
         metaline = self.copy()
         line = wrapper.fill(self.line)
-        print repr(line)
         #we start at 0, because we're guaranteed to never start on a newline.
         prev = 0
         #adjust the indices to account for the newlines

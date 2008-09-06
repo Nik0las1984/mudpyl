@@ -53,17 +53,12 @@ class TestModuleLoading:
 class Test_write:
 
     def setUp(self):
-        self.fore = "tata"
-        self.back = "toto"
-        self.fact = TelnetClientFactory(None, 'ascii', None)
-        self.fact.outputs = Mock(spec = OutputManager)
-        self.fact.outputs.fore = self.fore
-        self.fact.outputs.back = self.back
-        self.realm = self.fact.realm
-        self.realm.telnet = Mock(spec = TelnetClient)
-        #hack: use set() here because it has copy()
-        self.noting_line = Metaline('foo', set(), set())
-
+        self.realm = RootRealm(Mock())
+        self.realm.telnet = Mock()
+        self.p = Mock()
+        self.realm.addProtocol(self.p)
+        self.noting_line = simpleml("foo", Mock(), Mock())
+        
     def writer(self, match, realm):
         print 'writer called!'
         realm.write(self.noting_line)
@@ -71,7 +66,7 @@ class Test_write:
     @property
     def lines_gotten(self):
         return [line for ((line,), kwargs) in 
-                            self.fact.outputs.write_to_screen.call_args_list]
+                            self.p.metalineReceived.call_args_list]
 
     def test_from_not_a_string(self):
         self.realm.write(42)
@@ -117,7 +112,7 @@ class Test_write:
     def test_write_writes_after_during_matching_triggers(self):
         self.realm.triggers.append(self.noting_trigger)
         inline = Metaline('bar', set(), set())
-        self.realm.receive(inline)
+        self.realm.metalineReceived(inline)
         assert self.lines_gotten == [inline, self.noting_line], \
                self.lines_gotten
 
@@ -143,10 +138,10 @@ class Test_write:
         self.realm.tracing = True
         self.realm.triggers.append(self.tracing_trigger)
         inline = Metaline('baz', set(), set())
-        self.realm.receive(inline)
-        expected_lines = [simpleml("TRACE: %s matched!" % self.tracing_trigger,
+        self.realm.metalineReceived(inline)
+        expected_lines = [simpleml("\nTRACE: %s matched!" % self.tracing_trigger,
                                    fg_code(WHITE, False), bg_code(BLACK)),
-                          simpleml("TRACE: Foo", fg_code(WHITE, False),
+                          simpleml("\nTRACE: Foo", fg_code(WHITE, False),
                                    bg_code(BLACK))]
         print self.lines_gotten
         print
@@ -161,9 +156,9 @@ class Test_write:
                           RunLengthList([(0, bg_code(BLACK))]),
                           soft_line_start = True)
         self.realm.send('baz')
-        expected_lines = [simpleml("TRACE: %s matched!" % self.tracing_alias,
+        expected_lines = [simpleml("\nTRACE: %s matched!" % self.tracing_alias,
                                    fg_code(WHITE, False), bg_code(BLACK)),
-                          simpleml("TRACE: Foo", fg_code(WHITE, False),
+                          simpleml("\nTRACE: Foo", fg_code(WHITE, False),
                                    bg_code(BLACK))]
         print self.lines_gotten
         print
@@ -171,33 +166,25 @@ class Test_write:
         print expected
         assert self.lines_gotten == expected
 
-    def test_write_sends_peek_line(self):
-        p = Mock()
-        self.realm.add_peeker(p)
-        self.realm.write('foobar')
-        assert p.peek_line.call_args == (('foobar',), {})
-
-class Test_receive:
+class Test_metalineReceived:
 
     def setUp(self):
-        self.fore = "tata"
-        self.back = "toto"
-        self.fact = TelnetClientFactory(None, 'ascii', None)
-        self.fact.outputs = Mock(spec = OutputManager)
-        self.fact.outputs.fore = self.fore
-        self.fact.outputs.back = self.back
-        self.realm = self.fact.realm
+        self.realm = RootRealm(Mock())
+        self.p = Mock()
+        self.realm.addProtocol(self.p)
         self.realm.telnet = Mock()
-        self.ml = Metaline('foo', set(), set())
-        self.ml2 = Metaline("bar", None, None)
+        self.ml = simpleml('foo', sentinel.fores, sentinel.backs)
+        self.ml2 = simpleml("bar", sentinel.fores, sentinel.backs)
+        self.ml2_written = self.ml2.copy()
+        self.ml2_written.insert(0, '\n')
 
     @property
     def lines_gotten(self):
         return [line for ((line,), kwargs) in 
-                            self.fact.outputs.write_to_screen.call_args_list]
+                            self.p.metalineReceived.call_args_list]
 
     def test_sends_to_screen_normally(self):
-        self.realm.receive(self.ml)
+        self.realm.metalineReceived(self.ml)
         assert self.lines_gotten == [self.ml]
 
     @binding_trigger("foo")
@@ -206,8 +193,8 @@ class Test_receive:
 
     def test_write_writes_afterwards(self):
         self.realm.triggers.append(self.trigger_1)
-        self.realm.receive(self.ml)
-        assert self.lines_gotten == [self.ml, self.ml2]
+        self.realm.metalineReceived(self.ml)
+        assert self.lines_gotten == [self.ml, self.ml2_written]
 
     @binding_trigger("foo")
     def trigger_2(self, match, realm):
@@ -215,7 +202,7 @@ class Test_receive:
 
     def test_doesnt_display_if_asked_not_to(self):
         self.realm.triggers.append(self.trigger_2)
-        self.realm.receive(self.ml)
+        self.realm.metalineReceived(self.ml)
         assert self.lines_gotten == []
 
     @binding_alias("spam")
@@ -231,11 +218,11 @@ class Test_receive:
         self.realm.triggers.append(self.spam_sending_trigger)
         self.realm.aliases.append(self.bar_writing_alias)
 
-        noteline = Metaline("BAR BAR BAR",
+        noteline = Metaline("\nBAR BAR BAR",
                             RunLengthList([(0, fg_code(WHITE, False))]),
                             RunLengthList([(0, bg_code(BLACK))]))
 
-        self.realm.receive(self.ml)
+        self.realm.metalineReceived(self.ml)
 
         assert self.lines_gotten == [self.ml, noteline]
 
@@ -244,23 +231,19 @@ class Test_receive:
 class Test_send:
 
     def setUp(self):
-        self.fore = "tata"
-        self.back = "toto"
-        self.fact = TelnetClientFactory(None, 'ascii', None)
-        self.fact.outputs = Mock(spec = OutputManager)
-        self.fact.outputs.fore = self.fore
-        self.fact.outputs.back = self.back
-        self.realm = self.fact.realm
-        self.realm.telnet = self.tc = Mock(spec = TelnetClient)
+        self.realm = RootRealm(Mock())
+        self.p = Mock()
+        self.realm.addProtocol(self.p)
+        self.realm.telnet = Mock()
 
     @property
     def lines_gotten(self):
         return [line for ((line,), kwargs) in 
-                            self.fact.outputs.write_to_screen.call_args_list]
+                            self.p.metalineReceived.call_args_list]
 
     def test_send_sends_to_the_mud(self):
         self.realm.send("bar")
-        assert self.tc.sendLine.call_args_list == [(('bar',), {})]
+        assert self.realm.telnet.sendLine.call_args_list == [(('bar',), {})]
 
     def test_send_echos_by_default(self):
         self.realm.send("bar")
@@ -296,8 +279,8 @@ class Test_send:
         self.realm.aliases.append(self.our_alias_1)
         self.realm.send('bar')
 
-        assert self.tc.sendLine.call_args_list == [(('bar',), {}), 
-                                                   (('foo',), {})]
+        assert self.realm.telnet.sendLine.call_args_list == [(('bar',), {}), 
+                                                             (('foo',), {})]
 
     def test_send_after_default_echoing_is_off(self):
         self.realm.aliases.append(self.our_alias_1)
@@ -340,16 +323,17 @@ class Test_send:
                                  RunLengthList([(0, fg_code(WHITE, False))]),
                                  RunLengthList([(0, bg_code(BLACK))]),
                                  soft_line_start = True),
-                        Metaline("bar",
+                        Metaline("\nbar",
                                  RunLengthList([(0, fg_code(WHITE, False))]),
                                  RunLengthList([(0, bg_code(BLACK))]),
                                  soft_line_start = True),
-                        Metaline("foo",
+                        Metaline("\nfoo",
                                  RunLengthList([(0, fg_code(WHITE, False))]),
                                  RunLengthList([(0, bg_code(BLACK))]),
                                  soft_line_start = True)]
         expect_send = ['baz', 'bar', 'foo']
-        sent = [line for ((line,), kwargs) in self.tc.sendLine.call_args_list]
+        sent = [line for ((line,), kwargs)
+                in self.realm.telnet.sendLine.call_args_list]
 
         assert self.lines_gotten == expect_write
         assert sent == expect_send
@@ -366,7 +350,7 @@ class Test_send:
                               RunLengthList([(0, fg_code(WHITE, False))]),
                               RunLengthList([(0, bg_code(BLACK))]),
                               soft_line_start = True),
-                     Metaline("FOO FOO FOO",
+                     Metaline("\nFOO FOO FOO",
                               RunLengthList([(0, fg_code(WHITE, False))]),
                               RunLengthList([(0, bg_code(BLACK))]))]
 
@@ -389,20 +373,6 @@ class TestOtherStuff:
 
     def setUp(self):
         self.realm = RootRealm(None)
-        self.realm.telnet = self.telnet = Mock(spec = TelnetClient)
-
-    def test_close_closes_telnet(self):
-        self.realm.close()
-        assert self.telnet.close.called
-
-    def test_close_clears_telnet_attribute(self):
-        self.realm.close()
-        assert self.realm.telnet is None
-
-    def test_close_is_a_noop_when_telnet_is_None(self):
-        self.realm.telnet = None
-        self.realm.close()
-        assert self.realm.telnet is None
 
     def test_gui_macros_are_defaultly_loaded(self):
         assert self.realm.macros == gui_macros
@@ -477,24 +447,24 @@ class Test_maybe_do_macro:
         res = self.realm.maybe_do_macro(from_string('L'))
         assert not res
 
-class Test_connection_events:
+class Test_addProtocol:
 
     def setUp(self):
         self.factory = TelnetClientFactory(None, 'ascii', None)
         self.realm = RootRealm(self.factory)
         self.realm.telnet = self.telnet = Mock(spec = TelnetClient)
         self.receiver = Mock()
-        self.realm.add_connection_receiver(self.receiver)
+        self.realm.addProtocol(self.receiver)
 
     def test_passes_on_connection_lost(self):
-        self.realm.connection_lost()
-        assert self.receiver.connection_lost.called
+        self.realm.connectionLost()
+        assert self.receiver.connectionLost.called
 
     @patch('mudpyl.realms', 'time')
     def test_connection_lost_writes_message(self, our_time):
         our_time.strftime.return_value = 'FOOBAR'
         self.realm.write = Mock()
-        self.realm.connection_lost()
+        self.realm.connectionLost()
         assert self.realm.write.called
         ml = self.realm.write.call_args[0][0]
         assert ml.line == 'FOOBAR'
@@ -505,7 +475,7 @@ class Test_connection_events:
     def test_connection_made_writes_message(self, our_time):
         our_time.strftime.return_value = 'FOOBAR'
         self.realm.write = Mock()
-        self.realm.connection_made()
+        self.realm.connectionMade()
         assert self.realm.write.called
         ml = self.realm.write.call_args[0][0]
         assert ml.line == 'FOOBAR'
@@ -513,25 +483,22 @@ class Test_connection_events:
         assert ml.backs.items() == [(0, bg_code(BLACK))]
 
     def test_passes_on_connection_made(self):
-        self.realm.connection_made()
-        assert self.receiver.connection_made.called
+        self.realm.connectionMade()
+        assert self.receiver.connectionMade.called
 
     def test_sends_connection_lost_and_close_in_right_order(self):
         self.realm.close()
         #simulate Twisted's 'throw-it-over-the-wall' anti-guarantee
-        self.realm.connection_lost()
+        self.realm.connectionLost()
         calls = [mname for (mname, args, kws) in self.receiver.method_calls]
-        assert calls == ['connection_lost', 'close']
+        #the metalineReceived is the closing note
+        assert calls == ['metalineReceived', 'connectionLost', 'close'], calls
 
     def test_connection_lost_then_close_works(self):
-        self.realm.connection_lost()
+        self.realm.connectionLost()
         self.realm.close()
         calls = [mname for (mname, args, kws) in self.receiver.method_calls]
-        assert calls == ['connection_lost', 'close']
-
-    def test_connection_lost_sets_telnet_to_None(self):
-        self.realm.connection_lost()
-        assert self.realm.telnet is None
+        assert calls == ['metalineReceived', 'connectionLost', 'close'], calls
 
 from mudpyl.modules import load_file
 
@@ -649,7 +616,74 @@ class TestTracing:
     def test_trace_remembers_tracing_when_attempted(self):
         self.realm.write = Mock()
         self.realm.triggers.append(self.trace_twiddling_trigger)
-        self.realm.receive(simpleml("Foo", None, None))
+        self.realm.metalineReceived(simpleml("Foo", None, None))
         print self.realm.write.call_args_list
         assert self.realm.write.call_args_list == [(("TRACE: Foo", False),
                                                     {})]
+
+class Test_write_wrapping:
+    
+    def setUp(self):
+        self.realm = RootRealm(Mock())
+        self.p = Mock()
+        self.realm.addProtocol(self.p)
+
+    def test_line_insertion_with_hard_line_end_no_sls(self):
+        self.realm._last_line_end = 'hard'
+        self.realm.write(simpleml("foo", sentinel.fore,
+                                  sentinel.back))
+        rcvd = [ml for ((ml,), _) in self.p.metalineReceived.call_args_list]
+        assert rcvd == [simpleml("\nfoo", sentinel.fore, sentinel.back)]
+
+    def test_line_insertion_with_hard_line_end_sls(self):
+        self.realm._last_line_end = 'hard'
+        ml = simpleml("foo", sentinel.fore, sentinel.back)
+        ml.soft_line_start = True
+        expected = ml.copy()
+        expected.insert(0, '\n')
+        self.realm.write(ml)
+        rcvd = [ml for ((ml,), _) in self.p.metalineReceived.call_args_list]
+        assert rcvd == [expected]
+
+    def test_line_insertion_sle_no_sls(self):
+        self.realm._last_line_end = 'soft'
+        self.realm.write(simpleml("foo", sentinel.fore,
+                                  sentinel.back))
+        rcvd = [ml for ((ml,), _) in self.p.metalineReceived.call_args_list]
+        assert rcvd == [simpleml("\nfoo", sentinel.fore, sentinel.back)]
+        
+    def test_line_no_insertion_sle_sls(self):
+        self.realm._last_line_end = 'soft'
+        ml = simpleml("foo", sentinel.fore, sentinel.back)
+        ml.soft_line_start = True
+        expected = ml.copy()
+        self.realm.write(ml)
+        rcvd = [ml for ((ml,), _) in self.p.metalineReceived.call_args_list]
+        assert rcvd == [expected]
+
+    def test_respects_no_line_end(self):
+        self.realm._last_line_end = None
+        ml = simpleml("foo", sentinel.fore, sentinel.back)
+        expected = ml
+        self.realm.write(ml)
+        rcvd = [ml for ((ml,), _) in self.p.metalineReceived.call_args_list]
+        assert rcvd == [expected], rcvd
+
+    def test_last_line_end_setting(self):
+        ml = simpleml("foo", sentinel.fore, sentinel.back)
+        ml.line_end = sentinel.line_end
+        self.realm.write(ml)
+        assert self.realm._last_line_end == sentinel.line_end
+
+    def test_last_line_end_is_defaultly_None(self):
+        assert self.realm._last_line_end is None
+
+    def test_with_wrap(self):
+        ml = simpleml("bar", sentinel.fore1, sentinel.fore2)
+        ml.wrapped = Mock()
+        ml.wrapped.return_value = ml2 = simpleml("foo", sentinel.fore,
+                                                 sentinel.back)
+        self.realm.write(ml)
+        assert ml.wrapped.called
+        rcvd = [ml for ((ml,), _) in self.p.metalineReceived.call_args_list]
+        assert rcvd == [ml2]

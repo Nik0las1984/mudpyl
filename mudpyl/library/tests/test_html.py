@@ -106,12 +106,6 @@ class TestHTMLLogOutputInitialisation:
             log = HTMLLogOutput(self.outputs, self.realm, None)
         assert self.outputs.outputs == [log]
 
-    def test_adds_itself_for_connection_events(self):
-        with nested(patched('__builtin__', 'open', self.open),
-                    patched('mudpyl.library.html', 'time', self.time)):
-            log = HTMLLogOutput(self.outputs, self.realm, None)
-        assert self.realm.connection_event_receivers == [log]
-
     def test_opens_file_in_append_mode(self):
         with nested(patched('__builtin__', 'open', self.open),
                     patched('mudpyl.library.html', 'time', self.time)):
