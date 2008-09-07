@@ -37,7 +37,6 @@ class Test_LineReceiver_aspects:
 
     def test_closing_flushes_buffer(self):
         self.tc.dataReceived("bar")
-        print self.tc.factory.outputs
         self.tc.connectionLost(None)
         assert self.received == ['bar']
 

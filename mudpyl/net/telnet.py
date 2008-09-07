@@ -3,7 +3,6 @@ from twisted.conch.telnet import Telnet, GA, IAC, ECHO
 from twisted.protocols.basic import LineOnlyReceiver
 from twisted.internet.protocol import ClientFactory
 from mudpyl.net.nvt import ColourCodeParser, make_string_sane
-from mudpyl.output_manager import OutputManager
 from mudpyl.net.mccp import MCCPTransport, COMPRESS2
 from mudpyl.realms import RootRealm
 import re
@@ -132,7 +131,6 @@ class TelnetClientFactory(ClientFactory):
         self.encoding = encoding
         self.main_module_name = main_module_name
         self.realm = RootRealm(self)
-        self.outputs = OutputManager(self)
 
     protocol = TelnetClient
 

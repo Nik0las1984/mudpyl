@@ -3,8 +3,10 @@ from StringIO import StringIO
 from mudpyl.library import html
 from mudpyl.library.html import HTMLLogOutput
 from cgi import escape
-from mudpyl.colours import HexFGCode, HexBGCode
+from mudpyl.colours import HexFGCode, HexBGCode, bg_code, fg_code, WHITE, RED,\
+     PURPLE, GREEN
 from mock import _importer, Mock, sentinel
+from mudpyl.metaline import Metaline, RunLengthList, simpleml
 
 class Logger(HTMLLogOutput):
 
@@ -15,17 +17,29 @@ class Logger(HTMLLogOutput):
 
     def __init__(self, log):
         self.log = log
+        self.fore = Mock()
+        self.back = Mock()
+        self.method_calls = []
 
-    class outputs:
+    def write_out_span(self, span):
+        self.method_calls.append(("write_out_span", (span,), {}))
+        HTMLLogOutput.write_out_span(self, span)
 
-        fore = HexFGCode(0xF0, 0x0B, 0xA8)
-        back = HexBGCode(0xA2, 0xE6, 0x65)
+    def change_colour(self):
+        self.method_calls.append(("change_colour", (), {}))
+        HTMLLogOutput.change_colour(self)
 
 class Test_HTMLLogOutput:
 
     def setUp(self):
         self.f = StringIO()
         self.o = Logger(self.f)
+        self.o.fore.tohex.return_value = self.o.fore.ground = 'fore'
+        self.o.back.tohex.return_value = self.o.back.ground = 'back'
+        self.f1 = fg_code(WHITE, False)
+        self.f2 = fg_code(GREEN, True)
+        self.b1 = bg_code(RED)
+        self.b2 = bg_code(PURPLE)
 
     def test_write_out_span_writes_it_out(self):
         self.o.write_out_span("foo")
@@ -35,14 +49,76 @@ class Test_HTMLLogOutput:
         self.o.write_out_span("<foo>")
         assert self.f.getvalue() == escape('<foo>')
 
-    def test_fg_changed_writes_out_new_colour(self):
-        self.o.fg_changed(None)
-        assert self.f.getvalue() == 'COLOUR CHANGE f00ba8 a2e665', \
+    def test_change_colour_writes_out_new_colour(self):
+        self.o.back.tohex.return_value = 'newback'
+        self.o.change_colour()
+        assert self.f.getvalue() == 'COLOUR CHANGE fore newback', \
                self.f.getvalue()
 
-    def test_bg_changed_writes_out_new_colour(self):
-        self.o.bg_changed(None)
-        assert self.f.getvalue() == 'COLOUR CHANGE f00ba8 a2e665'
+    def test_metalineReceived_calls_write_out_span(self):
+        self.o.write_out_span = Mock()
+        self.o.metalineReceived(simpleml("foo", self.o.fore, self.o.back))
+        assert self.o.write_out_span.call_args_list == [(("foo",), {})]
+
+    def test_metalineReceived_changes_colour_if_needed(self):
+        self.o.metalineReceived(simpleml("foo", self.f1, self.b1))
+        print self.o.method_calls
+        assert self.o.method_calls == [("change_colour", (), {}),
+                                       ("write_out_span", ("foo",), {})]
+
+    def test_metalineReceived_doesnt_change_colour_if_not_needed(self):
+        self.o.change_colour = Mock()
+        self.o.metalineReceived(simpleml("foo", self.o.fore, self.o.back))
+        assert not self.o.change_colour.called
+
+    def test_metalineReceived_change_colour_mid_span_calls_change_colour(self):
+        self.o.metalineReceived(Metaline("foobarbaz",
+                                         RunLengthList([(0, self.f1),
+                                                        (3, self.f2)]),
+                                         RunLengthList([(0, self.b1),
+                                                        (6, self.b2)])))
+        assert self.o.method_calls == [("change_colour", (), {}),
+                                       ("write_out_span", ("foo",), {}),
+                                       ("change_colour", (), {}),
+                                       ("write_out_span", ("bar",), {}),
+                                       ("change_colour", (), {}),
+                                       ("write_out_span", ("baz",), {})]
+
+    def test_metalineReceived_sets_fore_and_back_mid_span(self):
+        colours = []
+        self.o.change_colour = lambda: colours.append((self.o.fore,
+                                                       self.o.back))
+        self.o.metalineReceived(Metaline("foobarbaz",
+                                         RunLengthList([(0, self.f1),
+                                                        (3, self.f2)]),
+                                         RunLengthList([(0, self.b1),
+                                                        (6, self.b2)])))
+        assert colours == [(self.f1, self.b1),
+                           (self.f2, self.b1),
+                           (self.f2, self.b2)]
+
+    def test_metalineReceived_calls_change_colour_for_overrun_colours(self):
+        self.o.metalineReceived(Metaline("foo",
+                                         RunLengthList([(0, self.f1),
+                                                        (3, self.f2)]),
+                                         RunLengthList([(0, self.b1),
+                                                        (6, self.b2)])))
+        print self.o.method_calls
+        assert self.o.method_calls == [("change_colour", (), {}),
+                                       ("write_out_span", ("foo",), {}),
+                                       ("change_colour", (), {})]
+
+    def test_metalineReceived_sets_fore_and_back_for_overruns(self):
+        colours = []
+        self.o.change_colour = lambda: colours.append((self.o.fore,
+                                                       self.o.back))
+        self.o.metalineReceived(Metaline("foo",
+                                         RunLengthList([(0, self.f1),
+                                                        (3, self.f2)]),
+                                         RunLengthList([(0, self.b1),
+                                                        (6, self.b2)])))
+        assert colours == [(self.f1, self.b1),
+                           (self.f2, self.b2)]
 
 class MockFile:
 
@@ -95,34 +171,27 @@ class TestHTMLLogOutputInitialisation:
         self.time = Mock(methods = ['strftime'])
         self.time.strftime.return_value = "FOO %(name)s"
         self.factory = TelnetClientFactory('baz', None, None)
-        self.outputs = self.factory.outputs
         self.realm = self.factory.realm
         self.open = Mock()
         self.open.return_value = MockFile()
 
-    def test_adds_itself_to_output_manager(self):
-        with nested(patched('__builtin__', 'open', self.open),
-                    patched('mudpyl.library.html', 'time', self.time)):
-            log = HTMLLogOutput(self.outputs, self.realm, None)
-        assert self.outputs.outputs == [log]
-
     def test_opens_file_in_append_mode(self):
         with nested(patched('__builtin__', 'open', self.open),
                     patched('mudpyl.library.html', 'time', self.time)):
-            log = HTMLLogOutput(self.outputs, self.realm, None)
+            log = HTMLLogOutput(self.realm, None)
         assert self.open.call_args == (("FOO baz", "a"), {})
 
     def test_passes_given_format_to_strftime(self):
         with nested(patched('__builtin__', 'open', self.open),
                     patched('mudpyl.library.html', 'time', self.time)):
-            log = HTMLLogOutput(self.outputs, self.realm, "BAR")
+            log = HTMLLogOutput(self.realm, "BAR")
         assert self.time.method_calls == [('strftime', ('BAR',), {})]
 
     def test_sets_opened_file_to_self_log(self):
         with nested(patched('__builtin__', 'open', self.open),
                     patched('mudpyl.library.html', 'time', self.time)):
             print 'opening'
-            log = HTMLLogOutput(self.outputs, self.realm, "BAR")
+            log = HTMLLogOutput(self.realm, "BAR")
             print 'should be opened'
         print log.log, self.open.return_value
         assert log.log is self.open.return_value
@@ -130,7 +199,7 @@ class TestHTMLLogOutputInitialisation:
     def test_writes_preamble_to_file(self):
         with nested(patched('__builtin__', 'open', self.open),
                     patched('mudpyl.library.html', 'time', self.time)):
-            log = HTMLLogOutput(self.outputs, self.realm, "BAR")
+            log = HTMLLogOutput(self.realm, "BAR")
         assert self.open.return_value.written == HTMLLogOutput.log_preamble
 
 from mudpyl.library.html import HTMLLoggingModule
@@ -143,5 +212,5 @@ def test_HTMLLoggingModule_is_main_initialises_html_log():
         mod = HTMLLoggingModule(f.realm)
         mod.logplace = sentinel.logplace
         mod.is_main()
-    assert m.call_args_list == [((f.outputs, f.realm, sentinel.logplace), {})]
+    assert m.call_args_list == [((f.realm, sentinel.logplace), {})]
 

@@ -79,6 +79,8 @@ New since 0.3
 
 2008-09-07 Sam Pointon <sampointon@gmail.com>
     - gui/gtkcommandline.py: use gtk.Entry, for real input hiding
+    - output_manager.py: removed
+    - library/html.py: receives the useful parts of the OutputManager
 
 New since 0.2
 -------------

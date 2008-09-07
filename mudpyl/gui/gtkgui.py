@@ -40,9 +40,8 @@ class GUI(gtk.Window):
 
     """The toplevel window. Contains the command line and the output view."""
 
-    def __init__(self, outputs, realm):
+    def __init__(self, realm):
         gtk.Window.__init__(self)
-        self.outputs = outputs
         self.realm = realm
         self.realm.addProtocol(self)
         realm.factory.gui = self
@@ -153,7 +152,7 @@ def configure(factory):
     """Set the right reactor up and get the GUI going."""
     from twisted.internet import gtk2reactor
     gtk2reactor.install()
-    gui = GUI(factory.outputs, factory.realm)
+    gui = GUI(factory.realm)
     macros = {from_string("<page up>"): gui.forward_page_up_cb,
               from_string('<page down>'): gui.forward_page_down_cb,
               from_string("C-c"): gui.maybe_forward_copy_cb}

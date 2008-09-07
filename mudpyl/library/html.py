@@ -1,6 +1,7 @@
 """Utilities and stuff for HTML logging."""
 from cgi import escape
 from mudpyl.modules import BaseModule
+from mudpyl.colours import fg_code, bg_code, WHITE, BLACK
 import time
 import os
 
@@ -35,11 +36,14 @@ body {
 
     colour_change = '''</span><span style="color: #%s; background: #%s">'''
 
-    def __init__(self, outputs, realm, logformat):
-        self.outputs = outputs
-        outputs.add_output(self)
+    def __init__(self, realm, logformat):
+        self.fore = fg_code(WHITE, False)
+        self.back = bg_code(BLACK)
+        self.realm = realm
+        self._dirty = False
+        realm.addProtocol(self)
         self.log = open(time.strftime(logformat) % 
-                                   {'name': self.outputs.factory.name}, 'a')
+                                   {'name': self.realm.factory.name}, 'a')
         self.log.write(self.log_preamble)
 
     def write_out_span(self, span):
@@ -48,15 +52,14 @@ body {
         """
         self.log.write(escape(span))
 
-    def colour_changed(self, _):
+    def change_colour(self):
         """The change itself is useless, as we'd have to write a new <span>
         anyway with both foreground and background, so use common code for
         both types of change.
         """
-        self.log.write(self.colour_change % (self.outputs.fore.tohex(), 
-                                             self.outputs.back.tohex()))
-
-    fg_changed = bg_changed = colour_changed
+        self.log.write(self.colour_change % (self.fore.tohex(), 
+                                             self.back.tohex()))
+        self._dirty = False
 
     def close(self):
         """Clean up."""
@@ -69,6 +72,41 @@ body {
         pass
     connectionLost = connectionMade
 
+    def metalineReceived(self, metaline):
+        """Write the line to the logs.
+
+        This breaks the string up into coloured chunks, and feeds them to
+        the log separately."""
+        line = metaline.line
+        #the indices are relative to the original string, not the previous
+        #index, so we need to track what the previous index was to figure out
+        #how much of the string needs to be coloured.
+        oldind = 0
+
+        for ind, change in sorted(metaline.fores.values +
+                                  metaline.backs.values):
+            #calculate the length of the previous bit of coloured string
+            inddiff = ind - oldind
+            if len(line) >= inddiff > 0:
+                if self._dirty:
+                    self.change_colour()
+                self.write_out_span(line[:inddiff])
+            if change.ground == 'back':
+                self._dirty = self.back != change
+                self.back = change
+            elif change.ground == 'fore':
+                self._dirty = self.fore != change
+                self.fore = change
+            else:
+                raise RuntimeError("Dunno what %r is." % change)
+            line = line[inddiff:]
+            oldind = ind
+        
+        if self._dirty:
+            self.change_colour()
+        if line:
+            self.write_out_span(line)
+
 class HTMLLoggingModule(BaseModule):
     """A module that logs to disk."""
 
@@ -79,5 +117,5 @@ class HTMLLoggingModule(BaseModule):
     def is_main(self):
         """Open up the HTML log."""
         #automatically adds itself to the outputs list
-        HTMLLogOutput(self.realm.factory.outputs, self.realm, self.logplace)
+        HTMLLogOutput(self.realm, self.logplace)
 
