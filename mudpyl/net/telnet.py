@@ -3,7 +3,6 @@ from twisted.conch.telnet import Telnet, GA, IAC, ECHO
 from twisted.protocols.basic import LineOnlyReceiver
 from twisted.internet.protocol import ClientFactory
 from mudpyl.net.nvt import ColourCodeParser, make_string_sane
-from mudpyl.output_manager import OutputManager
 from mudpyl.net.mccp import MCCPTransport, COMPRESS2
 from mudpyl.realms import RootRealm
 import re
@@ -45,11 +44,8 @@ class TelnetClient(Telnet, LineOnlyReceiver):
             return True
         elif option == ECHO:
             self.factory.realm.server_echo = True
-            #hide the command line. This won't stop a determined cracker
-            #getting the password if it's typed in (eg, shift-home will select
-            #and then they can copy), but it stops shoulder-surfing at least
-            self.factory.gui.command_line.hide()
-            self.factory.gui.command_line.grab_focus()
+            #hide the command line
+            self.factory.gui.command_line.set_visibility(False)
             return True
         else:
             return False
@@ -60,8 +56,7 @@ class TelnetClient(Telnet, LineOnlyReceiver):
             self.allowing_compress = False
         elif option == ECHO:
             self.factory.realm.server_echo = False
-            self.factory.gui.command_line.show()
-            self.factory.gui.command_line.grab_focus()
+            self.factory.gui.command_line.set_visibility(True)
 
     def turn_on_compression(self, bytes):
         """Actually enable MCCP."""
@@ -136,7 +131,6 @@ class TelnetClientFactory(ClientFactory):
         self.encoding = encoding
         self.main_module_name = main_module_name
         self.realm = RootRealm(self)
-        self.outputs = OutputManager(self)
 
     protocol = TelnetClient
 

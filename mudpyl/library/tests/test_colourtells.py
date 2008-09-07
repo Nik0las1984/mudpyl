@@ -1,7 +1,6 @@
 from mudpyl.library.colourtells import TellColourer
 from mudpyl.metaline import RunLengthList, Metaline, simpleml
 from mudpyl.net.telnet import TelnetClientFactory, TelnetClient
-from mudpyl.output_manager import OutputManager
 from mudpyl.colours import WHITE, BLACK, fg_code, bg_code
 from mock import Mock
 

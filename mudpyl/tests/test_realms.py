@@ -4,7 +4,6 @@ from mudpyl.metaline import Metaline, RunLengthList, simpleml
 from mudpyl.triggers import binding_trigger
 from mudpyl.aliases import binding_alias
 from mudpyl.net.telnet import TelnetClientFactory, TelnetClient
-from mudpyl.output_manager import OutputManager
 from mock import Mock
 import time
 
