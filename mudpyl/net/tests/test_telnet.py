@@ -131,8 +131,8 @@ class Test_server_echo_setting:
 
     def test_enable_hides_input_box_but_grabs_focus(self):
         self.tc.enableRemote(ECHO)
-        assert self.f.gui.command_line.hide.called
-        assert self.f.gui.command_line.grab_focus.called
+        assert self.f.gui.command_line.method_calls == \
+               [('set_visibility', (False,), {})]
 
     def test_disable_sets_server_echo_to_False(self):
         self.tc.enableRemote(ECHO)
@@ -141,8 +141,8 @@ class Test_server_echo_setting:
 
     def test_disable_shows_input_box_and_grabs_focus(self):
         self.tc.disableRemote(ECHO)
-        assert self.f.gui.command_line.show.called
-        assert self.f.gui.command_line.grab_focus.called
+        assert self.f.gui.command_line.method_calls == \
+               [('set_visibility', (True,), {})]
 
 from mudpyl.metaline import Metaline, RunLengthList, simpleml
 from mudpyl.colours import fg_code, RED, WHITE, BLACK, bg_code

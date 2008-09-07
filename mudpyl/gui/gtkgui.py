@@ -80,7 +80,7 @@ class GUI(gtk.Window):
         self.scrolled_out.add(self.output_window)
 
         self.scrolled_in.set_policy(gtk.POLICY_ALWAYS, gtk.POLICY_NEVER)
-        self.scrolled_in.add(self.command_line)
+        self.scrolled_in.add_with_viewport(self.command_line)
 
         #construct the bottom row of indicators and stuff
         labelbox = gtk.HBox()

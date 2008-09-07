@@ -5,12 +5,12 @@ from mudpyl.gui.keychords import from_gtk_event
 import gtk
 import pango
 
-class CommandView(gtk.TextView):
+class CommandView(gtk.Entry):
 
     """The area where the user enters commands to be sent to the MUD."""
 
     def __init__(self, gui):
-        gtk.TextView.__init__(self)
+        gtk.Entry.__init__(self)
         self.realm = gui.realm
         self.gui = gui
         self.tabdict = Trie()
@@ -36,18 +36,17 @@ class CommandView(gtk.TextView):
     def history_up(self):
         """Move up (ie, back in time) one command in the history."""
         #cursor will be at the end of the line, as it has no left gravity.
-        self.buffer.set_text(self.hist.advance())
-        self.scroll_mark_onscreen(self.buffer.get_insert())
+        self.set_text(self.hist.advance())
+        self.set_position(-1)
 
     def history_down(self):
         """Move down (ie, forwards in time) one command in the history."""
-        self.buffer.set_text(self.hist.retreat())
-        self.scroll_mark_onscreen(self.buffer.get_insert())
+        self.set_text(self.hist.retreat())
+        self.set_position(-1)
 
     def get_all_text(self):
         """Finger-saving mathod to get all the text from the buffer."""
-        bytes = self.buffer.get_text(self.buffer.get_start_iter(), 
-                                     self.buffer.get_end_iter())
+        bytes = self.get_chars(0, -1)
         return bytes.decode('utf-8')
 
     def escape_pressed(self):
@@ -55,12 +54,12 @@ class CommandView(gtk.TextView):
         the buffer.
         """
         self.hist.add_command(self.get_all_text())
-        self.buffer.set_text('')
+        self.set_text('')
 
     def submit_line(self):
         """Send the current line to the MUD and clear the buffer."""
         text = self.get_all_text()
-        self.buffer.set_text('')
+        self.set_text('')
         self.realm.receive_gui_line(text)
         if not self.realm.server_echo:
             self.hist.add_command(text)
@@ -68,14 +67,12 @@ class CommandView(gtk.TextView):
     def tab_complete(self):
         """Tab-completion."""
         line = self.get_all_text()
-        cursoriter = self.buffer.get_iter_at_mark(self.buffer.get_insert())
         #cursor position as an integer from the start of the line
-        ind = cursoriter.get_offset()
+        ind = self.get_position()
         line, ind = self.tabdict.complete(line, ind)
-        self.buffer.set_text(line)
+        self.set_text(line)
         #move the cursor to where the tabdict wants it
-        newiter = self.buffer.get_iter_at_offset(ind)
-        self.buffer.place_cursor(newiter)
+        self.set_position(ind)
 
     def add_line_to_tabdict(self, line):
         """Add all the new words in the line to our tabdict."""
