@@ -546,7 +546,7 @@ class Test_reload:
         assert self.realm.load_module.called
         assert self.realm.load_module.call_args[0] == (sentinel.Module,)
 
-class TestTracing:
+class Test_trace:
 
     def setUp(self):
         self.factory = TelnetClientFactory(None, None, sentinel.ModuleName)
@@ -615,6 +615,35 @@ class TestTracing:
     def test_trace_remembers_tracing_when_attempted(self):
         self.realm.write = Mock()
         self.realm.triggers.append(self.trace_twiddling_trigger)
+        self.realm.metalineReceived(simpleml("Foo", None, None))
+        print self.realm.write.call_args_list
+        assert self.realm.write.call_args_list == [(("TRACE: Foo", False),
+                                                    {})]
+
+    def test_trace_thunk_delegates_to_write_if_tracing(self):
+        self.realm.tracing = True
+        self.realm.write = Mock()
+        self.realm.trace_thunk(lambda: "FOO BAR BAZ")
+        print self.realm.write.call_args_list
+        assert self.realm.write.call_args_list == [(("TRACE: FOO BAR BAZ",),
+                                                    {})]
+
+    def test_trace_thunk_writes_nothing_if_not_tracing(self):
+        self.realm.write = Mock()
+        self.realm.trace_thunk(lambda: "FOO BAR BAZ")
+        assert not self.realm.write.called
+
+    @binding_trigger("Foo")
+    def trace_thunk_twiddling_trigger(self, match, realm):
+        realm.display_line = False
+        self.realm.tracing = True
+        realm.trace_thunk(lambda: 'Foo')
+        self.realm.tracing = False
+        realm.trace_thunk(lambda: "Bar")
+
+    def test_trace_thunk_remembers_tracing_when_attempted(self):
+        self.realm.write = Mock()
+        self.realm.triggers.append(self.trace_thunk_twiddling_trigger)
         self.realm.metalineReceived(simpleml("Foo", None, None))
         print self.realm.write.call_args_list
         assert self.realm.write.call_args_list == [(("TRACE: Foo", False),

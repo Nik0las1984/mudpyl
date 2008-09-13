@@ -1,5 +1,6 @@
 """Contains the widget that displays the text from the MUD."""
 from mudpyl.metaline import pairwise
+from itertools import chain
 import gtk
 import pango
 
@@ -73,12 +74,12 @@ class OutputView(gtk.TextView):
         """Apply a RunLengthList of colours to the buffer, starting at
         offset characters in.
         """
+        end_iter = self.buffer.get_iter_at_offset(offset)
         #add a dummy item at the end to make sure that even the very last
         #of the metaline is covered
-        values = colours.values[:]
-        values.append((end_offset, None))
-        end_iter = self.buffer.get_iter_at_offset(offset)
-        for (start, colour), (end, _) in pairwise(values):
+        end_dummy = (end_offset, None)
+        for (start, colour), (end, _) in pairwise(chain(colours.values,
+                                                        [end_dummy])):
             tag = self.fetch_tag(colour)
             start_iter = end_iter
             end_iter = self.buffer.get_iter_at_offset(end + offset)
@@ -87,7 +88,7 @@ class OutputView(gtk.TextView):
     def fetch_tag(self, colour):
         """Check to see if a colour is in the tag table. If it isn't, add it.
 
-        Return's the tag.
+        Returns the tag.
         """
         #use our own tag table, because GTK's is too slow
         if colour in self._tags:

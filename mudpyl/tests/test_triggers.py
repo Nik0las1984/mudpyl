@@ -167,14 +167,13 @@ class Test_LineAlterer:
 from mudpyl.triggers import non_binding_trigger
 
 def test_non_binding_trigger():
-    ro = object()
     so = object()
     fo = object()
-    f = non_binding_trigger(ro, sequence = so)(fo)
+    f = non_binding_trigger("foo", sequence = so)(fo)
     r = f()
-    assert r.regex is ro
     assert r.sequence is so
     assert r.func is fo
+    assert r.regex.pattern == 'foo'
 
 def test_non_binding_trigger_makes_a_new_instance_each_time():
     f = non_binding_trigger(None)(None)

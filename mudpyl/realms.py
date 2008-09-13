@@ -202,10 +202,20 @@ class RootRealm(object):
         """
         self._trace_with(line, self)
 
+    def trace_thunk(self, thunk):
+        """If we're tracing, call the thunk and write its result to the
+        outputs. If not, do nothing.
+        """
+        self._trace_thunk_with(thunk, self)
+
     def _trace_with(self, line, realm):
         """Write the line via the realm if we're tracing."""
         if self.tracing:
             realm.write("TRACE: " + line)
+
+    def _trace_thunk_with(self, thunk, realm):
+        if self.tracing:
+            realm.write("TRACE: " + thunk())
 
     #Going towards the MUD.
 

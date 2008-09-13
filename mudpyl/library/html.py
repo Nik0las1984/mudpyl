@@ -17,7 +17,7 @@ class HTMLLogOutput(object):
 <style>
 body {
     background: black;
-    font-family: Courier New, monospace;
+    font-family: monospace;
     font-size: 8pt;
 }
 </style>
