@@ -86,6 +86,11 @@ New since 0.3
     - output_manager.py: removed
     - library/html.py: receives the useful parts of the OutputManager
 
+2008-09-13 Sam Pointon <sampointon@gmail.com>
+    - gui/gtkoutput.py: use a less wasteful means of writing to the screen
+    - matchers.py: use new trace_thunk to only compute __str__ if needed
+    - realms.py: new function trace_thunk
+
 New since 0.2
 -------------
 

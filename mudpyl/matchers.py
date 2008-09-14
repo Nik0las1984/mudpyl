@@ -31,7 +31,7 @@ class ProtoMatcher(object):
 #pylint: enable-msg=E0202,W0613
 
     def __call__(self, match, realm):
-        realm.trace("%s matched!" % self)
+        realm.trace_thunk(lambda: "%s matched!" % self)
         try:
             self.func(match, realm)
         except Exception: #don't catch KeyboardInterrupt etc
@@ -159,6 +159,12 @@ class BaseMatchingRealm(object):
         """Forward the debugging decision to our parent."""
         self.parent._trace_with(line, self)
 
+    def trace_thunk(self, thunk):
+        self.parent._trace_thunk_with(thunk, self)
+
     def _trace_with(self, line, realm):
         """Forward a trace request up the stack of realms."""
         self.parent._trace_with(line, realm)
+
+    def _trace_thunk_with(self, thunk, realm):
+        self.parent._trace_thunk_with(thunk, realm)

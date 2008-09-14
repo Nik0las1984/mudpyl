@@ -22,9 +22,12 @@ class Test__call__:
         assert self.matches[0] is o
 
     def test_traces_calls(self):
+        self.realm.tracing = True
         self.m(None, self.realm)
         arg = '%s matched!' % self.m
-        assert self.realm.trace.call_args_list == [((arg,), {})]
+        assert self.realm.trace_thunk.called
+        (thunk,), _ = self.realm.trace_thunk.call_args
+        assert thunk() == arg
 
     def bad_func(self, match, info):
         raise Exception

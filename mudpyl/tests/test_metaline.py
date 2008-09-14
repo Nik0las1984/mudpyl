@@ -34,8 +34,8 @@ def test_Metaline_insert_adjustsindices_beyond_span():
     backs = RunLengthList([(0, 'F'), (5, 'B')])
     m = Metaline('foobar', fores, backs)
     m.insert(3, 'baz')
-    assert m.fores.items() == [(0, 'F'), (8, 'B')]
-    assert m.backs.items() == [(0, 'F'), (8, 'B')]
+    assert m.fores.items() == [(0, 'F'), (8, 'B')], m.fores.items()
+    assert m.backs.items() == [(0, 'F'), (8, 'B')], m.backs.items()
 
 def test_Metaline_delete():
     fores = RunLengthList([(0, 'F'), (4, 'B'), (7, 'Z')])
