@@ -1,4 +1,4 @@
-from setuptools import setup, find_packages
+from setuptools import setup, find_packages, Extension
 import os
 
 #we need to execute __init__.py because that's where our version number lives.
@@ -6,6 +6,9 @@ import os
 #conditions, because everything is unzipped anyway for installation.
 edict = {}
 execfile(os.path.join('mudpyl', '__init__.py'), edict)
+
+ordereddict_module = Extension("_ordereddict",
+                               sources = ["mudpyl/ordereddict.c"])
 
 setup(name = "mudpyl",
       version = edict['__version__'],
@@ -29,4 +32,5 @@ setup(name = "mudpyl",
                         },
       test_suite = 'nose.collector',
       packages = find_packages(),
-      scripts = ['mudpyl/mudconnect.py'])
+      scripts = ['mudpyl/mudconnect.py'],
+      ext_modules = [ordereddict_module])

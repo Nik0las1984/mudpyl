@@ -91,6 +91,9 @@ New since 0.3
     - matchers.py: use new trace_thunk to only compute __str__ if needed
     - realms.py: new function trace_thunk
 
+2008-09-14 Sam Pointon <sampointon@gmail.com>
+    - ordereddict.[ch]: incorporated
+
 New since 0.2
 -------------
 
