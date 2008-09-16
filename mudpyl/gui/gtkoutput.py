@@ -1,8 +1,21 @@
 """Contains the widget that displays the text from the MUD."""
-from mudpyl.metaline import pairwise
-from itertools import chain
+from itertools import tee, izip, chain
 import gtk
 import pango
+
+def pairwise(seq):
+    """Return a list pairwise.
+
+    Example::
+        >>> pairwise([1, 2, 3, 4])
+        [(1, 2), (2, 3), (3, 4)]
+    """
+    a, b = tee(seq)
+    try:
+        b.next()
+    except StopIteration:
+        pass
+    return izip(a, b)
 
 class OutputView(gtk.TextView):
 
@@ -78,7 +91,7 @@ class OutputView(gtk.TextView):
         #add a dummy item at the end to make sure that even the very last
         #of the metaline is covered
         end_dummy = (end_offset, None)
-        for (start, colour), (end, _) in pairwise(chain(colours.values,
+        for (start, colour), (end, _) in pairwise(chain(colours.iteritems(),
                                                         [end_dummy])):
             tag = self.fetch_tag(colour)
             start_iter = end_iter

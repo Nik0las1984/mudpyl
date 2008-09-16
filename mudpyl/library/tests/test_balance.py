@@ -29,6 +29,6 @@ class Test_balance_highlight:
         match = re.search('foobar', 'foobar')
         self.trig.func(match, realm)
         res = realm.alterer.apply(m)
-        assert res.fores.values[:] == \
+        assert res.fores.items() == \
                 [(0, HexFGCode(0x80, 0xFF, 0x80)),
                  (6, 'foo')]

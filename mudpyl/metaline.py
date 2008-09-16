@@ -1,6 +1,4 @@
 """Utility for passing around lines with their colour information."""
-from bisect import insort, bisect
-from itertools import izip, tee, chain
 
 def iadjust(ind, start, adj):
     """Moves the ind along by adj amount, unless ind is before start, when it
@@ -16,30 +14,32 @@ def iadjust(ind, start, adj):
         return start
     return ind + adj
 
-def pairwise(seq):
-    """Return a list pairwise.
+class _sorteddict(dict):
 
-    Example::
-        >>> pairwise([1, 2, 3, 4])
-        [(1, 2), (2, 3), (3, 4)]
-    """
-    a, b = tee(seq)
-    try:
-        b.next()
-    except StopIteration:
-        pass
-    return izip(a, b)
+    def __iter__(self):
+        return iter(self.keys())
+    iterkeys = __iter__
 
-class _LoopingLast(list):
-    """A list whose final value is repeated infinitely."""
+    def keys(self):
+        return sorted(dict.__iter__(self))
 
-    def __getitem__(self, ind):
-        if ind >= len(self):
-            return self[-1]
-        else:
-            return list.__getitem__(self, ind)
+    def iteritems(self):
+        return ((k, self[k]) for k in self)
 
-class RunLengthList(object):
+    def items(self):
+        return list(self.iteritems())
+
+    def itervalues(self):
+        return (self[k] for k in self)
+
+    def values(self):
+        return list(self.itervalues())
+
+    def setitems(self, items):
+        self.clear()
+        self.update(items)
+
+class RunLengthList(_sorteddict):
     """A list represented by a value and its start point.
     
     Thus, the data is using run-length coding. The data passed into this class
@@ -49,58 +49,35 @@ class RunLengthList(object):
     """
 
     def __init__(self, values, _normalised = False):
-        #pairwise works off of itertools.tee, so this isn't broken for
-        #generators.
-        self.values = values
+        _sorteddict.__init__(self, values)
         if not _normalised:
             self._normalise()
-        if not self.values:
+        if not self:
             raise ValueError("The list of values must not be empty.")
-        if self.values[0][0] != 0:
+        if self.iterkeys().next() != 0:
             raise ValueError("All the indices must be specified - no gap!")
-
-    def as_populated_list(self):
-        """Return a normal array of values. 
-        
-        Each index represents what the index's value is, and the last index
-        loops infinitely.
-        """
-        res = []
-        for (start, val), (end, _) in pairwise(self.values):
-            res += [val] * (end - start)
-        #our very last value won't be plucked by the above loop, so we add
-        #it here.
-        if self.values:
-            res.append(self.values[-1][1])
-        return _LoopingLast(res)
 
     def _normalise(self):
         """Remove redundancies."""
-        res = []
-        cur = object() #sentinel
-        #we can have None here, because only the first member of the pairwise
-        #(index, value) will be used, and it'll only be right at the end. In
-        #fact, only the first one being used is the very reason we need to
-        #do this: how else will the final value get out there?
-        values = chain(self.values, [(object(), None)])
-        for (start, val), (end, _) in pairwise(values):
-            if start != end and cur != val:
-                cur = val
-                res.append((start, val))
-        self.values = res
+        prev_val = object() #sentinel
+        for key, val in self.items():
+            if val == prev_val:
+                del self[key]
+            prev_val = val
 
     def add_colour(self, ind, value):
         """Add a value starting at a specific point."""
-        #remove any other colours present at this index. Because bisect won't
-        #accept a custom compare function, it will always compare both the key
-        #and the value of our tuples. But, if the value we're adding sorts
-        #before the present value, this means that it will be obliterated
-        #by the normalisation. Therefore, better safe than sorry.
-        for num, (other_ind, _) in enumerate(self.values):
-            if other_ind == ind:
-                del self.values[num]
-        insort(self.values, (ind, value))
+        self[ind] = value
         self._normalise()
+
+    def get_colour_at(self, ind):
+        """Return the colour at a given index."""
+        val = None
+        for key, new_val in self.items():
+            if key > ind:
+                break
+            val = new_val
+        return val
 
     def _make_explicit(self, ind):
         """Make the implicit value at a point explicit.
@@ -109,18 +86,25 @@ class RunLengthList(object):
         list is left in a non-normalised state - this method should only be
         used as an intermediate step to an end.
         """
-        value = self.as_populated_list()[ind]
-        insort(self.values, (ind, value))
+        value = self.get_colour_at(ind)
+        self[ind] = value
  
     def index_adjust(self, start, change):
         """Move the values along a specific amount."""
-        for num in range(len(self.values)):
-            ind, col = self.values[num]
-            self.values[num] = (iadjust(ind, start, change), col)
+        new_keys = [iadjust(ind, start, change) for ind in self]
+        self._rename_keys(new_keys)
         if change < 0:
             #if the change moves things forwards, things may be made redundant
             #thus we must normalise for this case
             self._normalise()
+
+    def _rename_keys(self, new_keys):
+        """This may leave the RunLengthList non-normalised, depending on the
+        new keys.
+
+        Also might be slow.
+        """
+        self.setitems(zip(new_keys, self.values()))
 
     def blank_between(self, start, end):
         """Delete a span of values between given indexes.
@@ -128,29 +112,31 @@ class RunLengthList(object):
         If end is None, it blanks all the way to the end."""
         if start == 0:
             raise ValueError("The start of the list may not be blanked.")
-        if end is not None:
-            #don't lose the information about what colour we end with
-            self._make_explicit(end)
-        res = [val for val in self.values if not (start <= val[0] and
-                                            (val[0] < end or end is None))]
-        self.values = res
+        self._clear_between(start, end)
         self._normalise()
 
     def delete_between(self, start, end):
         """Hardcore value removal."""
         self.index_adjust(start, start - end)
 
+    def _clear_between(self, start, end):
+        """This possibly leaves us in a non-normalised state."""
+        if end is not None:
+            #don't lose the ending colour information
+            self._make_explicit(end)
+        #could really do with slice deletion for sorteddicts :(
+        res = [val for val in self.items() if not (start <= val[0] and
+                                                   (val[0] < end or
+                                                    end is None))]
+        self.setitems(res)
+        
     def change_between(self, start, end, value):
         """Replace a whole span of values with a new one.
         
         This preserves the implied colour at the end. If end is None, then
         this changes all the way to the end.
         """
-        if end is not None:
-            self._make_explicit(end)
-        res = [val for val in self.values if not (start <= val[0] and
-                                             (val[0] < end or end is None))]
-        self.values = res
+        self._clear_between(start, end)
         self.add_colour(start, value)
 
     def insert_list_at(self, start, length, rll):
@@ -159,22 +145,17 @@ class RunLengthList(object):
         """
         self.index_adjust(start, length)
         self._make_explicit(start + length)
-        ind = bisect(self.values, (start, None))
-        self.values[ind:ind] = [(pos + start, val)
-                                for (pos, val) in rll.values
-                                if pos < length]
+        self.update([(pos + start, val) for (pos, val) in rll.items()
+                     if pos < length])
         self._normalise()
 
-    def __eq__(self, other):
-        return self.values == other.values
-
     def __repr__(self):
-        return 'RunLengthList(%r)' % (self.values,)
+        return 'RunLengthList(%r)' % (self.items(),)
     __str__ = __repr__
 
     def copy(self):
         """Return a deep copy of ourselves."""
-        return RunLengthList(self.values[:], _normalised = True)
+        return RunLengthList(self.items(), _normalised = True)
 
 class Metaline(object):
     """A line plus some metadata.

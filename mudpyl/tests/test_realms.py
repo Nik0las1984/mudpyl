@@ -84,13 +84,13 @@ class Test_write:
 
     def test_no_colourbleed_fg(self):
         self.realm.write("eggs")
-        cols = self.lines_gotten[0].fores.values[:]
+        cols = self.lines_gotten[0].fores.items()
         expected = [(0, fg_code(WHITE, False))]
         assert cols == expected, (cols, expected)
 
     def test_no_colourbleed_bg(self):
         self.realm.write("eggs")
-        cols = self.lines_gotten[0].backs.values[:]
+        cols = self.lines_gotten[0].backs.items()
         assert cols ==  [(0, bg_code(BLACK))], cols
 
     def test_passes_on_wrap_default(self):
@@ -467,8 +467,8 @@ class Test_addProtocol:
         assert self.realm.write.called
         ml = self.realm.write.call_args[0][0]
         assert ml.line == 'FOOBAR'
-        assert ml.fores.as_populated_list() == [HexFGCode(0xFF, 0xAA, 0x00)]
-        assert ml.backs.as_populated_list() == [bg_code(BLACK)]
+        assert ml.fores.items() == [(0, HexFGCode(0xFF, 0xAA, 0x00))]
+        assert ml.backs.items() == [(0, bg_code(BLACK))]
 
     @patch('mudpyl.realms', 'time')
     def test_connection_made_writes_message(self, our_time):
@@ -478,8 +478,8 @@ class Test_addProtocol:
         assert self.realm.write.called
         ml = self.realm.write.call_args[0][0]
         assert ml.line == 'FOOBAR'
-        assert ml.fores.as_populated_list() == [HexFGCode(0xFF, 0xAA, 0x00)]
-        assert ml.backs.as_populated_list() == [bg_code(BLACK)]
+        assert ml.fores.items() == [(0, HexFGCode(0xFF, 0xAA, 0x00))]
+        assert ml.backs.items() == [(0, bg_code(BLACK))]
 
     def test_passes_on_connection_made(self):
         self.realm.connectionMade()

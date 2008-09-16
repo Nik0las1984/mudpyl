@@ -41,7 +41,7 @@ class Test_TellColourer:
                       bg_code(BLACK))
         self.fact.realm.metalineReceived(ml)
         ml_written = self.p.metalineReceived.call_args[0][0]
-        colour_expecting = ml_written.fores.as_populated_list()[0]
+        colour_expecting = ml_written.fores.get_colour_at(0)
 
         self.fact.realm.send("tell baz blah")
         ml = simpleml("Whom do you wish to tell to?", fg_code(WHITE, False),
@@ -54,7 +54,7 @@ class Test_TellColourer:
         self.fact.realm.metalineReceived(ml)
         ml_written_2 = self.p.metalineReceived.call_args[0][0]
 
-        assert ml_written_2.fores.as_populated_list()[10] == colour_expecting
+        assert ml_written_2.fores.get_colour_at(10) == colour_expecting
 
     def test_tell_sending_alias_is_caseless_wrt_matching(self):
         assert list(self.tc.sending_tell.match("TELL foo bar"))

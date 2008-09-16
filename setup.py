@@ -6,7 +6,6 @@ import os
 #conditions, because everything is unzipped anyway for installation.
 edict = {}
 execfile(os.path.join('mudpyl', '__init__.py'), edict)
-
 setup(name = "mudpyl",
       version = edict['__version__'],
       author = 'Sam Pointon',
@@ -29,4 +28,5 @@ setup(name = "mudpyl",
                         },
       test_suite = 'nose.collector',
       packages = find_packages(),
-      scripts = ['mudpyl/mudconnect.py'])
+      scripts = ['mudpyl/mudconnect.py'],
+)

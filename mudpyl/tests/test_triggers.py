@@ -24,32 +24,32 @@ class Test_LineAlterer:
     def test_delete_adjusts_fore_indices(self):
         self.la.delete(1, 2)
         res = self.la.apply(self.ml)
-        assert res.fores.as_populated_list() == ['A', 'B', 'B', 'C']
+        assert res.fores.items() == [(0, 'A'), (1, 'B'), (3, 'C')]
 
     def test_delete_right_on_fore_colour_start_doesnt_remove_colour(self):
         self.la.delete(1, 3)
         res = self.la.apply(self.ml)
-        assert res.fores.as_populated_list() == ['A', 'B', 'C']
+        assert res.fores.items() == [(0, 'A'), (1, 'B'), (2, 'C')]
 
     def test_delete_over_whole_fore_colour_range_does_remove_colour(self):
         self.la.delete(2, 4)
         res = self.la.apply(self.ml)
-        assert res.fores.as_populated_list() == ['A', 'A', 'C']
+        assert res.fores.items() == [(0, 'A'), (2, 'C')]
 
     def test_delete_adjusts_back_indices(self):
         self.la.delete(1, 2)
         res = self.la.apply(self.ml)
-        assert res.backs.as_populated_list() == ['D', 'E', 'E', 'F']
+        assert res.backs.items() == [(0, 'D'), (1, 'E'), (3, 'F')]
 
     def test_delete_right_on_back_colour_start_doesnt_remove_colour(self):
         self.la.delete(1, 3)
         res = self.la.apply(self.ml)
-        assert res.backs.as_populated_list() == ['D', 'E', 'F']
+        assert res.backs.items() == [(0, 'D'), (1, 'E'), (2, 'F')]
 
     def test_delete_over_whole_back_colour_range_does_remove_colour(self):
         self.la.delete(2, 4)
         res = self.la.apply(self.ml)
-        assert res.backs.as_populated_list() == ['D', 'D', 'F']
+        assert res.backs.items() == [(0, 'D'),(2, 'F')]
 
     def test_delete_happens_after_delete_ahead_in_string(self):
         self.la.delete(1, 2)
@@ -97,9 +97,9 @@ class Test_LineAlterer:
         self.la.insert(0, "foo")
         self.la.change_fore(1, 4, sentinel.fore)
         res = self.la.apply(self.ml)
-        assert res.fores.values == [(0, 'A'),
+        assert res.fores.items() == [(0, 'A'),
                                     (4, sentinel.fore),
-                                    (7, 'C')], res.fores.values
+                                    (7, 'C')], res.fores.items()
 
     #XXX: test chaining. Each method must be tested before an insert and a
     #     delete.
@@ -114,9 +114,9 @@ class Test_LineAlterer:
     def test_change_fore(self):
         self.la.change_fore(0, 9, 'foo')
         res = self.la.apply(self.ml)
-        assert res.fores.values[:] == [(0, 'foo'),
+        assert res.fores.items() == [(0, 'foo'),
                                                     (9, 'C')], \
-               res.fores.values
+               res.fores.items()
 
     def test_change_fore_with_trailing_colours(self):
         #don't know why, but this test exposed what looked like a quasi-random
@@ -130,15 +130,15 @@ class Test_LineAlterer:
         expected = [(0, fg_code(RED, True)),
                     (7, fg_code(CYAN, False)),
                     (13, fg_code(WHITE, False))]
-        assert res.fores.values[:] == expected, \
-               res.fores.values
+        assert res.fores.items() == expected, \
+               res.fores.items()
 
     def test_change_fore_with_no_right_bound(self):
         ml = Metaline("foobarbaz", RunLengthList([(0, fg_code(WHITE, False))]),
                       RunLengthList([(0, None)]))
         self.la.change_fore(3, None, fg_code(RED, False))
         res = self.la.apply(ml)
-        assert res.fores.values == [(0, fg_code(WHITE, False)),
+        assert res.fores.items() == [(0, fg_code(WHITE, False)),
                                     (3, fg_code(RED, False))]
 
     def test_insert_metaline(self):

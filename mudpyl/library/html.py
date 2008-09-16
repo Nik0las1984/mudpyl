@@ -83,8 +83,8 @@ body {
         #how much of the string needs to be coloured.
         oldind = 0
 
-        for ind, change in sorted(metaline.fores.values +
-                                  metaline.backs.values):
+        for ind, change in sorted(metaline.fores.items() +
+                                  metaline.backs.items()):
             #calculate the length of the previous bit of coloured string
             inddiff = ind - oldind
             if len(line) >= inddiff > 0:
