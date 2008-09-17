@@ -50,10 +50,9 @@ Other refactorings:
  - separate the different layers (MCCP, Telnet, Matching, Output-Managing, 
    Outputs) more cleanly into Protocols, etc; ie, drink some more of the 
    Twisted koolaid.
+    - largely a matter of naming now, and breaking up RootReam as needed
  - make an abstract GUI interface, allowing for some other implementations 
    This is kind of half done informally, but half not.
- - look at which bits of output_manager really belong there, and which bits
-   should be shipped to html.py
  - split the module handling bit away from RootRealm
 
 Specific modules under library/:

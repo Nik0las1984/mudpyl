@@ -1,21 +1,7 @@
 """Contains the widget that displays the text from the MUD."""
-from itertools import tee, izip, chain
+from itertools import izip, chain
 import gtk
 import pango
-
-def pairwise(seq):
-    """Return a list pairwise.
-
-    Example::
-        >>> pairwise([1, 2, 3, 4])
-        [(1, 2), (2, 3), (3, 4)]
-    """
-    a, b = tee(seq)
-    try:
-        b.next()
-    except StopIteration:
-        pass
-    return izip(a, b)
 
 class OutputView(gtk.TextView):
 
@@ -88,11 +74,9 @@ class OutputView(gtk.TextView):
         offset characters in.
         """
         end_iter = self.buffer.get_iter_at_offset(offset)
-        #add a dummy item at the end to make sure that even the very last
-        #of the metaline is covered
-        end_dummy = (end_offset, None)
-        for (start, colour), (end, _) in pairwise(chain(colours.iteritems(),
-                                                        [end_dummy])):
+        for colour, end in izip(colours.itervalues(),
+                                colours.keys()[1:] + [end_offset]):
+            #TODO: try this with the recreating iter approach
             tag = self.fetch_tag(colour)
             start_iter = end_iter
             end_iter = self.buffer.get_iter_at_offset(end + offset)

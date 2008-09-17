@@ -70,7 +70,8 @@ class LineAlterer(object):
         This LineAlterer is no good after doing this, so copy it if it needs
         to be reused. The metaline passed in, however, is left pristine.
         """
-        metaline = metaline.copy()
+        if self._changes:
+            metaline = metaline.copy()
         for change in self._changes:
             meth = change[0]
             args = change[1:]

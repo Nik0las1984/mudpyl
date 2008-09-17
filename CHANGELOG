@@ -95,6 +95,13 @@ New since 0.3
     - metaline.py: rip out ordereddict.sorteddict, use a lightweird python
       version instead.
 
+2008-09-17 Sam Pointon <sampointon@gmail.com>
+    - triggers.py: LineAlterer is smarter about how often it needs to copy the
+      metaline.
+    - net/nvt.py: sped up _parseline, made it only produce normalised lists to
+      save time later.
+    - metaline.py, gui/gtkoutput.py: a bit smarter about fusion
+
 New since 0.2
 -------------
 

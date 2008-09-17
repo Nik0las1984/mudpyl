@@ -68,9 +68,18 @@ class ColourCodeParser(object):
         is a list of integers corresponding to WHITE, GREEN, etc. The
         foreground list is made up of two-ples: the first is the integer
         colour, and the second is whether bold is on or off.
+
+        The lists of fore and back changes isn't redundant -- there are no
+        changes that could be removed without losing colour information.
         """
-        backs = [(0, self.back)]
-        fores = [(0, (self.fore, self.bold))]
+        #this is a performance hotspot, so minimise the number of attribute
+        #lookups and modifications
+        fore = self.fore
+        bold = self.bold
+        back = self.back
+        
+        backs = [(0, back)]
+        fores = [(0, (fore, bold))]
         text = ''
         prev_end = 0
         
@@ -83,33 +92,35 @@ class ColourCodeParser(object):
                 code = code.lstrip('0') #normalisation.
                 if not code:
                     #leading zeroes been stripped from ALL_RESET
-                    self.fore = WHITE
-                    self.back = BLACK
-                    self.bold = False
-                    fores.append((len(text), self.get_fore()))
-                    backs.append((len(text), self.back))
-                elif code == BOLDON:
-                    self.bold = True
-                    fores.append((len(text), self.get_fore()))
-                elif code == BOLDOFF:
-                    self.bold = False
-                    fores.append((len(text), self.get_fore()))
+                    if fore != WHITE or bold:
+                        fore = WHITE
+                        bold = False
+                        fores.append((len(text), (fore, bold)))
+                    if back != BLACK:
+                        back = BLACK
+                        backs.append((len(text), back))
+                elif code == BOLDON and not bold:
+                    bold = True
+                    fores.append((len(text), (fore, bold)))
+                elif code == BOLDOFF and bold:
+                    bold = False
+                    fores.append((len(text), (fore, bold)))
 
                 elif code.startswith(FG_FLAG):
                     code = code[1:]
                     if code == GROUND_RESET:
                         code = WHITE
-                    if code in NORMAL_CODES:
-                        self.fore = code
-                        fores.append((len(text), self.get_fore()))
+                    if code in NORMAL_CODES and code != fore:
+                        fore = code
+                        fores.append((len(text), (fore, bold)))
 
                 elif code.startswith(BG_FLAG):
                     code = code[1:]
                     if code == GROUND_RESET:
                         code = BLACK
-                    if code in NORMAL_CODES:
-                        self.back = code
-                        backs.append((len(text), self.back))
+                    if code in NORMAL_CODES and code != back:
+                        back = code
+                        backs.append((len(text), back))
         
         #We don't really care about chopped colour codes. This class is
         #actually going to be tossed whole lines (ie, \r\n or similar
@@ -119,11 +130,11 @@ class ColourCodeParser(object):
         if len(line) - 1 > prev_end:
             text += line[prev_end:]
 
-        return (fores, backs, text)
+        self.fore = fore
+        self.back = back
+        self.bold = bold
 
-    def get_fore(self):
-        """Return what the current foreground tuple is."""
-        return self.fore, self.bold
+        return (fores, backs, text)
 
     def parseline(self, line):
         """Interpret the VT100 codes in line and returns a Metaline, replete
@@ -131,9 +142,11 @@ class ColourCodeParser(object):
         into three separate channels.
         """
         fores, backs, cleanline = self._parseline(line)
-        rlfores = RunLengthList((length, fg_code(colour, bold))
-                                for (length, (colour, bold)) in fores)
-        rlbacks = RunLengthList((length, bg_code(colour))
-                                for (length, colour) in backs)
+        rlfores = RunLengthList(((length, fg_code(colour, bold))
+                                 for (length, (colour, bold)) in fores),
+                                _normalised = True)
+        rlbacks = RunLengthList(((length, bg_code(colour))
+                                 for (length, colour) in backs),
+                                _normalised = True)
         return Metaline(cleanline, rlfores, rlbacks)
 

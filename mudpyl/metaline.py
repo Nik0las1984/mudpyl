@@ -52,9 +52,7 @@ class RunLengthList(_sorteddict):
         _sorteddict.__init__(self, values)
         if not _normalised:
             self._normalise()
-        if not self:
-            raise ValueError("The list of values must not be empty.")
-        if self.iterkeys().next() != 0:
+        if 0 not in self:
             raise ValueError("All the indices must be specified - no gap!")
 
     def _normalise(self):
@@ -91,20 +89,13 @@ class RunLengthList(_sorteddict):
  
     def index_adjust(self, start, change):
         """Move the values along a specific amount."""
-        new_keys = [iadjust(ind, start, change) for ind in self]
-        self._rename_keys(new_keys)
+        new_items = [(iadjust(ind, start, change), val)
+                     for ind, val in self.items()]
+        self.setitems(new_items)
         if change < 0:
             #if the change moves things forwards, things may be made redundant
             #thus we must normalise for this case
             self._normalise()
-
-    def _rename_keys(self, new_keys):
-        """This may leave the RunLengthList non-normalised, depending on the
-        new keys.
-
-        Also might be slow.
-        """
-        self.setitems(zip(new_keys, self.values()))
 
     def blank_between(self, start, end):
         """Delete a span of values between given indexes.
@@ -155,7 +146,7 @@ class RunLengthList(_sorteddict):
 
     def copy(self):
         """Return a deep copy of ourselves."""
-        return RunLengthList(self.items(), _normalised = True)
+        return RunLengthList(self, _normalised = True)
 
 class Metaline(object):
     """A line plus some metadata.

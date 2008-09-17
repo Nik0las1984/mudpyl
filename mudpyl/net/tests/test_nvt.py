@@ -141,3 +141,67 @@ def test_ColourCodeParser_funky_real_example():
     assert ml.fores.items() == [(0, fg_code(YELLOW, False)),
                                (3, fg_code(WHITE, False))]
     assert ml.backs.items() == [(0, bg_code(BLACK))]
+
+def test_ColourCodeParser_all_reset_fore_and_back_not_needed():
+    ccp = ColourCodeParser()
+    inline = "foo\x1b[0m"
+    ml = ccp.parseline(inline)
+    assert ml.fores == {0: fg_code(WHITE, False)}
+    assert ml.backs == {0: bg_code(BLACK)}
+
+def test_ColourCodeParser_all_reset_bold_change_made():
+    ccp = ColourCodeParser()
+    inline = "\x1b[1mfoo\x1b[0m"
+    ml = ccp.parseline(inline)
+    assert ml.fores == {0: fg_code(WHITE, True),
+                        3: fg_code(WHITE, False)}, ml.fores
+
+def test_ColourCodeParser_add_reset_fore_change_made():
+    ccp = ColourCodeParser()
+    inline = "\x1b[30mfoo\x1b[0m"
+    ml = ccp.parseline(inline)
+    assert ml.fores == {0: fg_code(BLACK, False),
+                        3: fg_code(WHITE, False)}, ml.fores
+
+def test_ColourCodeParser_add_reset_back_change_made():
+    ccp = ColourCodeParser()
+    inline = "\x1b[47mfoo\x1b[0m"
+    ml = ccp.parseline(inline)
+    assert ml.backs == {0: bg_code(WHITE),
+                        3: bg_code(BLACK)}
+
+def test_ColourCodeParser_redundant_bolding():
+    ccp = ColourCodeParser()
+    inline = '\x1b[1mfoo\x1b[1m'
+    ml = ccp.parseline(inline)
+    assert ml.fores == {0: fg_code(WHITE, True)}, ml.fores
+
+def test_ColourCodeParser_redundant_unbolding():
+    ccp = ColourCodeParser()
+    inline = "foo\x1b[22m"
+    ml = ccp.parseline(inline)
+    assert ml.fores == {0: fg_code(WHITE, False)}
+
+def test_ColourCodeParser_redundant_fore_change():
+    ccp = ColourCodeParser()
+    inline = 'foo\x1b[37m'
+    ml = ccp.parseline(inline)
+    assert ml.fores == {0: fg_code(WHITE, False)}
+
+def test_ColOurCodeParser_redundant_fore_reset():
+    ccp = ColourCodeParser()
+    inline = "foo\x1b[38m"
+    ml = ccp.parseline(inline)
+    assert ml.fores == {0: fg_code(WHITE, False)}
+
+def test_ColourCodeParser_redundant_back_change():
+    ccp = ColourCodeParser()
+    inline = 'foo\x1b[40m'
+    ml = ccp.parseline(inline)
+    assert ml.backs == {0: bg_code(BLACK)}, ml.backs
+
+def test_ColOurCodeParser_redundant_back_reset():
+    ccp = ColourCodeParser()
+    inline = "foo\x1b[48m"
+    ml = ccp.parseline(inline)
+    assert ml.backs == {0: bg_code(BLACK)}
