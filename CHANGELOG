@@ -1,3 +1,8 @@
+New since 0.4
+
+2008-09-21 Sam Pointon <sampointon@gmail.com>
+    - gui/tabcomplete.py: retain capitalisation better
+
 New since 0.3
 -------------
 

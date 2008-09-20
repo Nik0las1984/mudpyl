@@ -91,8 +91,9 @@ class Trie(ordereddict):
                           if c in line[ind:])
         except ValueError: #none in the line beyond the index
             wordend = len(line)
+        oldword_raw = line[wordstart:wordend]
         #all our keys are lowercase. Ditto values.
-        oldword = line[wordstart:wordend].lower()
+        oldword = oldword_raw.lower()
         try:
             newword = self._fetch(oldword)
             if newword == oldword:
@@ -102,8 +103,10 @@ class Trie(ordereddict):
             pass
         else:
             #try and preserve the user's capitalisation.
-            if line[wordstart].isupper():
-                newword = newword.capitalize()
+            if len(oldword_raw) > 1 and oldword_raw.isupper():
+                newword = newword.upper()
+            else:
+                newword = oldword_raw + newword[len(oldword):]
             line = line[:wordstart] + newword + line[wordend:]
             #cursor is now at the end of the new word. We must minus one, 
             #because len(newword) points us to the end, which is to the right 

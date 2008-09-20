@@ -122,6 +122,18 @@ class Test_complete_and_keys:
         res, ind = self.trie.complete('frob', 4)
         assert res == 'frobble', res
 
+    def test_retains_capitalisation(self):
+        res, ind = self.trie.complete("FOoBI", 3)
+        assert res == "FOoBInate"
+
+    def test_makes_all_caps_if_all_caps_previously(self):
+        res, ind = self.trie.complete("FOO", 2)
+        assert res == "FOOBINATE"
+
+    def test_doesnt_make_all_caps_if_only_one_char(self):
+        res, ind = self.trie.complete("F", 1)
+        assert res == "Foobinate"
+
 
 def test_retrieves_shorter_but_more_recent_word_without_extend():
     trie = Trie()
