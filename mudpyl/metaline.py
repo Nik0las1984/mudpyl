@@ -1,4 +1,5 @@
 """Utility for passing around lines with their colour information."""
+from itertools import imap
 
 def iadjust(ind, start, adj):
     """Moves the ind along by adj amount, unless ind is before start, when it
@@ -21,7 +22,7 @@ class _sorteddict(dict):
     iterkeys = __iter__
 
     def keys(self):
-        return sorted(dict.__iter__(self))
+        return sorted(dict.keys(self))
 
     def iteritems(self):
         return ((k, self[k]) for k in self)
@@ -30,10 +31,10 @@ class _sorteddict(dict):
         return list(self.iteritems())
 
     def itervalues(self):
-        return (self[k] for k in self)
+        return imap(self.__getitem__, self)
 
     def values(self):
-        return list(self.itervalues())
+        return map(self.__getitem__, self)
 
     def setitems(self, items):
         self.clear()

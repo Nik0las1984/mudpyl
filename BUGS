@@ -7,3 +7,7 @@ gui/gtkgui.py:
 net/mccp.py:
  - connecting to Achaea, the IAC WILL ECHO comes too late to hide the pw when
    MCCP is on
+
+realms.py:
+ - if we close before the connection is opened, self.telnet is None, and this
+   is not tested just yet.

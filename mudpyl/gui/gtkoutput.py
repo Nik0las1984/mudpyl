@@ -1,5 +1,5 @@
 """Contains the widget that displays the text from the MUD."""
-from itertools import izip, chain
+from itertools import izip
 import gtk
 import pango
 
@@ -76,7 +76,6 @@ class OutputView(gtk.TextView):
         end_iter = self.buffer.get_iter_at_offset(offset)
         for colour, end in izip(colours.itervalues(),
                                 colours.keys()[1:] + [end_offset]):
-            #TODO: try this with the recreating iter approach
             tag = self.fetch_tag(colour)
             start_iter = end_iter
             end_iter = self.buffer.get_iter_at_offset(end + offset)
