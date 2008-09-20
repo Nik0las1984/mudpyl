@@ -25,16 +25,16 @@ class _sorteddict(dict):
         return sorted(dict.keys(self))
 
     def iteritems(self):
-        return ((k, self[k]) for k in self)
+        return ((k, self[k]) for k in self.keys())
 
     def items(self):
-        return list(self.iteritems())
+        return [(k, self[k]) for k in self.keys()]
 
     def itervalues(self):
-        return imap(self.__getitem__, self)
+        return imap(self.__getitem__, self.keys())
 
     def values(self):
-        return map(self.__getitem__, self)
+        return map(self.__getitem__, self.keys())
 
     def setitems(self, items):
         self.clear()
