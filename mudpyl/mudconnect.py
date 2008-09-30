@@ -36,7 +36,7 @@ def main():
     configure(factory)
 
     modinstance = factory.realm.load_module(modclass)
-    modinstance.is_main()
+    modinstance.is_main(factory.realm)
 
     from twisted.internet import reactor
 

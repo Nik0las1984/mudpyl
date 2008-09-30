@@ -39,11 +39,10 @@ body {
     def __init__(self, realm, logformat):
         self.fore = fg_code(WHITE, False)
         self.back = bg_code(BLACK)
-        self.realm = realm
         self._dirty = False
         realm.addProtocol(self)
         self.log = open(time.strftime(logformat) % 
-                                   {'name': self.realm.factory.name}, 'a')
+                                   {'name': realm.factory.name}, 'a')
         self.log.write(self.log_preamble)
 
     def write_out_span(self, span):
@@ -114,8 +113,8 @@ class HTMLLoggingModule(BaseModule):
     logplace = os.path.join(os.path.expanduser('~'), 'logs',
                             '%%(name)s/Date %Y %m %d Time %H %M %S.html')
 
-    def is_main(self):
+    def is_main(self, realm):
         """Open up the HTML log."""
         #automatically adds itself to the outputs list
-        HTMLLogOutput(self.realm, self.logplace)
+        HTMLLogOutput(realm, self.logplace)
 

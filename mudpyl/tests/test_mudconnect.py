@@ -1,6 +1,7 @@
 from __future__ import with_statement
 from mudpyl.mudconnect import main
-from mock import Mock, _importer, patch
+from mudpyl.modules import BaseModule
+from mock import Mock, _importer, patch, sentinel
 from contextlib import contextmanager, nested
 
 @contextmanager
@@ -11,13 +12,22 @@ def patched(target, attribute, new = None):
     if new is None:
         new = Mock()
 
-    original = getattr(target, attribute)
+    if hasattr(target, attribute):
+        original = getattr(target, attribute)
     setattr(target, attribute, new)
 
     try:
         yield new
     finally:
-        setattr(target, attribute, original)
+        try:
+            setattr(target, attribute, original)
+        except NameError:
+            pass
+
+class OurMainModule(BaseModule):
+    name = sentinel.name
+    host = sentinel.host
+    port = sentinel.port
 
 class Test_Main:
 
@@ -37,3 +47,16 @@ class Test_Main:
             else:
                 assert False
 
+    @patch("mudpyl.mudconnect", "parser")
+    @patch("mudpyl.mudconnect", "load_file")
+    @patch("mudpyl.gui.gtkgui", "configure", Mock())
+    def test_loads_file_specified_on_command_line(self, mock_parser,
+                                                  mock_load_file):
+        mock_parser.parse_args.return_value = mock_options = Mock()
+        mock_options.modulename = sentinel.modulename
+        mock_options.gui = "gtk"
+        mock_load_file.return_value = OurMainModule
+        with patched("twisted.internet", "reactor"):
+            main()
+        assert mock_load_file.call_args_list == [((sentinel.modulename,),
+                                                  {})]

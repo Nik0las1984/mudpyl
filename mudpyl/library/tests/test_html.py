@@ -211,6 +211,6 @@ def test_HTMLLoggingModule_is_main_initialises_html_log():
                 patched("mudpyl.library.html", "time")):
         mod = HTMLLoggingModule(f.realm)
         mod.logplace = sentinel.logplace
-        mod.is_main()
+        mod.is_main(f.realm)
     assert m.call_args_list == [((f.realm, sentinel.logplace), {})]
 

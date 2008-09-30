@@ -1,29 +1,17 @@
-from mudpyl.modules import BaseModule
-from mudpyl.net.telnet import TelnetClientFactory
-from mudpyl.gui.bindings import gui_macros
-
-def test_BaseModule_adds_triggers_aliases_and_macros():
-    class Module(BaseModule):
-        trigger = object()
-        triggers = [trigger]
-        alias = object()
-        aliases = [alias]
-        macro = object()
-        macros = {'f': macro}
-
-    f = TelnetClientFactory(None, 'ascii', None)
-    Module(f.realm)
-
-    assert len(f.realm.triggers) == 1
-    assert f.realm.triggers[0] is Module.trigger
-    assert len(f.realm.aliases) == 1
-    assert f.realm.aliases[0] is Module.alias
-    assert len(f.realm.macros) == 1 + len(gui_macros)
-    assert f.realm.macros['f'] is Module.macro
-
-from mudpyl.modules import load_file
+from mudpyl.modules import load_file, EarlyInitialisingModule, BaseModule
 import sys
 from mock import patch, sentinel, Mock
+
+class _ModuleTest:
+    def test_default_is_main_exists(self):
+        self.cls(Mock()).is_main(Mock())
+
+    def test_encoding_is_defaultly_utf_8(self):
+        assert self.cls.encoding == 'utf-8'
+
+    def test_sets_manager_as_first_argument(self):
+        m = Mock()
+        assert self.cls(m).manager is m
 
 def our_import(name, globals, locals, importlist):
     if name == 'foobar' and importlist == ['MainModule']:
@@ -40,5 +28,52 @@ def test_load_file_reimports():
     sys.modules["foobar"] = object()
     test_load_file_loads_script()
 
-def test_encoding_is_defaultly_utf_8():
-    assert BaseModule.encoding == 'utf-8'
+class TestBaseModule(_ModuleTest):
+    cls = BaseModule
+
+    def test_adds_triggers_aliases_and_macros(self):
+        class Module(self.cls):
+            trigger = object()
+            triggers = [trigger]
+            alias = object()
+            aliases = [alias]
+            macro = object()
+            macros = {'f': macro}
+
+        manager = Mock()
+        manager.triggers = []
+        manager.aliases = []
+        manager.macros = {}
+        Module(manager)
+
+        assert len(manager.triggers) == 1
+        assert manager.triggers[0] is Module.trigger
+        assert len(manager.aliases) == 1
+        assert manager.aliases[0] is Module.alias
+        assert len(manager.macros) == 1
+        assert manager.macros['f'] is Module.macro
+
+class TestEarlyInitialisingModule(_ModuleTest):
+    cls = EarlyInitialisingModule()
+
+    def test_adds_triggers_aliases_and_macros(self):
+        class Module(EarlyInitialisingModule):
+            trigger = object()
+            triggers = [trigger]
+            alias = object()
+            aliases = [alias]
+            macro = object()
+            macros = {'f': macro}
+
+        manager = Mock()
+        manager.triggers = []
+        manager.aliases = []
+        manager.macros = {}
+        Module()(manager)
+
+        assert len(manager.triggers) == 1
+        assert manager.triggers[0] is Module.trigger
+        assert len(manager.aliases) == 1
+        assert manager.aliases[0] is Module.alias
+        assert len(manager.macros) == 1
+        assert manager.macros['f'] is Module.macro

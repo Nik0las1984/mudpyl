@@ -9,6 +9,8 @@ New since 0.4
     - realms.py, matchers.py: remove trace_with, propagate tracing down
       instead. Make sorting and ordering matchers cleaner
     - colours.py: removed unneeded methods
+    - modules.py: is_main() is now called with the realm; __init__ sets its
+      argument to self.manager
 
 New since 0.3
 -------------
