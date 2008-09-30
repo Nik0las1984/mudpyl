@@ -34,8 +34,8 @@ class Test_HTMLLogOutput:
     def setUp(self):
         self.f = StringIO()
         self.o = Logger(self.f)
-        self.o.fore.tohex.return_value = self.o.fore.ground = 'fore'
-        self.o.back.tohex.return_value = self.o.back.ground = 'back'
+        self.o.fore.as_hex = self.o.fore.ground = 'fore'
+        self.o.back.as_hex = self.o.back.ground = 'back'
         self.f1 = fg_code(WHITE, False)
         self.f2 = fg_code(GREEN, True)
         self.b1 = bg_code(RED)
@@ -50,7 +50,7 @@ class Test_HTMLLogOutput:
         assert self.f.getvalue() == escape('<foo>')
 
     def test_change_colour_writes_out_new_colour(self):
-        self.o.back.tohex.return_value = 'newback'
+        self.o.back.as_hex = 'newback'
         self.o.change_colour()
         assert self.f.getvalue() == 'COLOUR CHANGE fore newback', \
                self.f.getvalue()

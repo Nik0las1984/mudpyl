@@ -57,8 +57,8 @@ body {
         anyway with both foreground and background, so use common code for
         both types of change.
         """
-        self.log.write(self.colour_change % (self.fore.tohex(), 
-                                             self.back.tohex()))
+        self.log.write(self.colour_change % (self.fore.as_hex,
+                                             self.back.as_hex))
         self._dirty = False
 
     def close(self):

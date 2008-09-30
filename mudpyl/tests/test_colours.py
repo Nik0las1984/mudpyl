@@ -14,3 +14,7 @@ def test_HexBGCOde_ground_is_back():
 
 def test_HexFGCode_ground_is_fore():
     assert HexFGCode(0, 0, 0).ground == 'fore'
+
+def test_as_hex():
+    c = HexFGCode(10, 26, 255)
+    assert c.as_hex.lower() == "0a1aff", c.as_hex
