@@ -8,6 +8,7 @@ from mudpyl.aliases import AliasMatchingRealm
 from mudpyl.modules import load_file
 from mudpyl.gui.bindings import gui_macros
 from textwrap import TextWrapper
+from operator import attrgetter
 import traceback
 import time
 
@@ -69,8 +70,8 @@ class RootRealm(object):
             for mod in robmod.modules:
                 self.load_module(mod, _sort = False)
             if _sort:
-                self.triggers.sort()
-                self.aliases.sort()
+                self.triggers.sort(key = attrgetter("sequence"))
+                self.aliases.sort(key = attrgetter("sequence"))
         except:
             self.modules_loaded.remove(cls)
             raise
@@ -200,22 +201,15 @@ class RootRealm(object):
         """Write the argument to the screen if we are tracing, elsewise do
         nothing.
         """
-        self._trace_with(line, self)
+        if self.tracing:
+            self.write("TRACE: " + line)
 
     def trace_thunk(self, thunk):
         """If we're tracing, call the thunk and write its result to the
         outputs. If not, do nothing.
         """
-        self._trace_thunk_with(thunk, self)
-
-    def _trace_with(self, line, realm):
-        """Write the line via the realm if we're tracing."""
         if self.tracing:
-            realm.write("TRACE: " + line)
-
-    def _trace_thunk_with(self, thunk, realm):
-        if self.tracing:
-            realm.write("TRACE: " + thunk())
+            self.write("TRACE: " + thunk())
 
     #Going towards the MUD.
 

@@ -1,7 +1,13 @@
 New since 0.4
+-------------
 
 2008-09-21 Sam Pointon <sampointon@gmail.com>
     - gui/tabcomplete.py: retain capitalisation better
+
+2008-09-30 Sam Pointon <sampointon@gmail.com>
+    - gui/gtkoutput.py: less work in the inner loop
+    - realms.py, matchers.py: remove trace_with, propagate tracing down
+      instead. Make sorting and ordering matchers cleaner
 
 New since 0.3
 -------------

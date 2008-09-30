@@ -19,10 +19,16 @@ class Circular:
         pass
 Circular.modules = [Circular]
 
+class FakeMatcher:
+    def __init__(self, sequence):
+        self.sequence = sequence
+    def __eq__(self, other):
+        return self.sequence == other.sequence
+
 class WithTriggers:
     def __init__(self, c):
-        c.triggers = [2, 1, 6, 3]
-        c.aliases = [10, 4, 6, 9, 1, 2]
+        c.triggers = map(FakeMatcher, [2, 1, 6, 3])
+        c.aliases = map(FakeMatcher, [10, 4, 6, 9, 1, 2])
     modules = []
 
 class TestModuleLoading:
@@ -32,8 +38,8 @@ class TestModuleLoading:
 
     def test_load_sorts_triggers_and_aliases(self):
         self.c.load_module(WithTriggers)
-        assert self.c.triggers == [1, 2, 3, 6]
-        assert self.c.aliases == [1, 2, 4, 6, 9, 10]
+        assert self.c.triggers == map(FakeMatcher, [1, 2, 3, 6])
+        assert self.c.aliases == map(FakeMatcher, [1, 2, 4, 6, 9, 10])
 
     def test_circular_requirements(self):
         self.c.load_module(Circular)

@@ -31,14 +31,13 @@ class ProtoMatcher(object):
 #pylint: enable-msg=E0202,W0613
 
     def __call__(self, match, realm):
+        #simulate lazy evaluation, because __str__ is a bit too expensive in
+        #here, as this is in an inner loop
         realm.trace_thunk(lambda: "%s matched!" % self)
         try:
             self.func(match, realm)
         except Exception: #don't catch KeyboardInterrupt etc
             traceback.print_exc()
-
-    def __cmp__(self, other):
-        return cmp(self.sequence, other.sequence)
 
     def __str__(self):
         args = [type(self).__name__]
@@ -52,7 +51,8 @@ class ProtoMatcher(object):
         #scrape our function's name, if it's interesting
         if self.func is not None and self.func.func_name != 'func':
             args.append(self.func.func_name)
-        args.append('sequence = %d' % self.sequence)
+        if self.sequence != 0:
+            args.append('sequence = %d' % self.sequence)
         return '<%s>' % ' '.join(args)
 
 class _Placeholder(object):
@@ -156,15 +156,20 @@ class BaseMatchingRealm(object):
                 matcher(match, self)
 
     def trace(self, line):
-        """Forward the debugging decision to our parent."""
-        self.parent._trace_with(line, self)
+        """Write the argument to the screen if we are tracing, elsewise do
+        nothing.
+        """
+        if self.parent.tracing:
+            self.write("TRACE: " + line)
 
     def trace_thunk(self, thunk):
-        self.parent._trace_thunk_with(thunk, self)
+        """If we're tracing, call the thunk and write its result to the
+        outputs. If not, do nothing.
+        """
+        if self.parent.tracing:
+            self.write("TRACE: " + thunk())
 
-    def _trace_with(self, line, realm):
-        """Forward a trace request up the stack of realms."""
-        self.parent._trace_with(line, realm)
-
-    def _trace_thunk_with(self, thunk, realm):
-        self.parent._trace_thunk_with(thunk, realm)
+    @property
+    def tracing(self):
+        """Return whether we're spewing debugging output or not."""
+        return self.parent.tracing
