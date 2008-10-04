@@ -23,6 +23,7 @@ Features and miscellanea:
    word seen. (NB: the Trie data structure loses information; imagine if
    foobar, foospam, foobaz were entered - we don't know if foospam or foobar
    came first)
+ - ATCP
 
 Screen related:
  - search facility in the output
@@ -31,8 +32,12 @@ Screen related:
       we're keeping the history around anyway...
  - or, even better than pausing: screen splitting
    - or, new window opening?
- - proper tooltip-based line arrival time - I know this can be done somehow
-
+ - something like XChat's red line to show you where the text was at before
+   a pause/window switch
+ - an 'uncooked' output window, before triggers get their dirty little hands 
+   on the output
+ - also a 'raw' output of some kind, for the VT100 codes themselves
+   
 Test related:
  - Tests that need writing:
     - output_manager.py, gui/*gui.py

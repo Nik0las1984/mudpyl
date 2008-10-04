@@ -1,6 +1,8 @@
 """Contains the widget that displays the text from the MUD."""
 import gtk
 import pango
+from mudpyl.metaline import RunLengthList
+from datetime import datetime
 
 class OutputView(gtk.TextView):
 
@@ -18,7 +20,10 @@ class OutputView(gtk.TextView):
         self.end_mark = self.buffer.create_mark('end_mark', 
                                                 self.buffer.get_end_iter(), 
                                                 False)
+        self.timestamps = RunLengthList({})
         self.connect('focus-in-event', self.got_focus_cb)
+        self.set_property("has-tooltip", True)
+        self.connect("query-tooltip", self.display_tooltip_cb)
 
         self.set_editable(False)
         self.set_cursor_visible(False)
@@ -32,6 +37,24 @@ class OutputView(gtk.TextView):
         all incoming keypresses that we're interested in.
         """
         self.gui.command_line.grab_focus()
+
+    def display_tooltip_cb(self, widget, wx, wy, keyboard_mode, tooltip):
+        """Display a timestamp for the line the user hovers over."""
+        #XXX: I'm not sure this is converting between coordinates right, I
+        #need to double-check the GTK docs.
+        bx, by = self.window_to_buffer_coords(gtk.TEXT_WINDOW_WIDGET, wx, wy)
+        textiter = self.get_iter_at_location(bx, by)
+        #GTK is very keen for the above code to succeed, but really it's only
+        #useful for us if there's a tooltip above a bit of text, as opposed
+        #to the ENTIRE FREAKING WIDGET. So test to see if bx and by can
+        #roundtrip in the character's pixel rectangle
+        rect = self.get_iter_location(textiter)
+        if not 0 <= bx - rect.x <= rect.width or \
+           not 0 <= by - rect.y <= rect.height:
+            return False
+        received_at = self.timestamps.get_at(textiter.get_offset())
+        tooltip.set_text(received_at.strftime("Received at: %H:%M:%S"))
+        return True
 
     def pause(self):
         """Stop autoscrolling to new data."""
@@ -67,6 +90,7 @@ class OutputView(gtk.TextView):
             self.gui.paused_label.set_markup("<span foreground='#FFFFFF' "
                                                    "background='#000000'>"
                                                "MORE - PAUSED</span>")
+        self.timestamps[offset + len(metaline.line)] = datetime.now()
 
     def apply_colours(self, colours, offset, end_offset):
         """Apply a RunLengthList of colours to the buffer, starting at

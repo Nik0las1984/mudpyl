@@ -12,6 +12,11 @@ New since 0.4
     - modules.py: is_main() is now called with the realm; __init__ sets its
       argument to self.manager
 
+2008-10-04 Sam Pointon <sampointon@gmail.com>
+    - metaline.py: loosened restrictions on RunLengthList, renamed add_colour
+      to add_change, get_colour_at to get_at.
+    - gui/gtkoutput.py: added tooltip-based timestamps
+
 New since 0.3
 -------------
 

@@ -43,18 +43,13 @@ class _sorteddict(dict):
 class RunLengthList(_sorteddict):
     """A list represented by a value and its start point.
     
-    Thus, the data is using run-length coding. The data passed into this class
-    must not have a 'gap' at the beginning, otherwise Bad Things may happen.
-    If multiple runs start at the same index (ie, it is not normalised), other
-    Bad Things (related to insort, order and consistency) may happen.
+    Thus, the data is using run-length coding.
     """
 
     def __init__(self, values, _normalised = False):
         _sorteddict.__init__(self, values)
         if not _normalised:
             self._normalise()
-        if 0 not in self:
-            raise ValueError("All the indices must be specified - no gap!")
 
     def _normalise(self):
         """Remove redundancies."""
@@ -64,12 +59,12 @@ class RunLengthList(_sorteddict):
                 del self[key]
             prev_val = val
 
-    def add_colour(self, ind, value):
+    def add_change(self, ind, value):
         """Add a value starting at a specific point."""
         self[ind] = value
         self._normalise()
 
-    def get_colour_at(self, ind):
+    def get_at(self, ind):
         """Return the colour at a given index."""
         val = None
         for key, new_val in self.items():
@@ -85,7 +80,7 @@ class RunLengthList(_sorteddict):
         list is left in a non-normalised state - this method should only be
         used as an intermediate step to an end.
         """
-        value = self.get_colour_at(ind)
+        value = self.get_at(ind)
         self[ind] = value
  
     def index_adjust(self, start, change):
@@ -129,7 +124,7 @@ class RunLengthList(_sorteddict):
         this changes all the way to the end.
         """
         self._clear_between(start, end)
-        self.add_colour(start, value)
+        self.add_change(start, value)
 
     def insert_list_at(self, start, length, rll):
         """Insert the list of values at the given position, shifting all the

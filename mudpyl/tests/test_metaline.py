@@ -108,14 +108,14 @@ def test_insert_metaline_tidies_when_inserted_at_end():
 
 from mudpyl.metaline import RunLengthList
 
-def test_RunLengthList_add_colour():
+def test_RunLengthList_add_change():
     c = RunLengthList([(0, 1), (3, 2)])
-    c.add_colour(1, 3)
+    c.add_change(1, 3)
     assert c.items() == [(0, 1), (1, 3), (3, 2)]
 
-def test_RunLengthList_add_colour_already_got_index():
+def test_RunLengthList_add_change_already_got_index():
     c = RunLengthList([(0, 'foo'), (3, 'bar')])
-    c.add_colour(3, 'baz')
+    c.add_change(3, 'baz')
     assert c.items() == [(0, 'foo'), (3, 'baz')]
 
 def test_RunLengthList_index_adjust():
@@ -158,10 +158,10 @@ def test_RunLengthList_normalises_arguments():
     b = RunLengthList([(0, 'foo')])
     assert a == b
 
-def test_RunLengthList_add_colour_normalises_afterwards():
+def test_RunLengthList_add_change_normalises_afterwards():
     r = RunLengthList([(0, 'foo')])
-    r.add_colour(2, 'foo')
-    r.add_colour(1, 'bar')
+    r.add_change(2, 'foo')
+    r.add_change(1, 'bar')
     assert r.items() == [(0, 'foo'), (1, 'bar')]
 
 def test_copy_returns_different_lists():
@@ -198,22 +198,6 @@ def test_RunLengthList_copy_copies_non_empty():
     assert r == r.copy()
     assert not r.items() is r.copy().items()
 
-def test_RunLengthList_throws_ValueError_when_given_empty_list():
-    try:
-        r = RunLengthList([])
-    except ValueError:
-        pass
-    else:
-        assert False, r
-
-def test_RunLengthList_throws_ValueError_when_given_gappy_list():
-    try:
-        r = RunLengthList([(2, 'foo')])
-    except ValueError:
-        pass
-    else:
-        assert False, r
-
 def test_as_populated_list_throws_error_if_clearing_start():
     r = RunLengthList([(0, 'foo'), (3, 'bar')])
     try:
@@ -223,9 +207,9 @@ def test_as_populated_list_throws_error_if_clearing_start():
     else:
         assert False
 
-def test_add_colour_works_on_top_of_existing_colour_definition():
+def test_add_change_works_on_top_of_existing_colour_definition():
     rl = RunLengthList([(0, 'foo'), (2, +20)])
-    rl.add_colour(2, -20) #deliberately try and get it to the left
+    rl.add_change(2, -20) #deliberately try and get it to the left
     assert rl.items() == [(0, 'foo'), (2, -20)]
 
 def test_blank_between_second_argument_None_blanks_to_end():
@@ -262,21 +246,21 @@ def test_Metaline_addition_first_has_trailling_colours():
     assert res.fores.items() == [(0, sentinel.foofore2),
                                 (3, sentinel.barfore)], res.fores.items()
 
-def test_get_colour_at_works_for_index_0():
+def test_get_at_works_for_index_0():
     rll = RunLengthList({0: 'foo', 1: 'bar'})
-    assert rll.get_colour_at(0) == 'foo'
+    assert rll.get_at(0) == 'foo'
 
-def test_get_colour_at_works_after_last_index():
+def test_get_at_works_after_last_index():
     rll = RunLengthList({0: 'foo', 2: 'bar'})
-    assert rll.get_colour_at(10) == 'bar'
+    assert rll.get_at(10) == 'bar'
 
-def test_get_colour_at_works_right_before_colour_change():
+def test_get_at_works_right_before_colour_change():
     rll = RunLengthList({0: 'foo', 2: 'bar'})
-    assert rll.get_colour_at(1) == 'foo'
+    assert rll.get_at(1) == 'foo'
 
-def test_get_colour_at_works_on_colour_change():
+def test_get_at_works_on_colour_change():
     rll = RunLengthList({0: 'foo', 2: 'bar'})
-    assert rll.get_colour_at(2) == 'bar'
+    assert rll.get_at(2) == 'bar'
 
 class TrackingRunLengthList(RunLengthList):
 
