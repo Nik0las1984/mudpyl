@@ -17,6 +17,9 @@ New since 0.4
       to add_change, get_colour_at to get_at.
     - gui/gtkoutput.py: added tooltip-based timestamps
 
+2008-10-05 Sam Pointon <sampointon@gmail.com>
+    - library/secreter.py: new module
+
 New since 0.3
 -------------
 

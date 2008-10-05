@@ -37,6 +37,7 @@ Screen related:
  - an 'uncooked' output window, before triggers get their dirty little hands 
    on the output
  - also a 'raw' output of some kind, for the VT100 codes themselves
+ - timestamps in HTML log
    
 Test related:
  - Tests that need writing:
