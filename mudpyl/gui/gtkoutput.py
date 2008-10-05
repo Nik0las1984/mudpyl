@@ -80,8 +80,9 @@ class OutputView(gtk.TextView):
         This will autoscroll to the end if we are not paused.
         """
         bytes = metaline.line.encode('utf-8')
-        offset = self.buffer.get_char_count()
-        self.buffer.insert(self.buffer.get_end_iter(), bytes)
+        end_iter = self.buffer.get_end_iter()
+        offset = end_iter.get_offset()
+        self.buffer.insert(end_iter, bytes)
         self.apply_colours(metaline.fores, offset, len(metaline.line))
         self.apply_colours(metaline.backs, offset, len(metaline.line))
         if not self.paused:
@@ -90,7 +91,9 @@ class OutputView(gtk.TextView):
             self.gui.paused_label.set_markup("<span foreground='#FFFFFF' "
                                                    "background='#000000'>"
                                                "MORE - PAUSED</span>")
-        self.timestamps[offset + len(metaline.line)] = datetime.now()
+        #this is a bit naughty, we're bypassing the RLL's safety thingies
+        #anyway, we need to store the offset that -begins- the chunk of text
+        self.timestamps[offset] = datetime.now()
 
     def apply_colours(self, colours, offset, end_offset):
         """Apply a RunLengthList of colours to the buffer, starting at

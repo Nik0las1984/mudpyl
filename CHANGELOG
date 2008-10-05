@@ -19,6 +19,7 @@ New since 0.4
 
 2008-10-05 Sam Pointon <sampointon@gmail.com>
     - library/secreter.py: new module
+    - gui/gtkoutput.py: fix minor bug in timestamping
 
 New since 0.3
 -------------
