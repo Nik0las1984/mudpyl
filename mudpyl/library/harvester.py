@@ -32,7 +32,7 @@ class Harvester(BaseModule):
     """Automatically goes out and harvests you herbs."""
 
     def __init__(self, factory):
-        super(Harvester, self).__init__(factory)
+        BaseModule.__init__(self, factory)
         self.harvesting = False
         self.herbs_in_room = set()
         self.seen_herbs = False

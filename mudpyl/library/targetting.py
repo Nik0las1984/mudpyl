@@ -17,7 +17,7 @@ class Targetter(BaseModule):
     """Dynamically highlights a given name or piece of text."""
 
     def __init__(self, factory):
-        super(Targetter, self).__init__(factory)
+        BaseModule.__init__(self, factory)
         self.target = None
 
     @property

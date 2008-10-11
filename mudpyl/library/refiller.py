@@ -23,7 +23,7 @@ class RefillingSystem(BaseModule):
     """Refills vials."""
 
     def __init__(self, factory):
-        super(RefillingSystem, self).__init__(factory)
+        BaseModule.__init__(self, factory)
         self.num = 0
         self.target = None
         self.vial = None

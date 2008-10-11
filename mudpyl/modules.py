@@ -22,7 +22,6 @@ class BaseModule(object):
     encoding = 'utf-8'
 
     def __init__(self, manager):
-        super(BaseModule, self).__init__(manager)
         self.manager = manager
         manager.triggers.extend(self.triggers)
         manager.aliases.extend(self.aliases)

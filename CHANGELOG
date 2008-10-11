@@ -21,6 +21,10 @@ New since 0.4
     - library/secreter.py: new module
     - gui/gtkoutput.py: fix minor bug in timestamping
 
+2008-10-11 Sam Pointon <sampointon@gmail.com>
+    - modules.py: ripped out super, as it's worse than useless
+    - gui/tabcomplete.py: roll our own ordereddict
+
 New since 0.3
 -------------
 

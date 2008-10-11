@@ -1,9 +1,27 @@
 """Utilities for implementing tab-completion.
 """
-from _ordereddict import ordereddict
 import re
 
-class Trie(ordereddict):
+class _ordereddict(dict):
+
+    def __init__(self, *args, **kwargs):
+        dict.__init__(self, *args, **kwargs)
+        self._key_order = []
+
+    def __setitem__(self, key, value):
+        dict.__setitem__(self, key, value)
+        if key in self._key_order:
+            self._key_order.remove(key)
+        self._key_order.append(key)
+        
+    #only implement the bits we really need sorted
+    def __iter__(self):
+        return iter(self._key_order)
+
+    def keys(self):
+        return self._key_order[:]
+
+class Trie(_ordereddict):
     """A tree of dictionaries, representing a set of strings sorted by prefix
     """
 
@@ -15,13 +33,6 @@ class Trie(ordereddict):
                                                   for c in splitting_chars))
 
     #pylint: enable-msg= E0602
-
-    #pylint is also not very good at picking up methods of classes defined
-    #in C; also, we only call protected methods on our own classes
-    #pylint: disable-msg= E1101,W0212
-
-    def __init__(self, *args, **kwargs):
-        ordereddict.__init__(self, kvio = True, *args, **kwargs)
 
     def _fetch(self, key, extend = False):
         """Retrieve a string based on a prefix."""
