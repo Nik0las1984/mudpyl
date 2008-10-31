@@ -1,0 +1,5 @@
+cursable:evileye,curses
+envenomable:bite,sword,dstab,other weapon
+bitable:bite
+hellsightable:hellsight
+standalone:none

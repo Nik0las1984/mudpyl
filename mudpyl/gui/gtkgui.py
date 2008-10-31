@@ -142,7 +142,7 @@ class GUI(gtk.Window):
 
         This is needed so that focus can always stay on the command line.
         """
-        if self.command_line.buffer.get_has_selection():
+        if self.command_line.get_selection_bounds():
             #let the command window handle if it's got the selection
             return True
         else:

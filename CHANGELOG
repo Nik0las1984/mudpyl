@@ -25,6 +25,9 @@ New since 0.4
     - modules.py: ripped out super, as it's worse than useless
     - gui/tabcomplete.py: roll our own ordereddict
 
+2008-10-31 Sam Pointon <sampointon@gmail.com>
+    - gui/gtkgui.py, gtkcommandline.py: use the gtk.Entry interface now
+
 New since 0.3
 -------------
 

@@ -1,0 +1,49 @@
+A sense of extreme nausea washes over you\.:vomiting:envenomable,hellsightable:
+You gasp as your fine-tuned reflexes disappear into a haze of confusion\\.:clumsiness:envenomable,hellsightable:
+You realize that your heroic actions can no longer continue unnoticed, and you take it upon yourself to rectify the situation\\.:recklessness:envenomable:
+You feel a tightening sensation grow in your lungs\\.:asthma:enveomable,cursable:fitness
+You look about yourself nervously\\.:shyness:envenomable:
+You feel your allergy to the sun going into temporary remission\\.:darkshade:envenomable:
+Your vision is flooded with light, and your face suddenly reddens\\.:darkshade:envenomable:
+A prickly, stinging sensaiton spreads through your body\\.:sensitivity:cursable,envenomable:deafness
+Your hearing is suddenly restored\\.:deafness:cursable,envenomable:
+Your limbs grow heavy and you groan feebly\\.:weakness:envenomable:
+Your mind swims as dizziness overtakes you\\.:dizziness:envenomable,cursable:
+Hmmmm\\. Why must everything be so difficult to figure out\\?:stupidity:cursable,envenomable:
+\\w{3,12} lightly strikes the side of your head with (?\:his|her) rapier, restoring your hearing\\.:deafness:standalone:shield
+\\w{3,12} lightly strikes the side of your head with (?\:his|her) rapier\\.:deafness:standalone:shield
+You shuffle your feet noisily, suddenly bored\\.:impatience:cursable,standalone:
+A strange feeling overtakes you\\.:clumsiness:cursable:
+The idea of heights makes you queasy suddenly\\.:vertigo:cursable:
+Terror descends upon you and your head swims - you must find shelter!:agoraphobia:cursable,standalone:
+The walls close in to suffocate you - you must escape!:claustrophobia:cursable:
+Unthinking paranoia overcomes you\\.:paranoia:cursable:
+An odd sensation descends upon you\\.:masochism:cursable,standalone:
+There is a tightening sensation in your lungs suddenly\\.:asthma:cursable:
+None may stand in your way! You are invincible!:recklessness:cursable:
+Your nerves feel suddenly jangled\\.:epilepsy:cursable:
+Your will to harm anything leaves you\\.:peace:cursable:
+You feel a terrible thirst for elixirs grow within you\\.:addiction:cursable,standalone:
+Your health begins to drain away\\.:healthleech:cursable:
+You feel the mana begin to drain from your mind\\.:manaleech:cursable:
+You look about yourself, frenzied and wild-eyed\\.:dementia:cursable:
+Why, you ask yourself, are you so privileged when others are so needy\\.:generosity:standalone:
+Your vision blurs for a moment\\.:hallucinations:standalone:
+An urge to visit the Goddess of Dreams overcomes you\\.:hypersomnia:standalone:
+You feel your energy robbed from you as lethargy overtakes you\\.:lethargy:standalone:
+You glance nervously around the room\\.:loneliness:standalone:
+The thought of speech seems difficult all of a sudden\\.:stuttering:standalone:
+A sense of deep inner calm descends on you\\.:pacifism:standalone:
+You feel suddenly clumsy beside the graceful maqam of el'Jazira that \\w{3,12} sings at you\\.:clumsiness:standalone:deafness
+\\w{3,12} recites an obscure, confusing Kamleikan haiku to you\\.:confusion:standalone:deafness
+You feel as if the world has closed in on you after listening to \\w{3,12}'s droning, repetitive isorhythm\\.:claustrophobia:standalone:deafness
+\\w{3,12} chants 'GIMMEGIMME' at you and you begin to feel quite generous\\.:generosity:standalone:deafness
+\\w{3,12}'s poem of gluttony and decay makes you feel ill\\.:nausea:standalone:deafness
+\\w{3,12} sings a pastorale of the fields and streams to you\\. You feel reluctant to leave the ground\\.:vertigo:standalone:deafness
+Your mind is disrupted by the irritating ditty \\w{3,12} sings at you\\.:eliepsy:standalone:deafness
+So convincing is \\w{3,12}'s requiem for historical Seleucar that paranoia of the future sets in\\.:paranoia:standalone:deafness
+You are held motionless by \\w{3,12}'s epic tale of Nicator's heroism and bravery\\.:paralysis:standalone:deafness
+With a wink, \\w{3,12} recites "Ode to Elixirs" to you\\.
+You feel a terrible thirst for elixirs grow within you:addiction:standalone:deafness
+\\w{3,12} sings a qasida of asceticism to you\\.:anorexia:standalone:deafness
+\\w{3,12} sings the Passion of Imithia and your mind glazes with its beauty\\.:stupidity:standalone:deafness

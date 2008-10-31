@@ -18,8 +18,6 @@ class CommandView(gtk.Entry):
         self.connect('key-press-event', self.key_pressed_cb)
         self.modify_font(pango.FontDescription('monospace 8'))
 
-    buffer = property(gtk.TextView.get_buffer)
-
     def key_pressed_cb(self, widget, event):
         """The user's pressed a key.
 

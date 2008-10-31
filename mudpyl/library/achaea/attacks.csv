@@ -1,0 +1,8 @@
+evileye:curseward:false:evileye,none
+curses:curseward:false:none
+bite:sileris:false:none
+camus::true:bite
+sword:rebounding,shield:true:sword,none
+dstab:rebounding,shield:false:none
+other weapon:shield:true:none
+hellsight::false:none
