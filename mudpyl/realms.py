@@ -11,6 +11,7 @@ from textwrap import TextWrapper
 from operator import attrgetter
 import traceback
 import time
+from mudpyl.map.map import Map
 
 class RootRealm(object):
     """The root of the realms hierarchy. This is what macros and top-level
@@ -33,11 +34,41 @@ class RootRealm(object):
         self._last_line_end = None
         self.wrapper = TextWrapper(width = 100, 
                                    drop_whitespace = False)
+        
+        self.mmap = Map()
 
         self.protocols = []
         self._closing_down = False
+        
+        self.mvars = {}
 
     #Bidirectional, or just ambivalent, functions.
+    
+    
+    # Working with vars
+    def set_var(self, var, val, verbose = True):
+        old = self.get_var(var)
+        if verbose:
+            self.info(u'Variable: %s -> %s (%s)' % (var, val, old))
+        self.mvars[var] = val
+    
+    def get_var(self, var):
+        if self.mvars.has_key(var):
+            return self.mvars[var]
+        return None
+    
+    def toggle_var(self, var):
+        v = self.get_var(var)
+        if v:
+            v = False
+        else:
+            v = True
+        self.set_var(var, v)
+    
+    def print_vars(self):
+        for v in self.mvars.keys():
+            self.info(u'Variable: %s -> %s' % (v, self.mvars[v]))
+    
 
     def clear_modules(self):
         """Restore our state to a pristine (ie, blank) condition.
@@ -91,6 +122,7 @@ class RootRealm(object):
             for prot in self.protocols:
                 prot.close()
         self._closing_down = True
+        self.mmap.save()
 
     def addProtocol(self, protocol):
         self.protocols.append(protocol)
@@ -113,6 +145,7 @@ class RootRealm(object):
             for prot in self.protocols:
                 prot.close()
         self._closing_down = True
+        self.mmap.save()
 
     def connectionMade(self):
         """The MUD's been connected to."""
@@ -122,6 +155,13 @@ class RootRealm(object):
         self.write(metaline)
         for prot in self.protocols:
             prot.connectionMade()
+        
+        self.telnet.msdp.add_listener(self.mmap)
+    
+    def info(self, message, colour = HexFGCode(0xFF, 0xAA, 0x00)):
+        metaline = simpleml(message, colour, bg_code(BLACK))
+        self.write(metaline)
+    
 
     def trace_on(self):
         """Turn tracing (verbose printing to the output screen) on."""
@@ -220,11 +260,11 @@ class RootRealm(object):
         triggers and aliases should avoid using this, as they may be 
         vulnerable to injection from outside sources. Use send instead.
         """
-        if string.startswith('/'):
-            self.console.push(string[1:])
-        else:
-            for line in self._escape_parser.parse(string + '\n'):
-                self.send(line)
+        #if string.startswith('/'):
+            #self.console.push(string[1:])
+        #else:
+        for line in self._escape_parser.parse(string + '\n'):
+            self.send(line)
 
     def send(self, line, echo = True):
         """Match aliases against the line and perhaps send it to the MUD."""
@@ -232,4 +272,17 @@ class RootRealm(object):
         realm = AliasMatchingRealm(line, echo, parent = self, root = self,
                                    send_line_to_mud = self.telnet.sendLine)
         realm.process()
+    
+    def send_later(self, delay, line):
+        """Do something after a given delay."""
+        #needs a late import, otherwise the GUI won't be allowed to pick the right
+        #reactor. This could be fixed by spliitting the configure function into
+        #the bits that don't need the factory, and the bits that do. But that
+        #seems like overcomplication when one local import fixes this.
+        from twisted.internet import reactor
+        #also, pylint fails at twisted's magic
+        #pylint: disable-msg=E1101
+        reactor.callLater(delay, self.send, line)
+        #pylint: enable-msg=E1101
+
 

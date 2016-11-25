@@ -29,14 +29,15 @@ class OutputView(gtk.TextView):
         self.set_cursor_visible(False)
         self.set_wrap_mode(gtk.WRAP_CHAR)
         self.modify_base(gtk.STATE_NORMAL, gtk.gdk.Color(0, 0, 0)) #sic
-        self.modify_font(pango.FontDescription('monospace 8'))
+        self.modify_font(pango.FontDescription('terminus 12'))
         self._tags = {}
 
     def got_focus_cb(self, widget, event):
         """We never want focus; the command line automatically lets us have
         all incoming keypresses that we're interested in.
         """
-        self.gui.command_line.grab_focus()
+        if self.gui:
+            self.gui.command_line.grab_focus()
 
     def display_tooltip_cb(self, widget, wx, wy, keyboard_mode, tooltip):
         """Display a timestamp for the line the user hovers over."""
@@ -60,7 +61,8 @@ class OutputView(gtk.TextView):
         """Stop autoscrolling to new data."""
         if not self.paused:
             self.paused = True
-            self.gui.paused_label.set_markup("PAUSED")
+            if self.gui:
+                self.gui.paused_label.set_markup("PAUSED")
 
     def unpause(self):
         """Restart autoscrolling to new data.
@@ -69,7 +71,8 @@ class OutputView(gtk.TextView):
         """
         if self.paused:
             self.paused = False
-            self.gui.paused_label.set_markup("")
+            if self.gui:
+                self.gui.paused_label.set_markup("")
         #scroll to the end of output
         self.scroll_mark_onscreen(self.end_mark)
 
@@ -88,7 +91,8 @@ class OutputView(gtk.TextView):
         if not self.paused:
             self.scroll_mark_onscreen(self.end_mark)
         else:
-            self.gui.paused_label.set_markup("<span foreground='#FFFFFF' "
+            if self.gui:
+                self.gui.paused_label.set_markup("<span foreground='#FFFFFF' "
                                                    "background='#000000'>"
                                                "MORE - PAUSED</span>")
         #this is a bit naughty, we're bypassing the RLL's safety thingies

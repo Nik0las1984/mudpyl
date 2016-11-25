@@ -110,7 +110,7 @@ def make_decorator(class_, base):
     def instance_class(regex, sequence = 0):
         """The actual decorator."""
         if isinstance(regex, basestring):
-            regex = re.compile(regex)
+            regex = re.compile(regex, re.UNICODE)
         def fngrabber(func):
             return _PlaceholderClass(regex, func, sequence)
         return fngrabber
@@ -126,6 +126,21 @@ class BaseMatchingRealm(object):
         self.parent = parent
         self._writing_after = []
         self.send_line_to_mud = send_line_to_mud
+    
+    
+        # Working with vars
+    def set_var(self, var, val, verbose = True):
+        self.parent.set_var(var, val, verbose)
+    
+    def get_var(self, var):
+        return self.parent.get_var(var)
+    
+    def toggle_var(self, var):
+        self.parent.toggle_var(var)
+    
+    def print_vars(self):
+        self.parent.print_vars()
+
 
     def _write_after(self):
         """Write everything we've been waiting to."""
@@ -160,14 +175,14 @@ class BaseMatchingRealm(object):
         nothing.
         """
         if self.parent.tracing:
-            self.write("TRACE: " + line)
+            self.write("TRACE: %s" % line)
 
     def trace_thunk(self, thunk):
         """If we're tracing, call the thunk and write its result to the
         outputs. If not, do nothing.
         """
         if self.parent.tracing:
-            self.write("TRACE: " + thunk())
+            self.write("TRACE: %s" % thunk())
 
     @property
     def tracing(self):

@@ -6,6 +6,11 @@ from mudpyl.gui.keychords import from_string
 from datetime import datetime, timedelta
 import traceback
 import gtk
+import re
+from mudpyl.map.mapwidget import MapView
+
+OUT1 = re.compile('^#out1\s.*')
+OUT2 = re.compile('^#out2\s.*')
 
 class TimeOnlineLabel(gtk.Label):
 
@@ -51,6 +56,15 @@ class GUI(gtk.Window):
         self.scrolled_in = gtk.ScrolledWindow()
         self.paused_label = gtk.Label()
         self.time_online = TimeOnlineLabel()
+        
+        self.out1 = OutputView(None)
+        self.out2 = OutputView(None)
+        self.scrolled_out1 = gtk.ScrolledWindow()
+        self.scrolled_out2 = gtk.ScrolledWindow()
+        
+        self.map_view = MapView(self)
+        
+        
         self._make_widget_body()
 
     def connectionMade(self):
@@ -65,8 +79,15 @@ class GUI(gtk.Window):
 
     def metalineReceived(self, metaline):
         plain_line = metaline.line.replace('\n', '')
-        self.command_line.add_line_to_tabdict(plain_line)
-        self.output_window.show_metaline(metaline)
+        if OUT1.match(plain_line.strip()):
+            metaline.delete(1, 6)
+            self.out1.show_metaline(metaline)
+        elif OUT2.match(plain_line.strip()):
+            metaline.delete(1, 6)
+            self.out2.show_metaline(metaline)
+        else:
+            self.command_line.add_line_to_tabdict(plain_line)
+            self.output_window.show_metaline(metaline)
 
     def _make_widget_body(self):
         """Put it all together."""
@@ -95,9 +116,34 @@ class GUI(gtk.Window):
         box.pack_start(gtk.HSeparator(), expand = False)
         box.pack_start(self.scrolled_in, expand = False)
         box.pack_start(labelbox, expand = False)
-        self.add(box)
+        
+        
+        self.scrolled_out1.set_policy(gtk.POLICY_NEVER, gtk.POLICY_ALWAYS)
+        self.scrolled_out1.add(self.out1)
+        self.scrolled_out2.set_policy(gtk.POLICY_NEVER, gtk.POLICY_ALWAYS)
+        self.scrolled_out2.add(self.out2)
+        
+        
+        outbox = gtk.VPaned()
+        outbox.add1(self.scrolled_out1)
+        outbox.add2(self.scrolled_out2)
+        
+        
+        outmap = gtk.VPaned()
+        outmap.add1(outbox)
+        outmap.add2(self.map_view.get_widget())
+        
+        
+        mainbox = gtk.HPaned()
+        
+        mainbox.add1(box)
+        mainbox.add2(outmap)
+        
+        self.add(mainbox)
 
         self.show_all()
+        
+        self.map_view.create_gcs()
 
     def destroy_cb(self, widget, data = None):
         """Close everything down."""

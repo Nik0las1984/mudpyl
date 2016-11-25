@@ -1,3 +1,4 @@
+#coding: utf-8
 """A keychord representation system."""
 
 #NOTE: the key pressed is case insensitive as far as macros are concerned. 
@@ -28,7 +29,12 @@ legal_specials = ['backspace', 'tab', 'return', 'enter', 'dash',
                   'f11', 'f12', 'numpad 0', 'numpad 1', 'numpad 2', 
                   'numpad 3', 'numpad 4', 'numpad 5', 'numpad 6', 'numpad 7', 
                   'numpad 8', 'numpad 9', 'numpad add', 'numpad divide',
-                  'numpad multiply', 'numpad subtract']
+                  'numpad multiply', 'numpad subtract',
+                  
+                  #ы
+                  'cyrillic_yeru',
+                  #е
+                  'cyrillic_ie',]
 
 
 def from_string(string):
@@ -87,6 +93,7 @@ else:
     def from_gtk_event(event):
         """Turn GTK's key-press-event into a KeyChord."""
         name = gtk.gdk.keyval_name(event.keyval).lower()
+        #print name
 
         #GTK and us share a few common names, so we only look up where it's
         #different. These may differ in case than ours, which is why we do

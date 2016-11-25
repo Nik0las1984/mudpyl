@@ -5,12 +5,14 @@ from twisted.internet.protocol import ClientFactory
 from mudpyl.net.nvt import ColourCodeParser, make_string_sane
 from mudpyl.net.mccp import MCCPTransport, COMPRESS2
 from mudpyl.realms import RootRealm
+from mudpyl.net.msdp import MSDPParser, MSDP
 import re
 
 broken_line_ending_pattern = re.compile("([^\r]|^)\n\r")
 
 #pylint doesn't like Twisted naming conventions
 #pylint: disable-msg= C0103
+
 
 class TelnetClient(Telnet, LineOnlyReceiver):
 
@@ -27,6 +29,11 @@ class TelnetClient(Telnet, LineOnlyReceiver):
         self.allowing_compress = False
         self._colourparser = ColourCodeParser()
         self.fix_broken_godwars_line_endings = True
+        
+        # MSDP support
+        self.allowing_msdp = False
+        self.msdp = MSDPParser(self)
+        self.negotiationMap[MSDP] = self.msdp_negotiation
 
     def connectionMade(self):
         """Call our superclasses.
@@ -40,6 +47,7 @@ class TelnetClient(Telnet, LineOnlyReceiver):
     def enableRemote(self, option):
         """Allow MCCP to be turned on."""
         if option == COMPRESS2:
+            self.factory.realm.info('Enabling MCCP')
             self.allowing_compress = True
             return True
         elif option == ECHO:
@@ -47,13 +55,24 @@ class TelnetClient(Telnet, LineOnlyReceiver):
             #hide the command line
             self.factory.gui.command_line.set_visibility(False)
             return True
+        if option == MSDP:
+            self.factory.realm.info('Enabling MSDP')
+            self.allowing_msdp = True
+            return True
         else:
             return False
+    
+    def msdp_negotiation(self, data):
+        self.msdp.negotiation(data)
 
     def disableRemote(self, option):
         """Allow MCCP to be turned off."""
         if option == COMPRESS2:
+            self.factory.realm.info('Disabling MCCP')
             self.allowing_compress = False
+        elif option == MSDP:
+            self.factory.realm.info('Disabling MSDP')
+            self.allowing_msdp = False
         elif option == ECHO:
             self.factory.realm.server_echo = False
             self.factory.gui.command_line.set_visibility(True)
@@ -120,6 +139,8 @@ class TelnetClient(Telnet, LineOnlyReceiver):
             metaline.line_end = 'hard'
         metaline.wrap = True
         self.factory.realm.metalineReceived(metaline)
+    
+    
 
 class TelnetClientFactory(ClientFactory):
 
@@ -140,3 +161,8 @@ class TelnetClientFactory(ClientFactory):
         self.realm.telnet = prot
         mccp = MCCPTransport(prot)
         return mccp
+
+    def clientConnectionFailed(self, connector, reason):
+        print 'Connection failed', reason
+        #connector.connect()
+        self.realm.connectionLost()
