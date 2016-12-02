@@ -89,6 +89,7 @@ class BylinsModule(HTMLLoggingModule):
     def triggers(self):
         return [self.login_encoding, self.login_login, self.login_password, self.login_enter, self.mud_map, self.reconnect, self.login_login1, BaseTrigger(triggers = importlib.import_module(self.triggers_file).triggers),
                 self.opener,
+                self.opener1,
                 self.eat1,
                 ]
     
@@ -176,6 +177,16 @@ class BylinsModule(HTMLLoggingModule):
         realm.send(c1)
         realm.write(c2)
         realm.send(c2)
+    
+    @binding_trigger(u'^Закрыто\.')
+    def opener1(self, match, realm):
+        c1 = u'отпер дв %s' % (realm.parent.get_var(u'направление'))
+        c2 = u'открыть дв %s' % (realm.parent.get_var(u'направление'))
+        realm.write(c1)
+        realm.send(c1)
+        realm.write(c2)
+        realm.send(c2)
+
     
     
     # еда

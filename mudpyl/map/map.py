@@ -2,6 +2,7 @@
 import numpy as np
 import json
 
+#http://build-failed.blogspot.ru/2012/11/zoomable-image-with-leaflet.html
 
 MAPFILE = 'map.json'
 
@@ -49,6 +50,7 @@ class Zone:
         # BBox
         self.bmin = None
         self.bmax = None
+        
     
     def update_room(self, r):
         if self.mmx.has_key(r.coords[1]):
@@ -69,7 +71,7 @@ class Zone:
         
         self.rooms[r.vnum] = r
         
-        self.construct_boundary()
+        #self.construct_boundary()
     
     def get_maxy(self):
         v = None
@@ -86,6 +88,15 @@ class Zone:
             v += self.mmy[i][0] + self.mmy[i][1] 
         return v / len(self.mmy.keys())
     
+    def get_avg(self):
+        c = None
+        for i in self.rooms.values():
+            if c is None:
+                c = i.coords.copy()
+            else:
+                c += i.coords
+        return c / len(self.rooms.keys())
+    
     def check_room(self, r):
         return self.vnum == r.zone
     
@@ -95,6 +106,8 @@ class Zone:
             for e in r.exits.values():
                 r1 = self.mmap.rooms[e]
                 if r1.zone is not None and r1.zone != self.vnum:
+                    r1.bound_flag = True
+                    r.bound_flag = True
                     self.exits[r.vnum] = self.mmap.zones[r1.zone]
                     print self.name, '->', self.exits[r.vnum].name
     
@@ -200,6 +213,9 @@ class Room:
         self.dt_flag = False
         self.slow_dt_flag = False
         self.yama_flag = False
+        
+        # Зона граничит с другой
+        self.bound_flag = False
     
     def update(self, name = None, area = None, zone = None, exits = {}, terrain = None):
         self.name = name
@@ -233,6 +249,7 @@ class Room:
             'dt_flag': self.dt_flag,
             'slow_dt_flag': self.slow_dt_flag,
             'yama_flag': self.yama_flag,
+            #'bound_flag': self.bound_flag,
             }
         return json.dumps(data, encoding="utf-8")
     
@@ -250,6 +267,7 @@ class Room:
         self.coords = np.int_(data['coords'])
         self.dt_flag = data['dt_flag']
         self.slow_dt_flag = data['slow_dt_flag']
+        #self.bound_flag = data.get('bound_flag', False)
     
     def toggle_dt(self):
         self.dt_flag = not self.dt_flag
@@ -270,7 +288,10 @@ class Map:
         
         self.last_room = None
         
-        self.load(MAPFILE)
+        try:
+            self.load(MAPFILE)
+        except:
+            pass
         if self.gui:
             self.gui.update(r.vnum)
         

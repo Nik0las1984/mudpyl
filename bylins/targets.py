@@ -12,7 +12,7 @@ import json
 from bylins.base import fill_vars
 
 
-RE_FIGHT_STATUS = ur'^\d+H \d+M \d+о Зауч:\d+ .*\[[\w\s]+:[\.\w\s]+\] \[[\w\s]+:[\.\w\s]+\] >'
+RE_FIGHT_STATUS = ur'^\d+H \d+M \d+о Зауч:\d+ .*\[[\w\s]+:[\.\w\s\-]+\] \[[\w\s]+:[\.\w\s\-]+\] >'
 RE_NORMAL_STATUS = ur'^\d+H \d+M \d+о Зауч:\d+ .*\d+L \d+G Вых:[.\^]*>'
 
 RE_OFF_FIGHT = (
@@ -53,10 +53,25 @@ def ml(m, c):
     return simpleml(m, c, bg_code(BLACK))
 
 def get_target_short(t, num):
+    s = t.split()
     try:
-        return t.split()[num][:3]
+        t1 = s[num][:3]
+        t2 = s[num+1][:3]
+        while len(t1) != 3 and len(t2) != 3:
+            num += 1
+            t1 = s[num][:3]
+            t2 = s[num+1][:3]
+        return '%s.%s' % (t1, t2)
     except:
-        pass
+        try:
+            t1 = s[num-len(s)][:3]
+            while len(t1) != 3:
+                num += 1
+                t1 = s[num-len(s)][:3]
+                
+            return '%s' % (t1)
+        except:
+            pass
     return None
     
 
@@ -89,14 +104,17 @@ class TargetsSystem(BaseModule):
         try:
             self.load_aliases('targets.json')
         except:
-            self.aliases = {}
+            self.taliases = {}
     
     def load_aliases(self, path):
-        self.aliases = json.loads(file(path, 'r').read(), encoding="utf-8")
+        self.taliases = json.loads(file(path, 'r').read(), encoding="utf-8")
     
     def dump_aliases(self, path):
-        file(path, 'w').write(json.dumps(self.aliases, encoding="utf-8"))
+        file(path, 'w').write(json.dumps(self.taliases, encoding="utf-8"))
 
+    @property
+    def aliases(self):
+        return [self.set_target,]
     
     @property
     def triggers(self):
@@ -122,12 +140,23 @@ class TargetsSystem(BaseModule):
             from_string('C-<cyrillic_a>'): self.change_attack,
             }
     
+    @binding_alias(u'^ц(\d+) ([\.\w]+)$')
+    def set_target(self, match, realm):
+        t = int(match.group(1))
+        al = match.group(2)
+        try:
+            self.set_target_alias(self.targets[t-1], al)
+            self.realm.write(ml('Алиас: %s -> %s' % (self.targets[t-1], al), fg_code(YELLOW, True)))
+        except:
+            self.realm.write(ml('Нет цели %s' % (t), fg_code(YELLOW, True)))
+        realm.send_to_mud = False
+    
     def change_attack(self, realm):
         self.curr_attack += 1
         if self.curr_attack > len(self.attacks) - 1:
             self.curr_attack = 0
         self.realm.set_var(u'атака', u'$%s$' % self.attacks[self.curr_attack], False)
-        self.realm.info(u'Атака: %s' % self.realm.get_var(self.attacks[self.curr_attack]))
+        self.realm.info(u'Атака: %s: %s' % (self.attacks[self.curr_attack], self.realm.get_var(self.attacks[self.curr_attack])))
     
     def key1(self, realm):
         self.on_key(0)
@@ -176,18 +205,18 @@ class TargetsSystem(BaseModule):
     def get_target_alias(self, t):
         r = self.m.last_room
         if r:
-            if self.aliases.has_key(r.zone):
-                if self.aliases[r.zone].has_key(t):
-                    return self.aliases[r.zone][t]
+            if self.taliases.has_key(r.zone):
+                if self.taliases[r.zone].has_key(t):
+                    return self.taliases[r.zone][t]
         return None
     
     def set_target_alias(self, t, al):
         r = self.m.last_room
         if r:
-            if self.aliases.has_key(r.zone):
-                self.aliases[r.zone][t] = al
+            if self.taliases.has_key(r.zone):
+                self.taliases[r.zone][t] = al
             else:
-                self.aliases[r.zone] = {t: al,}
+                self.taliases[r.zone] = {t: al,}
             self.dump_aliases('targets.json')
     
     def set_round(self, v):

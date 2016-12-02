@@ -2,9 +2,48 @@
 
 import gtk
 import numpy as np
+import math
 from numpy.linalg import norm
+import cairo
 from .map import *
 from colors import *
+
+TOWNS = [
+    u'Вышгород',
+    u'Город Владимир',
+    u'Город Галич',
+    u'Город Курск',
+    u'Город Переяславль',
+    u'Город Полоцк',
+    u'Город Русса',
+    u'Городище Корсунь',
+    u'Господин Великий Новгород',
+    u'град Любеч',
+    u'град Путивль',
+    u'Искоростень',
+    u'Киев (новый город)',
+    u'Меньск (Минск)',
+    u'Муром',
+    u'Псков',
+    u'Ростов Великий',
+    u'Рязань',
+    u'Старая Ладога',
+    u'Старая Ладога 2',
+    u'Тверь',
+    u'Торжок',
+    u'Тотьма',
+    u'Туров-град',
+    u'Чернигов',
+    ]
+
+class MapLabel(gtk.Label):
+
+    """Some info."""
+
+    def __init__(self):
+        gtk.Label.__init__(self)
+        self.set_text('Some text')
+        
 
 
 class MapView(gtk.DrawingArea):
@@ -40,9 +79,77 @@ class MapView(gtk.DrawingArea):
         self.gcs = {}
         
         self.active = None
+        self.active_zone = None
         self.selected = []
+        
+        self.bound_rooms = None
 
         self.rmenu = self.room_menu()
+        
+        
+        
+        self.map_label = MapLabel()
+        
+        
+        # меню вверху
+        self.zone_combobox = gtk.combo_box_new_text()
+        self.zone_index = {}
+        self.create_list_zones()
+        self.zone_combobox.connect('changed', self.zone_combobox_changed)
+        
+        self.map_detalization = gtk.combo_box_new_text()
+        self.detalization = 1
+        self.create_map_detalization()
+        self.map_detalization.connect('changed', self.map_detalization_changed)
+        
+
+    
+    def create_map_detalization(self):
+        self.map_detalization.append_text(u'Детализация отрисовки:')
+        self.map_detalization.append_text(u'Текущая зона')
+        self.map_detalization.append_text(u'Текущая зона+граничные')
+        self.map_detalization.append_text(u'Все зоны')
+        self.map_detalization.append_text(u'Приграничные комнаты+BBox')
+        self.map_detalization.append_text(u'Приграничные комнаты+Центр зоны')
+        self.map_detalization.set_active(1)
+    
+    def map_detalization_changed(self, combobox):
+        index = combobox.get_active()
+        if index:
+            self.detalization = index
+            self.queue_draw()
+        return
+    
+    def create_list_zones(self):
+        self.zone_combobox.get_model().clear()
+        self.zone_index = {}
+        
+        self.zone_combobox.append_text(u'Список зон:')
+        self.zone_combobox.set_active(0)
+        ind = 0
+        for z in self.mmap.zones.values():
+            if z.name:
+                self.zone_combobox.append_text(z.name)
+                ind += 1
+                self.zone_index[z.name] = (z, ind)
+    
+    def update_list_zones(self):
+        try:
+            ind = self.zone_index[self.mmap.zones[self.active.zone].name][1]
+            self.zone_combobox.set_active(ind)
+        except:
+            self.zone_combobox.set_active(0)
+        
+    
+    def zone_combobox_changed(self, combobox):
+        model = combobox.get_model()
+        index = combobox.get_active()
+        if index:
+            self.active_zone = self.zone_index[unicode(model[index][0])][0]
+            self.center_to_room(self.active_zone.rooms.values()[0])
+            self.queue_draw()
+        return
+
     
     def create_gcs(self):
         for i in COLORS.keys():
@@ -123,7 +230,7 @@ class MapView(gtk.DrawingArea):
         if event.button == 1:
             #self.gui.realm.info('right %s ' % self.mouse_to_coord(np.int_([event.x, event.y])))
             self.move_room_coord = self.mouse_to_coord(np.int_([event.x, event.y]))
-            r = self.mmap.get_by_coords(self.move_room_coord, self.active.zone)
+            r = self.mmap.get_by_coords(self.move_room_coord, self.active_zone.vnum)
 
             # Если кликнули по выделенной, то можем тащить
             if r in self.selected:
@@ -145,7 +252,7 @@ class MapView(gtk.DrawingArea):
                         self.selected.append(r1)
                         for ri in r1.exits.values():
                             r2 = self.mmap.rooms[ri]
-                            if not r2.parsed_flag:
+                            if not r2.parsed_flag and r2 not in self.selected:
                                 self.selected.append(r2)
                     
             
@@ -167,6 +274,11 @@ class MapView(gtk.DrawingArea):
         if s == u'level-':
             for r in self.selected:
                 r.move(np.int_([0,0,-1]))
+        
+        if s == u'active_zone':
+            if len(self.selected) > 0:
+                r = self.selected[0]
+                self.active_zone = self.mmap.zones[r.zone]
         self.queue_draw()
             
     def button_release_event(self, widget, event):
@@ -200,7 +312,7 @@ class MapView(gtk.DrawingArea):
     def rc(self, r):
         return self.m2w(r.coords) - np.int_([self.h() / 2, self.h() / 2])
     
-    def draw_room(self, r, active, current_level, cr):
+    def draw_room(self, r, active, current_level, cr, draw_room = True):
         
         gc = self.gcs['def']
         if self.gcs.has_key(r.terrain):
@@ -220,23 +332,24 @@ class MapView(gtk.DrawingArea):
         y -= r.coords[2] * h / 3
         
         
-        if current_level:
-            cr.set_source_color(gc)
-        else:
-            cr.set_source_rgba(0.5, 0.5, 0.5, 0.4)
-        cr.rectangle(x, y, h, h)
-        cr.fill()
-        #self.window.draw_rectangle(gc, gtk.TRUE, x, y, h, h)
-        #self.window.draw_rectangle(self.get_gc(), gtk.FALSE, x, y, h, h)
-        cr.set_line_width(1)
-        
-        if h > 5:
+        if draw_room:
             if current_level:
-                cr.set_source_color(self.gcs['def_stoke'])
+                cr.set_source_color(gc)
             else:
-                cr.set_source_rgba(0, 0, 0, 0.4)
+                cr.set_source_rgba(0.5, 0.5, 0.5, 0.4)
             cr.rectangle(x, y, h, h)
-            cr.stroke()
+            cr.fill()
+            #self.window.draw_rectangle(gc, gtk.TRUE, x, y, h, h)
+            #self.window.draw_rectangle(self.get_gc(), gtk.FALSE, x, y, h, h)
+            cr.set_line_width(1)
+            
+            if h > 5:
+                if current_level:
+                    cr.set_source_color(self.gcs['def_stoke'])
+                else:
+                    cr.set_source_rgba(0, 0, 0, 0.4)
+                cr.rectangle(x, y, h, h)
+                cr.stroke()
         
         #if r.name:
         #    cr.move_to(x, y + h/2)
@@ -270,17 +383,18 @@ class MapView(gtk.DrawingArea):
             cr.stroke()
            
             #self.window.draw_line(self.get_gc(), x1, y1, x1 + w[0], y1 - w[1])
-            
-        cr.set_line_width(2)    
-        if active:
-            cr.set_source_color(self.gcs['active'])
-            cr.rectangle(x-2, y-2, h+4, h+4)
-            cr.stroke()
         
-        if r in self.selected:
-            cr.set_source_rgba(1, 0, 0, 1)
-            cr.rectangle(x-2, y-2, h+4, h+4)
-            cr.stroke()
+        if draw_room:
+            cr.set_line_width(2)
+            if active:
+                cr.set_source_color(self.gcs['active'])
+                cr.rectangle(x-2, y-2, h+4, h+4)
+                cr.stroke()
+            
+            if r in self.selected:
+                cr.set_source_rgba(1, 0, 0, 1)
+                cr.rectangle(x-2, y-2, h+4, h+4)
+                cr.stroke()
         
     
     def draw_map(self, drawingarea, event):
@@ -291,14 +405,43 @@ class MapView(gtk.DrawingArea):
         #        self.draw_zone(self.gui.realm.mmap.zones[z], cr)
 
         
+        if self.detalization in [1, 2]:
+            if self.active_zone:
+                
+                # Рисуем текущую зону
+                self.draw_zone(self.active_zone, cr)
+                
+                # Если детализация 2
+                if self.detalization == 2:
+                    for z1 in self.active_zone.exits.values():
+                        self.draw_zone(z1, cr)
         
+        if self.detalization == 3:
+            # Рисуем все зоны
+            for z in self.mmap.zones.values():
+                self.draw_zone(z, cr)
+        
+        # Рисуем ббоксы
+        if self.detalization == 4:
+            for z in self.mmap.zones.values():
+                self.draw_bbox(z, cr)
+            self.draw_bound_rooms(cr)
+        
+        # Рисуем центра
+        if self.detalization == 5:
+            for z in self.mmap.zones.values():
+                if z.name:
+                    self.draw_zone_center(z, cr)
+            #self.draw_bound_rooms(cr, True)
+        
+        """
         if self.active:
             
             z = self.mmap.zones[self.active.zone]
             self.draw_zone(z, cr)
             for z1 in z.exits.values():
                 self.draw_zone(z1, cr)
-            
+       """     
             #for z1 in self.mmap.zones.values():
             #    self.draw_zone(z1, cr)
         
@@ -324,6 +467,63 @@ class MapView(gtk.DrawingArea):
             self.draw_room(room, r == self.active, room.coords[2] == ral, cr)
         """
         #
+    
+    def draw_zone_name(self, z, cr):
+        h = self.h()
+        # Координаты
+        c = self.m2w(np.int_([(z.bmin[0] + z.bmax[0]) / 2, z.bmax[1]]))
+            
+        cr.select_font_face("terminus", cairo.FONT_SLANT_NORMAL, cairo.FONT_WEIGHT_BOLD)
+        cr.set_font_size(max(h, 12) + 2)
+
+        (x, y, width, height, dx, dy) = cr.text_extents(z.name)
+        cr.move_to(c[0]- width/2, c[1] - h)
+        cr.show_text(z.name)
+    
+    def draw_bbox(self, z, cr):
+        x1 = self.m2w(z.bmin)
+        x2 = self.m2w(z.bmax)
+        cr.set_source_rgba(0, 0, 1, 1)
+        cr.rectangle(x1[0], x1[1], x2[0]-x1[0], x2[1]-x1[1])
+        cr.stroke()
+        
+        # Рисуем название
+        if z.name:
+            self.draw_zone_name(z, cr)
+    
+    def draw_zone_center(self, z, cr):
+        h = self.h()
+        c = self.m2w(z.get_avg())
+        if z.name in TOWNS:
+            cr.set_source_rgba(1, 0, 0, 1)
+            cr.arc(c[0], c[1], h*6, 0, 2*math.pi)
+            self.draw_zone_name(z, cr)
+        else:
+            cr.set_source_rgba(0, 0, 1, 1)
+            cr.arc(c[0], c[1], h*3, 0, 2*math.pi)
+        
+        cr.fill()
+        # Рисуем линки
+        for z1 in z.exits.values():
+            if z1.name:
+                c1 = self.m2w(z1.get_avg())
+                cr.move_to(c[0], c[1])
+                cr.line_to(c1[0], c1[1])
+                cr.stroke()
+        
+        # Рисуем название
+        if z.name and h > 5:
+            self.draw_zone_name(z, cr)
+    
+    def draw_bound_rooms(self, cr, only_links = False):
+        if not self.bound_rooms:
+            self.bound_rooms = []
+            for r in self.mmap.rooms.values():
+                if r.bound_flag:
+                    self.bound_rooms.append(r)
+        for r in self.bound_rooms:
+            self.draw_room(r, r == self.active, r.coords[2] == self.active.coords[2], cr, not only_links)
+
     
     def draw_zone(self, z, cr):
         """
@@ -362,6 +562,39 @@ class MapView(gtk.DrawingArea):
         cr.stroke()
         """
         
+        # Рисуем название
+        h = self.h()
+        if z.name and h > 5:
+            self.draw_zone_name(z, cr)
+        
+        # Если зона одна, рисуем название выходов
+        if self.detalization == 1 and h > 5:
+            already = []
+            for e in z.exits.keys():
+                r = self.mmap.rooms[e]
+                rc = None
+                d = None
+                for e1 in r.exits.keys():
+                    r1 = self.mmap.rooms[r.exits[e1]]
+                    if r1.zone != r.zone and r1.area:
+                        d = e1
+                        rc = r1
+                        break
+                if rc and rc.zone not in already:
+                    already.append(rc.zone)
+                    c = self.m2w(r.coords + DIRS_PLUS[d])
+                    cr.select_font_face("terminus", cairo.FONT_SLANT_NORMAL, cairo.FONT_WEIGHT_NORMAL)
+                    cr.set_font_size(max(h, 12))
+                    (x, y, width, height, dx, dy) = cr.text_extents(r1.area)
+                    
+                    if d == 'e':
+                        cr.move_to(c[0], c[1])
+                    elif d == 'w':
+                        cr.move_to(c[0]-width, c[1])
+                    else:
+                        cr.move_to(c[0]-width/2, c[1])
+                    cr.show_text(r1.area)
+        
         if z.name and False:
             cr.set_source_rgba(0, 0, 1, 1)
             first = False
@@ -391,16 +624,42 @@ class MapView(gtk.DrawingArea):
     
     def update(self, room):
         self.active = room
+        self.active_zone = self.mmap.zones[self.active.zone]
         
-        c = self.rc(room)
-        r = self.get_allocation()
-        print r
-        self.ofs += np.int_([r.width / 2, r.height / 2]) - c
+        self.center_to_room(room)
         
         self.queue_draw()
+        
+        # обновляем инфу внизу
+        self.update_mal_label()
+        
+        # обновляем комбобокс с зонами
+        self.update_list_zones()
+    
+    def center_to_room(self, room):
+        c = self.rc(room)
+        r = self.get_allocation()
+        #print r
+        self.ofs += np.int_([r.width / 2, r.height / 2]) - c
+    
+    def update_mal_label(self):
+        if self.active:
+            s = 'Zone: %s, Room: %s, Terrain: %s' % (self.active.area, self.active.name, self.active.terrain)
+        else:
+            s = 'No active room'
+        self.map_label.set_text(s)
     
     def get_widget(self):
-        return self
+        
+        box1 = gtk.HBox()
+        box1.pack_start(self.zone_combobox)
+        box1.pack_start(self.map_detalization)
+        
+        box = gtk.VBox()
+        box.pack_start(box1, expand = False)
+        box.pack_start(self)
+        box.pack_end(self.map_label, expand = False)
+        return box
     
     def room_menu(self):
         menu = gtk.Menu()
@@ -424,6 +683,12 @@ class MapView(gtk.DrawingArea):
         menu.append(menu1)
         menu1.connect("activate", self.rmenu_response, u'level-')
         
+        menu1 = gtk.MenuItem(u'Активная зона')
+        menu.append(menu1)
+        menu1.connect("activate", self.rmenu_response, u'active_zone')
+        
+        
+
         menu.show_all()
         return menu
     
