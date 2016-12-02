@@ -127,6 +127,7 @@ class TargetsSystem(BaseModule):
             self.on_opozn,
             self.repeat_opozn,
             self.repeat_opozn1,
+            self.repeat_opozn2,
             ]
     
     @property
@@ -280,6 +281,12 @@ class TargetsSystem(BaseModule):
     def repeat_opozn1(self, match, realm):
         if self.opozn_flag:
             self.opozn_targer()
+    
+    @binding_trigger(ur'^Вы не видите ничего необычного\.')
+    def repeat_opozn2(self, match, realm):
+        if self.opozn_flag:
+            self.opozn_targer()
+
     
     @binding_trigger(RE_FIGHT_STATUS)
     def on_fight_status(self, match, realm):
