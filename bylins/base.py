@@ -14,11 +14,12 @@ RE_VAR = re.compile(ur'\$([\w\s]+)\$', re.UNICODE)
 
 def fill_vars(s, realm):
     m = RE_VAR.match(s)
-    print m
-    if m:
+    while m:
         for g in m.groups():
             s = s.replace('$%s$' % g, realm.get_var(g))
-    return s
+        m = RE_VAR.match(s)
+    return s.replace(';', '\n')
+
 
 def trace_toggle(realm):
     if realm.tracing:
@@ -44,8 +45,10 @@ class BaseTrigger(ProtoMatcher):
         return []
     
     def func(self, match, realm):
-        realm.write(match)
-        return realm.send(match)
+        realm.send_to_mud = False
+        c = fill_vars(match, realm)
+        realm.write(c)
+        return realm.send(c)
 
 
 class BaseAlias(ProtoMatcher):
@@ -67,6 +70,7 @@ class BaseAlias(ProtoMatcher):
     
     def func(self, match, realm):
         c = fill_vars(match, realm)
+        realm.send_to_mud = False
         realm.write(c)
         return realm.send(c)
 

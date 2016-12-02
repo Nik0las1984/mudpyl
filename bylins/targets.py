@@ -9,8 +9,10 @@ from mudpyl.metaline import Metaline, simpleml
 import re
 import json
 
+from bylins.base import fill_vars
 
-RE_FIGHT_STATUS = ur'^\d+H \d+M \d+о Зауч:\d+ .*\[[\w\s]+:[\w\s]+\] \[[\w\s]+:[\w\s]+\] >'
+
+RE_FIGHT_STATUS = ur'^\d+H \d+M \d+о Зауч:\d+ .*\[[\w\s]+:[\.\w\s]+\] \[[\w\s]+:[\.\w\s]+\] >'
 RE_NORMAL_STATUS = ur'^\d+H \d+M \d+о Зауч:\d+ .*\d+L \d+G Вых:[.\^]*>'
 
 RE_OFF_FIGHT = (
@@ -29,7 +31,7 @@ class TargetTrigger(RegexTrigger):
         fores = metaline.fores
         if len(fores) == 1:
             if fores[0] == HexFGCode(255, 0, 0):
-                if len(metaline.line) > 3 and metaline.line[0] != '.':
+                if len(metaline.line) > 3 and metaline.line[0] != '.' and metaline.line[0] != ' ' :
                     return [metaline.line,]
         return []
     
@@ -62,6 +64,8 @@ class TargetsSystem(BaseModule):
     target_trigger = TargetTrigger()
     fight_trigger = FigthTrigger()
     
+    attacks = [u'атака1', u'атака2', u'атака3', u'атака4']
+    
     def __init__(self, factory):
         BaseModule.__init__(self, factory)
         
@@ -79,6 +83,8 @@ class TargetsSystem(BaseModule):
         self.opozn_flag = False
         self.double_key = False
         self.last_alias = None
+        
+        self.curr_attack = 0
         
         try:
             self.load_aliases('targets.json')
@@ -113,7 +119,15 @@ class TargetsSystem(BaseModule):
             from_string('<F3>'): self.key3,
             from_string('<F4>'): self.key4,
             from_string('<F5>'): self.key5,
+            from_string('C-<cyrillic_a>'): self.change_attack,
             }
+    
+    def change_attack(self, realm):
+        self.curr_attack += 1
+        if self.curr_attack > len(self.attacks) - 1:
+            self.curr_attack = 0
+        self.realm.set_var(u'атака', u'$%s$' % self.attacks[self.curr_attack], False)
+        self.realm.info(u'Атака: %s' % self.realm.get_var(self.attacks[self.curr_attack]))
     
     def key1(self, realm):
         self.on_key(0)
@@ -150,7 +164,7 @@ class TargetsSystem(BaseModule):
             self.realm.write(ml('Нет алиаса цели %s, повторное нажатие -- поиск алиаса' % (n+1), fg_code(YELLOW, True)))
             self.double_key = True
         else:
-            c = self.realm.get_var(u'атака')
+            c = fill_vars(self.realm.get_var(u'атака'), self.realm)
             if not c:
                 self.realm.write(ml('Не выставлена переменная "атака"', fg_code(YELLOW, True)))
                 return

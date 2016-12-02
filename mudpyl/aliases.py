@@ -5,6 +5,7 @@ from mudpyl.matchers import BindingPlaceholder, NonbindingPlaceholder, \
                             ProtoMatcher, make_decorator, BaseMatchingRealm
 import re
 
+
 class Alias(ProtoMatcher):
     """Matches on the user's input."""
 

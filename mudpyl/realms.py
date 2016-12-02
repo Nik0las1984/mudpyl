@@ -11,7 +11,10 @@ from textwrap import TextWrapper
 from operator import attrgetter
 import traceback
 import time
+import re
 from mudpyl.map.map import Map
+
+
 
 class RootRealm(object):
     """The root of the realms hierarchy. This is what macros and top-level

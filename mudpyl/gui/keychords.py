@@ -34,7 +34,10 @@ legal_specials = ['backspace', 'tab', 'return', 'enter', 'dash',
                   #ы
                   'cyrillic_yeru',
                   #е
-                  'cyrillic_ie',]
+                  'cyrillic_ie',
+                  #а
+                  'cyrillic_a',
+                  ]
 
 
 def from_string(string):
