@@ -14,6 +14,8 @@ import time
 import re
 from mudpyl.map.map import Map
 
+def ml(m, c):
+    return simpleml(m, c, bg_code(BLACK))
 
 
 class RootRealm(object):
@@ -287,5 +289,8 @@ class RootRealm(object):
         #pylint: disable-msg=E1101
         reactor.callLater(delay, self.send, line)
         #pylint: enable-msg=E1101
+    
+    def write_c(self, s, c):
+        self.write(ml(s, fg_code(c, True)))
 
 
