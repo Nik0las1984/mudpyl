@@ -79,7 +79,7 @@ class TargetsSystem(BaseModule):
     target_trigger = TargetTrigger()
     fight_trigger = FigthTrigger()
     
-    attacks = [u'атака1', u'атака2', u'атака3', u'атака4']
+    attacks = [u'атака1', u'атака2', u'атака3', u'атака4', u'атака5']
     
     def __init__(self, factory):
         BaseModule.__init__(self, factory)
