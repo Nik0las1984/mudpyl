@@ -13,7 +13,7 @@ from bylins.base import fill_vars
 
 
 RE_FIGHT_STATUS = ur'^\d+H \d+M \d+о Зауч:\d+ .*\[[\w\s]+:[\.\w\s\-]+\] \[[\w\s]+:[\.\w\s\-]+\] >'
-RE_NORMAL_STATUS = ur'^\d+H \d+M \d+о Зауч:\d+ .*\d+L \d+G Вых:[.\^]*>'
+RE_NORMAL_STATUS = ur'^\d+H \d+M \d+о Зауч:\d+ .*\d+L \d+G Вых:.*>'
 
 RE_OFF_FIGHT = (
     re.compile(ur'^Вы быстро убежали с поля битвы\.', re.UNICODE),
