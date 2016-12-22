@@ -128,7 +128,7 @@ class BylinsModule(HTMLLoggingModule):
         realm.parent.telnet.msdp.msdp_request('REPORT'.encode('utf-8'), 'ROOM'.encode('utf-8'))
         #realm.send_to_mud = False
     
-    @binding_alias('^#(\d+) (.*)$')
+    @binding_alias(u'^#(\d+) (.+)')
     def repeat(self, match, realm):
         """Repeats a given command a given number of times."""
         for _ in xrange(int(match.group(1))):
