@@ -23,7 +23,9 @@ RE_OFF_FIGHT = (
 
 
 def clear_target(t):
-    return t.replace(u'(летит) ', '')
+    t = t.replace(u'(летит) ', '')
+    t = re.sub(ur'\(.*\) ', '', t)
+    return t
 
 
 class TargetTrigger(RegexTrigger):
@@ -32,6 +34,12 @@ class TargetTrigger(RegexTrigger):
         if len(fores) == 1:
             if fores[0] == HexFGCode(255, 0, 0):
                 if len(metaline.line) > 3 and metaline.line[0] != '.' and metaline.line[0] != ' ' :
+                    return [metaline.line,]
+        if len(fores) == 2:
+            print metaline.line, fores
+            if fores.get_at(0) == HexFGCode(0, 255, 255):
+                if len(metaline.line) > 3 and metaline.line[0] != '.' and metaline.line[0] != ' ' :
+                    print 'DSDDDDDDDDDDDDDDDD'
                     return [metaline.line,]
         return []
     
