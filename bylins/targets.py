@@ -12,7 +12,7 @@ import json
 from bylins.base import fill_vars
 
 
-RE_FIGHT_STATUS = ur'^\d+H \d+M \d+о Зауч:\d+ .*\[[\w\s]+:[\.\w\s\-]+\] \[[\w\s]+:[\.\w\s\-]+\] >'
+RE_FIGHT_STATUS = ur'^\d+H \d+M \d+о Зауч:\d+ .*\[[\w\s]+:[\.\w\s\-]+\] \[[\w\s-]+:[\.\w\s\-]+\] >'
 RE_NORMAL_STATUS = ur'^\d+H \d+M \d+о Зауч:\d+ .*\d+L \d+G Вых:.*>'
 
 RE_OFF_FIGHT = (
@@ -105,6 +105,10 @@ class TargetsSystem(BaseModule):
         self.last_alias = None
         
         self.curr_attack = 0
+        
+        self.do_agr = False
+        
+        self.do_udavka = False
         
         try:
             self.load_aliases('targets.json')
@@ -213,6 +217,8 @@ class TargetsSystem(BaseModule):
                 return
             c = c.replace(u'%1', al)
             #self.realm.write(c)
+            if self.do_udavka:
+                c = u'удав %s' % al
             self.realm.send(c)
         
     
@@ -225,6 +231,7 @@ class TargetsSystem(BaseModule):
         return None
     
     def set_target_alias(self, t, al):
+        self.realm.write(ml(u'Алиас цели: %s->%s' % (t, al), fg_code(YELLOW, True)))
         r = self.m.last_room
         if r:
             if self.taliases.has_key(r.zone):
@@ -266,10 +273,11 @@ class TargetsSystem(BaseModule):
             realm.alterer.insert_metaline(0, ml(u'<F%s> (%s) - ' % (len(self.targets), self.get_target_alias(t)), fg_code(GREEN, True)))
             
         # авто агрим цели
-        if self.auto_agr():
+        if not self.do_agr and self.auto_agr() and not self.realm.get_var(u'бой'):
             for i in range(len(self.targets)):
                 a = self.get_target_alias(self.targets[i])
                 if a:
+                    self.do_agr = True
                     self.on_key(i)
                     break
         #print self.manager, match
@@ -311,6 +319,7 @@ class TargetsSystem(BaseModule):
     
     @binding_trigger(ur'^Ваш опыт повысился на \d+ очков.')
     def on_exp(self, match, realm):
+        self.do_agr = False
         if self.auto_agr():
             realm.send(u'look')
 
@@ -319,11 +328,18 @@ class TargetsSystem(BaseModule):
     def on_fight_status(self, match, realm):
         self.set_fight()
         self.inc_round()
+        self.do_agr = False
 
     @binding_trigger(RE_NORMAL_STATUS)
     def on_normal_status(self, match, realm):
         self.unset_fight()
         self.target_flag = False
+        
+        self.do_udavka = False
+        if not self.do_udavka and match.group(0).find(u'Уд:0') > 0 and self.realm.get_var(u'автоудавка'):
+            self.do_udavka = True
+            #self.realm.write(ml(u'Включаем удавку!!!', fg_code(YELLOW, True)))
+            
     
     @binding_trigger(ur'[\w\s]+ \[\d+\]')
     def on_room(self, match, realm):
