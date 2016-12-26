@@ -36,11 +36,8 @@ class TargetTrigger(RegexTrigger):
                 if len(metaline.line) > 3 and metaline.line[0] != '.' and metaline.line[0] != ' ' :
                     return [metaline.line,]
         if len(fores) == 2:
-            print metaline.line, fores
-            if fores.get_at(0) == HexFGCode(0, 255, 255):
-                if len(metaline.line) > 3 and metaline.line[0] != '.' and metaline.line[0] != ' ' :
-                    print 'DSDDDDDDDDDDDDDDDD'
-                    return [metaline.line,]
+            if len(metaline.line) > 3 and metaline.line[0] == '(':
+                return [metaline.line,]
         return []
     
     def func(self, match, realm):
