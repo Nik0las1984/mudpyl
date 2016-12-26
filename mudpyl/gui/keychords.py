@@ -37,6 +37,8 @@ legal_specials = ['backspace', 'tab', 'return', 'enter', 'dash',
                   'cyrillic_ie',
                   #а
                   'cyrillic_a',
+                  #б
+                  'cyrillic_be',
                   ]
 
 
@@ -96,7 +98,7 @@ else:
     def from_gtk_event(event):
         """Turn GTK's key-press-event into a KeyChord."""
         name = gtk.gdk.keyval_name(event.keyval).lower()
-        #print name
+        print name
 
         #GTK and us share a few common names, so we only look up where it's
         #different. These may differ in case than ours, which is why we do

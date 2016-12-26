@@ -117,6 +117,9 @@ class TargetsSystem(BaseModule):
     def dump_aliases(self, path):
         file(path, 'w').write(json.dumps(self.taliases, encoding="utf-8"))
 
+    def auto_agr(self):
+        return self.realm.get_var(u'автоагр')
+
     @property
     def aliases(self):
         return [self.set_target,]
@@ -133,6 +136,7 @@ class TargetsSystem(BaseModule):
             self.repeat_opozn,
             self.repeat_opozn1,
             self.repeat_opozn2,
+            self.on_exp,
             ]
     
     @property
@@ -144,7 +148,11 @@ class TargetsSystem(BaseModule):
             from_string('<F4>'): self.key4,
             from_string('<F5>'): self.key5,
             from_string('C-<cyrillic_a>'): self.change_attack,
+            from_string('C-<cyrillic_be>'): self.change_auto_agr,
             }
+    
+    def change_auto_agr(self, realm):
+        self.realm.toggle_var(u'автоагр')
     
     @binding_alias(u'^ц(\d+) ([\.\w]+)$')
     def set_target(self, match, realm):
@@ -256,6 +264,14 @@ class TargetsSystem(BaseModule):
             self.targets.append(t)
             #realm.write('#out2 Target: %s -> ' % t)
             realm.alterer.insert_metaline(0, ml(u'<F%s> (%s) - ' % (len(self.targets), self.get_target_alias(t)), fg_code(GREEN, True)))
+            
+        # авто агрим цели
+        if self.auto_agr():
+            for i in range(len(self.targets)):
+                a = self.get_target_alias(self.targets[i])
+                if a:
+                    self.on_key(i)
+                    break
         #print self.manager, match
     
     def opozn_targer(self):
@@ -291,6 +307,12 @@ class TargetsSystem(BaseModule):
     def repeat_opozn2(self, match, realm):
         if self.opozn_flag:
             self.opozn_targer()
+        
+    
+    @binding_trigger(ur'^Ваш опыт повысился на \d+ очков.')
+    def on_exp(self, match, realm):
+        if self.auto_agr():
+            realm.send(u'look')
 
     
     @binding_trigger(RE_FIGHT_STATUS)
