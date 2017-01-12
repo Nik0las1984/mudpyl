@@ -5,6 +5,8 @@ import json
 #http://build-failed.blogspot.ru/2012/11/zoomable-image-with-leaflet.html
 
 MAPFILE = 'map.json'
+POSSIBLE_DT_FILE = 'dt.txt'
+
 
 OPPOSITE_DIRS = {
     u'e': u'w',
@@ -109,7 +111,7 @@ class Zone:
                     r1.bound_flag = True
                     r.bound_flag = True
                     self.exits[r.vnum] = self.mmap.zones[r1.zone]
-                    print self.name, '->', self.exits[r.vnum].name
+                    #print self.name, '->', self.exits[r.vnum].name
     
     def check_zone(self, z):
         return z in self.exits.values()
@@ -210,12 +212,15 @@ class Room:
         self.terrain = terrain
         self.parsed_flag = parsed_flag
         self.coords = coords
-        self.dt_flag = False
-        self.slow_dt_flag = False
-        self.yama_flag = False
+        #self.dt_flag = False
+        #self.slow_dt_flag = False
+        #self.yama_flag = False
         
         # Зона граничит с другой
         self.bound_flag = False
+        
+        # Флаги
+        self.flags = set()
     
     def update(self, name = None, area = None, zone = None, exits = {}, terrain = None):
         self.name = name
@@ -246,10 +251,11 @@ class Room:
             'terrain': self.terrain,
             'parsed_flag': self.parsed_flag,
             'coords': self.coords.tolist(),
-            'dt_flag': self.dt_flag,
-            'slow_dt_flag': self.slow_dt_flag,
-            'yama_flag': self.yama_flag,
+            #'dt_flag': self.dt_flag,
+            #'slow_dt_flag': self.slow_dt_flag,
+            #'yama_flag': self.yama_flag,
             #'bound_flag': self.bound_flag,
+            'flags': list(self.flags),
             }
         return json.dumps(data, encoding="utf-8")
     
@@ -265,18 +271,45 @@ class Room:
         self.terrain = data['terrain']
         self.parsed_flag = data['parsed_flag']
         self.coords = np.int_(data['coords'])
-        self.dt_flag = data['dt_flag']
-        self.slow_dt_flag = data['slow_dt_flag']
+        
+        if data.has_key('flags'):
+            self.flags = set(data['flags'])
+        
+        #TODO: remove
+        if data.has_key('dt_flag') and data['dt_flag']:
+            self.set_flag('dt')
+        
+        if data.has_key('slow_dt_flag') and data['slow_dt_flag']:
+            self.set_flag('slow_dt')
+        
+        if data.has_key('yama_flag') and data['yama_flag']:
+            self.set_flag('yama')
         #self.bound_flag = data.get('bound_flag', False)
+
+    
+    def set_flag(self, flag):
+        self.flags.add(flag)
+    
+    def unset_flag(self, flag):
+        self.flags.discard(flag)
+    
+    def has_flag(self, flag):
+        return flag in self.flags
+    
+    def toggle_flag(self, flag):
+        if self.has_flag(flag):
+            self.unset_flag(flag)
+        else:
+            self.set_flag(flag)
     
     def toggle_dt(self):
-        self.dt_flag = not self.dt_flag
+        self.toggle_flag('dt')
     
     def toggle_yama(self):
-        self.yama_flag = not self.yama_flag
+        self.toggle_flag('yama')
     
     def toggle_slow_dt(self):
-        self.slow_dt_flag = not self.slow_dt_flag
+        self.toggle_flag('slow_dt')
         
 
 class Map:
@@ -287,6 +320,8 @@ class Map:
         self.gui    = None
         
         self.last_room = None
+        
+        self.possible_dt = self.load_possible_dt()
         
         try:
             self.load(MAPFILE)
@@ -365,6 +400,8 @@ class Map:
                 self.levels[level] = {vnum: r, }
             
             dump_flag = True
+
+        self.check_possible_dt(r)
             
         print r.name, r.exits    
         
@@ -407,6 +444,7 @@ class Map:
                     nr.update_exits({d1: vnum, })
                 
                 dump_flag = True
+            self.check_possible_dt(self.rooms[r1])
         self.last_room = r
         z.update_room(r)
         z.update_exits()
@@ -459,8 +497,9 @@ class Map:
         for i in f:
             r = Room(None)
             r.from_json(i)
+            self.check_possible_dt(r)
             
-            print r.name, r.exits
+            #print r.name, r.exits
             
             level = r.coords[2]
             if self.levels.has_key(level):
@@ -477,5 +516,22 @@ class Map:
             z.construct_boundary()
         f.close()
         
-        
+    def check_possible_dt(self, r):
+        if r.vnum in self.possible_dt:
+            r.set_flag('possible_dt')
+            print 'Set room %s to possinle dt' % r.vnum
+        else:
+            r.unset_flag('possible_dt')
+    
+    def load_possible_dt(self):
+        dt = []
+        try:
+            f = file(POSSIBLE_DT_FILE)
+            for l in f:
+                print l
+                dt.append(unicode(l.split()[1]))
+            print 'Loaded %s possible dt.' % len(dt)
+        except:
+            return []
+        return dt
 

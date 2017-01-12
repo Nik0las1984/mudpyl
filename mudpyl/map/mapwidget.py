@@ -84,10 +84,6 @@ class MapView(gtk.DrawingArea):
         
         self.bound_rooms = None
 
-        self.rmenu = self.room_menu()
-        
-        
-        
         self.map_label = MapLabel()
         
         
@@ -172,6 +168,9 @@ class MapView(gtk.DrawingArea):
         
         c = self.get_colormap().alloc_color('#ff0000', True, True)
         self.gcs['slow_dt'] = c
+        
+        c = self.get_colormap().alloc_color('#ff0000', True, True)
+        self.gcs['yama'] = c
 
 
 
@@ -221,7 +220,7 @@ class MapView(gtk.DrawingArea):
             
             for r in self.selected:
                 if r and r.coords[0] == c[0] and r.coords[1] == c[1]:
-                    self.rmenu.popup(None,None,None,event.button,event.time)
+                    self.room_menu().popup(None,None,None,event.button,event.time)
                     return True
             
             self.move_flag = True
@@ -318,10 +317,13 @@ class MapView(gtk.DrawingArea):
         if self.gcs.has_key(r.terrain):
             gc = self.gcs[r.terrain]
         
-        if r.slow_dt_flag:
+        if r.has_flag('yama'):
+            gc = self.gcs['yama']
+        
+        if r.has_flag('slow_dt'):
             gc = self.gcs['slow_dt']
         
-        if r.dt_flag:
+        if r.has_flag('dt'):
             gc = self.gcs['dt']
         
         
@@ -395,6 +397,12 @@ class MapView(gtk.DrawingArea):
                 cr.set_source_rgba(1, 0, 0, 1)
                 cr.rectangle(x-2, y-2, h+4, h+4)
                 cr.stroke()
+        
+        if draw_room:
+            if r.has_flag('possible_dt'):
+                cr.set_source_rgb(0, 0, 0)
+                cr.arc(x+h/2, y+h/2, h/3, 0.0, 2*math.pi)
+                cr.fill()
         
     
     def draw_map(self, drawingarea, event):
@@ -661,17 +669,30 @@ class MapView(gtk.DrawingArea):
         box.pack_end(self.map_label, expand = False)
         return box
     
+    def check_selected_flag(self, flag):
+        cnt = 0
+        for i in self.selected:
+            if i.has_flag(flag):
+                cnt += 1
+        ln = len(self.selected)
+        if ln > 0 and cnt == ln:
+            return '+'
+        if ln > 0 and cnt == 0:
+            return '-'
+        if ln > 0 and cnt > 0 and cnt < ln:
+            return '+/-'
+    
     def room_menu(self):
         menu = gtk.Menu()
-        menu1 = gtk.MenuItem(u'ДТ')
+        menu1 = gtk.MenuItem(u'ДТ (%s)' % self.check_selected_flag('dt'))
         menu.append(menu1)
         menu1.connect("activate", self.rmenu_response, u'dt')
         
-        menu1 = gtk.MenuItem(u'Слоу ДТ')
+        menu1 = gtk.MenuItem(u'Слоу ДТ(%s)' % self.check_selected_flag('slow_dt'))
         menu.append(menu1)
         menu1.connect("activate", self.rmenu_response, u'sdt')
         
-        menu1 = gtk.MenuItem(u'Яма')
+        menu1 = gtk.MenuItem(u'Яма(%s)' % self.check_selected_flag('yama'))
         menu.append(menu1)
         menu1.connect("activate", self.rmenu_response, u'yama')
         
