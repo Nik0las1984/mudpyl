@@ -210,12 +210,15 @@ class Room:
         self.terrain = terrain
         self.parsed_flag = parsed_flag
         self.coords = coords
-        self.dt_flag = False
-        self.slow_dt_flag = False
-        self.yama_flag = False
+        #self.dt_flag = False
+        #self.slow_dt_flag = False
+        #self.yama_flag = False
         
         # Зона граничит с другой
         self.bound_flag = False
+        
+        # Флаги
+        self.flags = set()
     
     def update(self, name = None, area = None, zone = None, exits = {}, terrain = None):
         self.name = name
@@ -246,10 +249,11 @@ class Room:
             'terrain': self.terrain,
             'parsed_flag': self.parsed_flag,
             'coords': self.coords.tolist(),
-            'dt_flag': self.dt_flag,
-            'slow_dt_flag': self.slow_dt_flag,
-            'yama_flag': self.yama_flag,
+            #'dt_flag': self.dt_flag,
+            #'slow_dt_flag': self.slow_dt_flag,
+            #'yama_flag': self.yama_flag,
             #'bound_flag': self.bound_flag,
+            'flags': list(self.flags),
             }
         return json.dumps(data, encoding="utf-8")
     
@@ -265,18 +269,45 @@ class Room:
         self.terrain = data['terrain']
         self.parsed_flag = data['parsed_flag']
         self.coords = np.int_(data['coords'])
-        self.dt_flag = data['dt_flag']
-        self.slow_dt_flag = data['slow_dt_flag']
+        
+        if data.has_key('flags'):
+            self.flags = set(data['flags'])
+        
+        #TODO: remove
+        if data.has_key('dt_flag') and data['dt_flag']:
+            self.set_flag('dt')
+        
+        if data.has_key('slow_dt_flag') and data['slow_dt_flag']:
+            self.set_flag('slow_dt')
+        
+        if data.has_key('yama_flag') and data['yama_flag']:
+            self.set_flag('yama')
         #self.bound_flag = data.get('bound_flag', False)
+
+    
+    def set_flag(self, flag):
+        self.flags.add(flag)
+    
+    def unset_flag(self, flag):
+        self.flags.discard(flag)
+    
+    def has_flag(self, flag):
+        return flag in self.flags
+    
+    def toggle_flag(self, flag):
+        if self.has_flag(flag):
+            self.unset_flag(flag)
+        else:
+            self.set_flag(flag)
     
     def toggle_dt(self):
-        self.dt_flag = not self.dt_flag
+        self.toggle_flag('dt')
     
     def toggle_yama(self):
-        self.yama_flag = not self.yama_flag
+        self.toggle_flag('yama')
     
     def toggle_slow_dt(self):
-        self.slow_dt_flag = not self.slow_dt_flag
+        self.toggle_flag('slow_dt')
         
 
 class Map:
