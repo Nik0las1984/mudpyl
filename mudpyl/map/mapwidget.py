@@ -398,6 +398,12 @@ class MapView(gtk.DrawingArea):
                 cr.rectangle(x-2, y-2, h+4, h+4)
                 cr.stroke()
         
+        if draw_room:
+            if r.has_flag('possible_dt'):
+                cr.set_source_rgb(0, 0, 0)
+                cr.arc(x+h/2, y+h/2, h/3, 0.0, 2*math.pi)
+                cr.fill()
+        
     
     def draw_map(self, drawingarea, event):
         cr = self.window.cairo_create()

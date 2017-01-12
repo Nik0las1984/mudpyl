@@ -5,6 +5,8 @@ import json
 #http://build-failed.blogspot.ru/2012/11/zoomable-image-with-leaflet.html
 
 MAPFILE = 'map.json'
+POSSIBLE_DT_FILE = 'dt.txt'
+
 
 OPPOSITE_DIRS = {
     u'e': u'w',
@@ -109,7 +111,7 @@ class Zone:
                     r1.bound_flag = True
                     r.bound_flag = True
                     self.exits[r.vnum] = self.mmap.zones[r1.zone]
-                    print self.name, '->', self.exits[r.vnum].name
+                    #print self.name, '->', self.exits[r.vnum].name
     
     def check_zone(self, z):
         return z in self.exits.values()
@@ -319,6 +321,8 @@ class Map:
         
         self.last_room = None
         
+        self.possible_dt = self.load_possible_dt()
+        
         try:
             self.load(MAPFILE)
         except:
@@ -396,6 +400,8 @@ class Map:
                 self.levels[level] = {vnum: r, }
             
             dump_flag = True
+
+        self.check_possible_dt(r)
             
         print r.name, r.exits    
         
@@ -438,6 +444,7 @@ class Map:
                     nr.update_exits({d1: vnum, })
                 
                 dump_flag = True
+            self.check_possible_dt(self.rooms[r1])
         self.last_room = r
         z.update_room(r)
         z.update_exits()
@@ -490,8 +497,9 @@ class Map:
         for i in f:
             r = Room(None)
             r.from_json(i)
+            self.check_possible_dt(r)
             
-            print r.name, r.exits
+            #print r.name, r.exits
             
             level = r.coords[2]
             if self.levels.has_key(level):
@@ -508,5 +516,22 @@ class Map:
             z.construct_boundary()
         f.close()
         
-        
+    def check_possible_dt(self, r):
+        if r.vnum in self.possible_dt:
+            r.set_flag('possible_dt')
+            print 'Set room %s to possinle dt' % r.vnum
+        else:
+            r.unset_flag('possible_dt')
+    
+    def load_possible_dt(self):
+        dt = []
+        try:
+            f = file(POSSIBLE_DT_FILE)
+            for l in f:
+                print l
+                dt.append(unicode(l.split()[1]))
+            print 'Loaded %s possible dt.' % len(dt)
+        except:
+            return []
+        return dt
 
