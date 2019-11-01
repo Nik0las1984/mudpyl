@@ -1,11 +1,31 @@
 #coding: utf-8
 import numpy as np
 import json
+import heapq
 
 #http://build-failed.blogspot.ru/2012/11/zoomable-image-with-leaflet.html
 
 MAPFILE = 'map.json'
 POSSIBLE_DT_FILE = 'dt.txt'
+
+def shortest_path(G, start, end):
+    def flatten(L):       # Flatten linked list of form [0,[1,[2,[]]]]
+        while len(L) > 0:
+            yield L[0]
+            L = L[1]
+
+    q = [(0, start, ())]  # Heap of (cost, path_head, path_rest).
+    visited = set()       # Visited vertices.
+    while True:
+        (cost, v1, path) = heapq.heappop(q)
+        if v1 not in visited:
+            visited.add(v1)
+            if v1 == end:
+                return list(flatten(path))[::-1] + [v1]
+            path = (v1, path)
+            for (v2, cost2) in G[v1].iteritems():
+                if v2 not in visited:
+                    heapq.heappush(q, (cost + cost2, v2, path))
 
 
 OPPOSITE_DIRS = {
@@ -52,7 +72,12 @@ class Zone:
         # BBox
         self.bmin = None
         self.bmax = None
-        
+    
+    
+    def __getitem__(self, key):
+        return self.rooms[key]
+    
+
     
     def update_room(self, r):
         if self.mmx.has_key(r.coords[1]):
@@ -200,6 +225,13 @@ class Zone:
         self.boundary = []
         for i in H:
             self.boundary.append(A[i].coords)
+    
+    def find_rooms(self, name):
+        rooms = []
+        for r in self.rooms.values():
+            if r.find_name(name):
+                rooms.append(r)
+        return rooms
         
 
 class Room:
@@ -212,6 +244,11 @@ class Room:
         self.terrain = terrain
         self.parsed_flag = parsed_flag
         self.coords = coords
+        
+        
+        # все комнаты
+        self.mmap = None
+        
         #self.dt_flag = False
         #self.slow_dt_flag = False
         #self.yama_flag = False
@@ -221,6 +258,27 @@ class Room:
         
         # Флаги
         self.flags = set()
+    
+    def __unicode__(self):
+        return '%s [%s]' % (self.name, self.vnum)
+    
+    def __str__(self):
+        return unicode(self).encode('utf-8')
+    
+    def iteritems(self):
+        e = {}
+        for i in self.exits.values():
+            # проверка ДТ
+            if not self.mmap.rooms[i].is_bad():
+                # вес пути
+                e[i] = 1
+        return e.iteritems()
+    
+    def exits_by_rooms(self):
+        e = {}
+        for i in self.exits.keys():
+            e[self.exits[i]] = i
+        return e
     
     def update(self, name = None, area = None, zone = None, exits = {}, terrain = None):
         self.name = name
@@ -286,6 +344,8 @@ class Room:
             self.set_flag('yama')
         #self.bound_flag = data.get('bound_flag', False)
 
+    def is_bad(self):
+        return self.has_flag('dt') or self.has_flag('yama') or self.has_flag('slow_dt')
     
     def set_flag(self, flag):
         self.flags.add(flag)
@@ -310,6 +370,11 @@ class Room:
     
     def toggle_slow_dt(self):
         self.toggle_flag('slow_dt')
+    
+    def find_name(self, n):
+        if self.name:
+            return self.name.lower().find(n.lower()) >= 0
+        return False
         
 
 class Map:
@@ -332,8 +397,28 @@ class Map:
         
         self.listeners = []
     
+    def find_rooms(self, name):
+        rooms = []
+        for r in self.rooms.values():
+            if r.find_name(name):
+                rooms.append(r)
+        return rooms
+    
+    def path(self, r1, r2):
+        return shortest_path(self, r1, r2)
+    
+    def path_to_walk(self, r1, r2):
+        p = self.path(r1, r2)
+        walk = []
+        for i in range(len(p) - 1):
+            walk.append(self.rooms[p[i]].exits_by_rooms()[p[i+1]])
+        return walk
+    
     def add_listener(self, l):
         self.listeners.append(l)
+    
+    def __getitem__(self, key):
+        return self.rooms[key]
     
     def msdp_var(self, var):
         if var.has_key('ROOM'):
@@ -400,7 +485,7 @@ class Map:
                 self.levels[level] = {vnum: r, }
             
             dump_flag = True
-
+        r.mmap = self
         self.check_possible_dt(r)
             
         print r.name, r.exits    
@@ -497,6 +582,7 @@ class Map:
         for i in f:
             r = Room(None)
             r.from_json(i)
+            r.mmap = self
             self.check_possible_dt(r)
             
             #print r.name, r.exits

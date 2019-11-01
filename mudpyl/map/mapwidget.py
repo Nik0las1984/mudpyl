@@ -278,6 +278,25 @@ class MapView(gtk.DrawingArea):
             if len(self.selected) > 0:
                 r = self.selected[0]
                 self.active_zone = self.mmap.zones[r.zone]
+        
+        
+        if s == u'show_path':
+            if len(self.selected) > 0:
+                r = self.selected[0]
+                
+                p = self.mmap.path(self.active.vnum, r.vnum)
+                self.gui.realm.write(u'Длина пути: %s' % len(p))
+                self.selected = []
+                for i in p:
+                    self.selected.append(self.mmap.rooms[i])
+        
+        if s == u'go':
+            if len(self.selected) > 0:
+                r = self.selected[0]
+                p = self.mmap.path_to_walk(self.active.vnum, r.vnum)
+                for i in p:
+                    self.gui.realm.send(i)
+        
         self.queue_draw()
             
     def button_release_event(self, widget, event):
@@ -707,6 +726,14 @@ class MapView(gtk.DrawingArea):
         menu1 = gtk.MenuItem(u'Активная зона')
         menu.append(menu1)
         menu1.connect("activate", self.rmenu_response, u'active_zone')
+        
+        menu1 = gtk.MenuItem(u'Показать путь')
+        menu.append(menu1)
+        menu1.connect("activate", self.rmenu_response, u'show_path')
+        
+        menu1 = gtk.MenuItem(u'Идти')
+        menu.append(menu1)
+        menu1.connect("activate", self.rmenu_response, u'go')
         
         
 
